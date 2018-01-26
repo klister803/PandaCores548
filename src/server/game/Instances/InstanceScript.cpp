@@ -72,7 +72,7 @@ void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject* go)
     if (go)
         go->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
     else
-        sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript: HandleGameObject failed");
+        TC_LOG_DEBUG("server", "InstanceScript: HandleGameObject failed");
 }
 
 bool InstanceScript::IsEncounterInProgress() const
@@ -113,7 +113,7 @@ void InstanceScript::LoadMinionData(const MinionData* data)
 
         ++data;
     }
-    sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadMinionData: " UI64FMTD " minions loaded.", uint64(minions.size()));
+    TC_LOG_DEBUG("server", "InstanceScript::LoadMinionData: " UI64FMTD " minions loaded.", uint64(minions.size()));
 }
 
 void InstanceScript::LoadDoorData(const DoorData* data)
@@ -125,7 +125,7 @@ void InstanceScript::LoadDoorData(const DoorData* data)
 
         ++data;
     }
-    sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
+    TC_LOG_DEBUG("server", "InstanceScript::LoadDoorData: " UI64FMTD " doors loaded.", uint64(doors.size()));
 }
 
 void InstanceScript::LoadDoorDataBase(std::vector<DoorData> const* data)
@@ -134,9 +134,9 @@ void InstanceScript::LoadDoorDataBase(std::vector<DoorData> const* data)
     {
         if (itr->bossId < bosses.size())
             doors.insert(std::make_pair(itr->entry, DoorInfo(&bosses[itr->bossId], itr->type, BoundaryType(itr->boundary))));
-        sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorDataBase data->entry %u, data->bossId %u, bosses.size() %u, data->type %u, data->boundary %u", itr->entry, itr->bossId, bosses.size(), itr->type, itr->boundary);
+        TC_LOG_DEBUG("server", "InstanceScript::LoadDoorDataBase data->entry %u, data->bossId %u, bosses.size() %u, data->type %u, data->boundary %u", itr->entry, itr->bossId, bosses.size(), itr->type, itr->boundary);
     }
-    sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::LoadDoorDataBase: " UI64FMTD " doors loaded.", uint64(doors.size()));
+    TC_LOG_DEBUG("server", "InstanceScript::LoadDoorDataBase: " UI64FMTD " doors loaded.", uint64(doors.size()));
 }
 
 void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
@@ -258,7 +258,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
         if (bossInfo->state == TO_BE_DECIDED) // loading
         {
             bossInfo->state = state;
-            //sLog->outError(LOG_FILTER_GENERAL, "Inialize boss %u state as %u.", id, (uint32)state);
+            //TC_LOG_ERROR("server", "Inialize boss %u state as %u.", id, (uint32)state);
             return false;
         }
         else
@@ -341,7 +341,7 @@ void InstanceScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, 
                 go->ResetDoorOrButton();
         }
         else
-            sLog->outError(LOG_FILTER_GENERAL, "SD2: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.", go->GetEntry(), go->GetGoType());
+            TC_LOG_ERROR("server", "SD2: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.", go->GetEntry(), go->GetGoType());
     }
 }
 
@@ -372,7 +372,7 @@ void InstanceScript::DoUpdateWorldState(uint32 uiStateId, uint32 uiStateData)
                 player->SendUpdateWorldState(uiStateId, uiStateData);
     }
     else
-        sLog->outDebug(LOG_FILTER_TSCR, "DoUpdateWorldState attempt send data but no players in map.");
+        TC_LOG_DEBUG("server", "DoUpdateWorldState attempt send data but no players in map.");
 }
 
 // Send Notify to all players in instance
@@ -537,7 +537,7 @@ void InstanceScript::DoAddAuraOnPlayers(uint32 spell)
 
 bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/ /*= NULL*/, uint32 /*miscvalue1*/ /*= 0*/)
 {
-    sLog->outError(LOG_FILTER_GENERAL, "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u",
+    TC_LOG_ERROR("server", "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u",
         instance->GetId(), criteria_id);
     return false;
 }
@@ -631,7 +631,7 @@ void InstanceScript::RemoveSelfResFieldFromPlayers()
     if (challenge_timer)
         diff = HEROIC_DIFFICULTY;
 
-    sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) diff %u. creditEntry: %u, type %u", instance->GetMapName(), instance->GetInstanceId(), diff, creditEntry, type);
+    TC_LOG_DEBUG("lfg", "UpdateEncounterState: Instance %s (instanceId %u) diff %u. creditEntry: %u, type %u", instance->GetMapName(), instance->GetInstanceId(), diff, creditEntry, type);
 
     DungeonEncounterList const* encounters = sObjectMgr->GetDungeonEncounterList(instance->GetId(), diff);
     if (!encounters)
@@ -649,7 +649,7 @@ void InstanceScript::RemoveSelfResFieldFromPlayers()
             if (encounter->lastEncounterDungeon)
             {
                 dungeonId = encounter->lastEncounterDungeon;
-                sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName, dungeonId);
+                TC_LOG_DEBUG("lfg", "UpdateEncounterState: Instance %s (instanceId %u) completed encounter %s. Credit Dungeon: %u", instance->GetMapName(), instance->GetInstanceId(), encounter->dbcEntry->encounterName, dungeonId);
                 // no break need check all encounters.
                 //break;
             }
@@ -668,7 +668,7 @@ void InstanceScript::RemoveSelfResFieldFromPlayers()
                 if (Group* grp = player->GetGroup())
                     if (grp->isLFGGroup())
                     {
-                        sLog->outDebug(LOG_FILTER_LFG, "UpdateEncounterState: grp->GetGUID %u. Credit Dungeon: %u", grp->GetGUID(), dungeonId);
+                        TC_LOG_DEBUG("lfg", "UpdateEncounterState: grp->GetGUID %u. Credit Dungeon: %u", grp->GetGUID(), dungeonId);
                         sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId);
                         break;
                     }

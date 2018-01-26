@@ -173,7 +173,7 @@ void WorldSession::HandleBfQueueInviteResponse(WorldPacket & recvData)
     recvData.ReadGuidMask<3, 7, 4, 2>(guid);
 
     recvData.ReadGuidBytes< 2, 3, 6, 1, 5, 0, 4, 7>(guid);
-    sLog->outError(LOG_FILTER_GENERAL, "HandleQueueInviteResponse: GUID:" UI64FMTD " Accepted:%u", (uint64)guid, accepted);
+    TC_LOG_ERROR("server", "HandleQueueInviteResponse: GUID:" UI64FMTD " Accepted:%u", (uint64)guid, accepted);
 
     if(!accepted)
         return;
@@ -203,7 +203,7 @@ void WorldSession::HandleBfEntryInviteResponse(WorldPacket & recvData)
 
     recvData.ReadGuidBytes<7, 1, 0, 6, 2, 4, 3, 5>(guid);
 
-    sLog->outError(LOG_FILTER_GENERAL, "HandleBattlefieldInviteResponse: GUID:" UI64FMTD " Accepted:%u", uint64(guid), accepted);
+    TC_LOG_ERROR("server", "HandleBattlefieldInviteResponse: GUID:" UI64FMTD " Accepted:%u", uint64(guid), accepted);
 
     Battlefield* bf = sBattlefieldMgr->GetBattlefieldByGUID(guid);
     if (!bf)
@@ -224,7 +224,7 @@ void WorldSession::HandleBfQueueRequest(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 3, 1, 2, 0, 4, 7, 5>(guid);
     recvData.ReadGuidBytes<4, 3, 0, 1, 6, 5, 2, 7>(guid);
 
-    sLog->outError(LOG_FILTER_GENERAL, "HandleBfQueueRequest: GUID:" UI64FMTD " ", (uint64)guid);
+    TC_LOG_ERROR("server", "HandleBfQueueRequest: GUID:" UI64FMTD " ", (uint64)guid);
 
     if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldByGUID(guid))
     {
@@ -247,7 +247,7 @@ void WorldSession::HandleBfExitQueueRequest(WorldPacket & recvData)
     recvData.ReadGuidMask<0, 7, 5, 2, 4, 1, 6, 3>(guid);
     recvData.ReadGuidBytes<7, 1, 2, 5, 0, 6, 4, 3>(guid);
 
-    sLog->outError(LOG_FILTER_GENERAL, "HandleBfExitQueueRequest: GUID:" UI64FMTD " ", (uint64)guid);
+    TC_LOG_ERROR("server", "HandleBfExitQueueRequest: GUID:" UI64FMTD " ", (uint64)guid);
 
     SendBfLeaveMessage(guid);
 
@@ -257,7 +257,7 @@ void WorldSession::HandleBfExitQueueRequest(WorldPacket & recvData)
 
 void WorldSession::HandleBfExitRequest(WorldPacket& recv_data)
 {
-    sLog->outError(LOG_FILTER_GENERAL, "HandleBfExitRequest");
+    TC_LOG_ERROR("server", "HandleBfExitRequest");
     Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->getCurrentUpdateZoneID());
 
     if (!bf)
@@ -278,11 +278,11 @@ void WorldSession::HandleReportPvPAFK(WorldPacket & recvData)
 
     if (!reportedPlayer)
     {
-        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WorldSession::HandleReportPvPAFK: player not found");
+        TC_LOG_DEBUG("bg", "WorldSession::HandleReportPvPAFK: player not found");
         return;
     }
 
-    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WorldSession::HandleReportPvPAFK: %s reported %s", _player->GetName(), reportedPlayer->GetName());
+    TC_LOG_DEBUG("bg", "WorldSession::HandleReportPvPAFK: %s reported %s", _player->GetName(), reportedPlayer->GetName());
 
     reportedPlayer->ReportedAfkBy(_player);
 }
@@ -291,5 +291,5 @@ void WorldSession::HandleBfSetPreferedCemetry(WorldPacket & recvData)
 {
     uint32 graveID = 0;
     recvData >> graveID;
-    sLog->outError(LOG_FILTER_GENERAL, "HandleBfSetPreferedCemetry: GraveID: %u", graveID);
+    TC_LOG_ERROR("server", "HandleBfSetPreferedCemetry: GraveID: %u", graveID);
 }

@@ -481,7 +481,7 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
             else
                 _gtscalingId = (MAX_CLASSES - (_spellInfo->ScalingClass + 2)) * 100 + level - 1;
 
-            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellEffectInfo::CalcValue Id %u, ScalingClass %i, level %i, basePoints %i, basePointsPerLevel %f, _gtscalingId %i",
+            //TC_LOG_DEBUG("spell", "SpellEffectInfo::CalcValue Id %u, ScalingClass %i, level %i, basePoints %i, basePointsPerLevel %f, _gtscalingId %i",
             //_spellInfo->Id, _spellInfo->ScalingClass, level, basePoints, basePointsPerLevel, _gtscalingId);
 
             if (GtSpellScalingEntry const* gtScaling = sGtSpellScalingStore.LookupEntry(_gtscalingId))
@@ -1792,7 +1792,7 @@ SpellCastResult SpellInfo::CheckShapeshift(Unit const* _caster) const
         shapeInfo = sSpellShapeshiftFormStore.LookupEntry(form);
         if (!shapeInfo)
         {
-            sLog->outError(LOG_FILTER_SPELLS_AURAS, "GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
+            TC_LOG_ERROR("spell", "GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
             return SPELL_CAST_OK;
         }
         actAsShifted = !(shapeInfo->flags1 & 1);            // shapeshift acts as normal form for spells
@@ -1841,7 +1841,7 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
                 if (groupEntry->AreaId[i] == zone_id || groupEntry->AreaId[i] == area_id)
                     found = true;
                 else if (groupEntry->AreaId[i])
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CheckLocation: spell %i only for %u area", Id, groupEntry->AreaId[i]);
+                    TC_LOG_DEBUG("spell", "CheckLocation: spell %i only for %u area", Id, groupEntry->AreaId[i]);
             }
             if (found || !groupEntry->nextGroup)
                 break;
@@ -2205,18 +2205,18 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
 SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget) const
 {
     uint32 neededTargets = GetExplicitTargetMask();
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget neededTargets %i target %i Id %i", neededTargets, target ? target->GetGUID() : 0, Id);
+    //TC_LOG_DEBUG("spell", "SpellInfo::CheckExplicitTarget neededTargets %i target %i Id %i", neededTargets, target ? target->GetGUID() : 0, Id);
     if (!target)
     {
         if (neededTargets & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT_MASK | TARGET_FLAG_CORPSE_MASK) && !(neededTargets & TARGET_FLAG_DEST_LOCATION))
             if (!(neededTargets & TARGET_FLAG_GAMEOBJECT_ITEM) || !itemTarget)
                 return SPELL_FAILED_BAD_TARGETS;
 
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget Id %i non bad target", Id);
+        //TC_LOG_DEBUG("spell", "SpellInfo::CheckExplicitTarget Id %i non bad target", Id);
         return SPELL_CAST_OK;
     }
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget Id %i", Id);
+    //TC_LOG_DEBUG("spell", "SpellInfo::CheckExplicitTarget Id %i", Id);
     if (Unit const* unitTarget = target->ToUnit())
     {
         if (neededTargets & (TARGET_FLAG_UNIT_ENEMY | TARGET_FLAG_UNIT_ALLY | TARGET_FLAG_UNIT_RAID | TARGET_FLAG_UNIT_PARTY | TARGET_FLAG_UNIT_MINIPET | TARGET_FLAG_UNIT_PASSENGER))
@@ -2716,7 +2716,7 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
         // Else drain all power
         if (PowerType < MAX_POWERS)
             return caster->GetPower(Powers(PowerType));
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CalcPowerCost: Unknown power type '%d' in spell %d", spellPower->powerType, Id);
+        TC_LOG_ERROR("spell", "SpellInfo::CalcPowerCost: Unknown power type '%d' in spell %d", spellPower->powerType, Id);
         return 0;
     }
 
@@ -2737,11 +2737,11 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) 
                     break;
                 case POWER_RUNES:
                 case POWER_RUNIC_POWER:
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Not implemented yet!");
+                    TC_LOG_DEBUG("spell", "CalcPowerCost: Not implemented yet!");
                     break;
                 default:
                     powerCost += int32(CalculatePct(getCreatePowers, power.powerCostPercentage));
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", power.powerType, Id, powerCost, caster->GetCreatePowers(Powers(power.powerType)));
+                    TC_LOG_DEBUG("spell", "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", power.powerType, Id, powerCost, caster->GetCreatePowers(Powers(power.powerType)));
                     //return powerCost;
             }
         }
@@ -3519,7 +3519,7 @@ SpellPowerEntry const SpellInfo::GetPowerInfo(uint8 powerIndex) const
 {
     if (powerIndex >= MAX_POWERS_FOR_SPELL)
     {
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "Invalid power index: %u, for spell: %u.", powerIndex, Id);
+        TC_LOG_ERROR("spell", "Invalid power index: %u, for spell: %u.", powerIndex, Id);
         powerIndex = 0;
     }
 

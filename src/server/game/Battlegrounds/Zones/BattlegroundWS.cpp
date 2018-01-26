@@ -112,7 +112,7 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                         if (GameObject* obj = GetBgMap()->GetGameObject(_droppedFlagGUID[team]))
                                 obj->Delete();
                             else
-                                sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundWS: An error has occurred in PostUpdateImpl: Unknown dropped flag GUID: %u", GUID_LOPART(_droppedFlagGUID[team]));
+                                TC_LOG_ERROR("bg", "BattlegroundWS: An error has occurred in PostUpdateImpl: Unknown dropped flag GUID: %u", GUID_LOPART(_droppedFlagGUID[team]));
 
                         _droppedFlagGUID[team] = 0;
 
@@ -152,7 +152,7 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                         if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[team]))
                             player->CastSpell(player, WS_SPELL_FOCUSED_ASSAULT, true);
                         else
-                            sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundWS: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
+                            TC_LOG_ERROR("bg", "BattlegroundWS: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
                     }
                 }
                 else if (_flagDebuffState == 6) ///< Moment when you change the stacks
@@ -165,7 +165,7 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                             player->CastCustomSpell(WS_SPELL_BRUTAL_ASSAULT, SPELLVALUE_AURA_STACK, _flagDebuffState, player);
                         }
                         else
-                            sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundWS: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
+                            TC_LOG_ERROR("bg", "BattlegroundWS: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
                     }
                 }
                 else //< Continue to cast brutal Assault on target
@@ -175,7 +175,7 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                         if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[team]))
                             player->CastSpell(player, WS_SPELL_BRUTAL_ASSAULT, true);
                         else
-                            sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundWS: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
+                            TC_LOG_ERROR("bg", "BattlegroundWS: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
                     }
                 }
             }
@@ -251,25 +251,25 @@ bool BattlegroundWS::SetupBattleground()
         || !AddObject(BG_WS_OBJECT_DOOR_H_4, BG_OBJECT_DOOR_H_4_WS_ENTRY, 950.7952f, 1459.583f, 342.1523f, 0.05235988f, 0, 0, 0.02617695f, 0.9996573f, RESPAWN_IMMEDIATELY)
         )
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn some object Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundWS: Failed to spawn some object Battleground not created!");
         return false;
     }
 
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_ALLIANCE);
     if (!sg || !AddSpiritGuide(WS_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_HORDE);
     if (!sg || !AddSpiritGuide(WS_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
         return false;
     }
 
-    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BatteGroundWS: BG objects and spirit guides spawned");
+    TC_LOG_DEBUG("bg", "BatteGroundWS: BG objects and spirit guides spawned");
 
     return true;
 }
@@ -442,7 +442,7 @@ void BattlegroundWS::HandleAreaTrigger(Player* player, uint32 trigger)
         case 8965:                                          // unk6
             break;
         default:
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", trigger);
+            TC_LOG_ERROR("bg", "WARNING: Unhandled AreaTrigger in Battleground: %u", trigger);
             player->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", trigger);
             break;
     }
@@ -761,7 +761,7 @@ void BattlegroundWS::RemovePlayer(Player* player, uint64 guid, uint32 /* team */
                         pl->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
                 }
                 else
-                    sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundWS: An error has occurred in RemovePlayer: player with GUID: %u haven't been found. (_bothflagsKept is TRUE).", _flagKeepers[team]);
+                    TC_LOG_ERROR("bg", "BattlegroundWS: An error has occurred in RemovePlayer: player with GUID: %u haven't been found. (_bothflagsKept is TRUE).", _flagKeepers[team]);
             }
 
             /// Reset both flags things

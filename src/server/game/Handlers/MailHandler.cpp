@@ -57,7 +57,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
         return;
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u",
+    TC_LOG_INFO("network", "Player %u includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u",
     _player->GetGUIDLow(), items_count, money, COD, stationery, package);
 
     ObjectGuid itemGUIDs[MAX_MAIL_ITEMS];
@@ -141,13 +141,13 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     if (!rc)
     {
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u is sending mail to %s (GUID: not existed!) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u",
+        TC_LOG_INFO("network", "Player %u is sending mail to %s (GUID: not existed!) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u",
             player->GetGUIDLow(), receiver.c_str(), subject.c_str(), body.c_str(), items_count, money, COD, stationery, package);
         player->SendMailResult(0, MAIL_SEND, MAIL_ERR_RECIPIENT_NOT_FOUND);
         return;
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "Player %u is sending mail to %s (GUID: %u) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u", player->GetGUIDLow(), receiver.c_str(), GUID_LOPART(rc), subject.c_str(), body.c_str(), items_count, money, COD, stationery, package);
+    TC_LOG_INFO("network", "Player %u is sending mail to %s (GUID: %u) with subject %s and body %s includes %u items, " UI64FMTD " copper and " UI64FMTD " COD copper with stationery = %u, package = %u", player->GetGUIDLow(), receiver.c_str(), GUID_LOPART(rc), subject.c_str(), body.c_str(), items_count, money, COD, stationery, package);
 
     if (player->GetGUID() == rc)
     {
@@ -501,7 +501,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
         return;
 
     if(item->GetEntry() == 38186)
-        sLog->outDebug(LOG_FILTER_EFIR, "HandleMailTakeItem - item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), item->GetCount(), player->GetGUID(), item->GetGUID());
+        TC_LOG_DEBUG("efir", "HandleMailTakeItem - item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), item->GetCount(), player->GetGUID(), item->GetGUID());
 
     item->SetOwnerGUID(player->GetGUID());
     ItemPosCountVec dest;
@@ -814,7 +814,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket& recvData)
     bodyItem->SetUInt32Value(ITEM_FIELD_CREATOR, m->sender);
     bodyItem->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_MAIL_TEXT_MASK);
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "HandleMailCreateTextItem mailid=%u", mailId);
+    TC_LOG_INFO("network", "HandleMailCreateTextItem mailid=%u", mailId);
 
     ItemPosCountVec dest;
     uint8 msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, bodyItem, false);

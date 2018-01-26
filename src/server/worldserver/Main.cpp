@@ -58,15 +58,8 @@ uint32 realmID;                                             ///< Id of the realm
 /// Print out the usage string for this program on the console.
 void usage(const char *prog)
 {
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Usage: \n %s [<options>]\n"
-        "    -c config_file           use config_file as configuration file\n\r"
-        #ifdef _WIN32
-        "    Running as service functions:\n\r"
-        "    --service                run as service\n\r"
-        "    -s install               install service\n\r"
-        "    -s uninstall             uninstall service\n\r"
-        #endif
-        , prog);
+    TC_LOG_INFO("server", "Usage: \n %s [<options>]\n"
+        "    -c config_file           use config_file as configuration file\n\r", prog);
 }
 
 /// Launch the Trinity server
@@ -135,10 +128,11 @@ extern int main(int argc, char **argv)
         printf("Verify that the file exists and has \'[worldserver]' written in the top of the file!");
         return 1;
     }
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Using configuration file %s.", cfg_file);
+    sLog->Initialize(nullptr);
+    TC_LOG_INFO("server", "Using configuration file %s.", cfg_file);
 
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "Using ACE version: %s", ACE_VERSION);
+    TC_LOG_INFO("server", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+    TC_LOG_INFO("server", "Using ACE version: %s", ACE_VERSION);
 
     ///- and run the 'Master'
     /// \todo Why do we need this 'Master'? Can't all of this be in the Main as for Realmd?

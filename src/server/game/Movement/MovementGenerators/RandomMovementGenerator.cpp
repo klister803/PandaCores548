@@ -96,9 +96,9 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature& creature)
         }
     }*/
 
-    PathFinderMovementGenerator path(&creature);
+    PathGenerator path(&creature);
 
-    if (!path.calculate(destX, destY, destZ) || path.getPathType() & PATHFIND_NOPATH)
+    if (!path.CalculatePath(destX, destY, destZ) || path.GetPathType() & PATHFIND_NOPATH)
     {
         i_nextMoveTime.Reset(urand(500, 1500));
         return;
@@ -107,7 +107,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature& creature)
     creature.AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 
     Movement::MoveSplineInit init(creature);
-    init.MovebyPath(path.getPath());
+    init.MovebyPath(path.GetPath());
     init.SetWalk((irand(0, RUNNING_CHANCE_RANDOMMV) > 0) ? true : false);
     int32 traveltime = init.Launch();
 

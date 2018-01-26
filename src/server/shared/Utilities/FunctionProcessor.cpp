@@ -72,4 +72,3 @@ uint64 FunctionProcessor::CalculateTime(uint64 t_offset) const
 {
     return m_time + t_offset;
 }
-

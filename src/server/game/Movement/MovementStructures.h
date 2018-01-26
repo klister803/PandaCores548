@@ -2943,7 +2943,7 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
         case SMSG_MOVE_UPDATE:
             return ServerMoveUpdateSequence;
         default:
-            sLog->outError(LOG_FILTER_OPCODES, "Unknown movement sequence for opcode %u", opcode);
+            TC_LOG_ERROR("opcode", "Unknown movement sequence for opcode %u", opcode);
             break;
     }
 

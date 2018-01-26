@@ -2649,7 +2649,7 @@ public:
             GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(goEntry);
             if (!goinfo)
             {
-                sLog->outError(LOG_FILTER_SQL, "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
+                TC_LOG_ERROR("sql", "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
                 delete t;
                 return NULL;
             }
@@ -2658,7 +2658,7 @@ public:
             if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathID, mapsUsed))
                 // skip transports with empty waypoints list
             {
-                sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathID);
+                TC_LOG_ERROR("sql", "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathID);
                 delete t;
                 return NULL;
             }

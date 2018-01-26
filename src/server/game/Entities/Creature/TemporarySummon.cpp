@@ -159,14 +159,14 @@ void TempSummon::Update(uint32 diff)
         }
         default:
             UnSummon();
-            sLog->outError(LOG_FILTER_UNITS, "Temporary summoned creature (entry: %u) have unknown type %u of ", GetEntry(), m_type);
+            TC_LOG_ERROR("server", "Temporary summoned creature (entry: %u) have unknown type %u of ", GetEntry(), m_type);
             break;
     }
 }
 
 void TempSummon::InitStats(uint32 duration)
 {
-    ASSERT(!isPet());
+    ASSERT(!IsPet());
 
     m_timer = duration;
     m_lifetime = duration;
@@ -333,7 +333,7 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(getLevel(), cinfo->unit_class);
     Unit* owner = GetAnyOwner();
 
-    //sLog->outDebug(LOG_FILTER_PETS, "TempSummon::InitBaseStat owner %u creatureId %i", owner ? owner->GetGUID() : 0, creatureId);
+    //TC_LOG_DEBUG("pets", "TempSummon::InitBaseStat owner %u creatureId %i", owner ? owner->GetGUID() : 0, creatureId);
 
     PetStats const* pStats = sObjectMgr->GetPetStats(creatureId);
     if (pStats)                                      // exist in DB
@@ -427,8 +427,8 @@ void TempSummon::UnSummon(uint32 msTime)
     onUnload = true;
 
     CastPetAuras(false);
-    //ASSERT(!isPet());
-    if (isPet())
+    //ASSERT(!IsPet());
+    if (IsPet())
     {
         ((Pet*)this)->Remove();
         ASSERT(!IsInWorld());
@@ -497,7 +497,7 @@ void TempSummon::RemoveFromWorld()
         }
 
     //if (GetOwnerGUID())
-    //    sLog->outError(LOG_FILTER_UNITS, "Unit %u has owner guid when removed from world", GetEntry());
+    //    TC_LOG_ERROR("server", "Unit %u has owner guid when removed from world", GetEntry());
 
     Creature::RemoveFromWorld();
 }
@@ -534,12 +534,12 @@ void Minion::RemoveFromWorld()
 
 bool Minion::IsGuardianPet() const
 {
-    return isPet() || (m_Properties && m_Properties->Category == SUMMON_CATEGORY_PET);
+    return IsPet() || (m_Properties && m_Properties->Category == SUMMON_CATEGORY_PET);
 }
 
 bool Minion::IsWarlockPet() const
 {
-    if(isPet())
+    if(IsPet())
     {
         if(m_owner && m_owner->getClass() == CLASS_WARLOCK)
             return true;

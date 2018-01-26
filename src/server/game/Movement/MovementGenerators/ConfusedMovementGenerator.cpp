@@ -19,7 +19,7 @@
 #include "Creature.h"
 #include "MapManager.h"
 #include "ConfusedMovementGenerator.h"
-#include "PathFinderMovementGenerator.h"
+#include "PathGenerator.h"
 #include "VMapFactory.h"
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
@@ -67,15 +67,15 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T &unit, const uint32 &diff)
     {
         float max_accuracyMiliYard = 150 * speed;
         float min_accuracyMiliYard = -20 * speed;
-        PathFinderMovementGenerator path(&unit);
+        PathGenerator path(&unit);
 
-        if (path.calculate(i_x, i_y, i_z))
+        if (path.CalculatePath(i_x, i_y, i_z))
         {
             float len = 0;
-            for (uint32 i = 1; i < path.getPath().size(); ++i)
+            for (uint32 i = 1; i < path.GetPath().size(); ++i)
             {
-                Vector3 node = path.getPath()[i];
-                Vector3 prev = path.getPath()[i-1];
+                G3D::Vector3 node = path.GetPath()[i];
+                G3D::Vector3 prev = path.GetPath()[i-1];
                 float xd = node.x - prev.x;
                 float yd = node.y - prev.y;
                 float zd = node.z - prev.z;
@@ -91,7 +91,7 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T &unit, const uint32 &diff)
                 unit.UpdateAllowedPositionZ(i_x, i_y, i_z);
 
                 Movement::MoveSplineInit init(unit);
-                init.MovebyPath(path.getPath());
+                init.MovebyPath(path.GetPath());
                 init.SetWalk(true);
                 init.Launch();
                 return true;
@@ -123,18 +123,18 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T &unit, const uint32 &diff)
             if (z <= INVALID_HEIGHT)
                 i_z = unit.GetBaseMap()->GetHeight(unit.GetPhaseMask(), x, y, MAX_HEIGHT) + 2.0f;
 
-            PathFinderMovementGenerator path(&unit);
-            path.setPathLengthLimit(30.0f);
-            path.setUseStrightPath(false);
+            PathGenerator path(&unit);
+            path.SetPathLengthLimit(30.0f);
+            path.SetUseStraightPath(false);
 
-            if (!unit.IsWithinLOS(x, y, z) || !path.calculate(x, y, z) || path.getPathType() & PATHFIND_NOPATH)
+            if (!unit.IsWithinLOS(x, y, z) || !path.CalculatePath(x, y, z) || path.GetPathType() & PATHFIND_NOPATH)
             {
                 i_nextMoveTime.Reset(urand(200, 500));
                 return true;
             }
 
             Movement::MoveSplineInit init(unit);
-            init.MovebyPath(path.getPath());
+            init.MovebyPath(path.GetPath());
             init.SetWalk(true);
             init.Launch();
         }

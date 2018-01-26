@@ -2466,7 +2466,7 @@ class spell_warl_felsteed : public SpellScriptLoader
             {
                 if(Unit* caster = GetCaster())
                 {
-                    ZLiquidStatus status = caster->GetBaseMap()->getLiquidStatus(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), MAP_ALL_LIQUIDS);
+                    ZLiquidStatus status = caster->GetBaseMap()->GetLiquidStatus(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), MAP_ALL_LIQUIDS);
                     if(!status)
                         return;
 

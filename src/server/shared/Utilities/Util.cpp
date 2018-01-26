@@ -23,6 +23,13 @@
 #include "SFMT.h"
 #include <ace/TSS_T.h>
 #include <ace/INET_Addr.h>
+#include <boost/asio/ip/address.hpp>
+#include <utf8.h>
+#include <algorithm>
+#include <sstream>
+#include <cstdarg>
+#include <ctime>
+#include <chrono>
 
 typedef ACE_TSS<SFMTRand> SFMTRandTSS;
 static SFMTRandTSS sfmtRand;
@@ -124,6 +131,14 @@ void stripLineInvisibleChars(std::string &str)
         str.clear();
 
 }
+
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
+struct tm* localtime_r(time_t const* time, struct tm *result)
+{
+    localtime_s(result, time);
+    return result;
+}
+#endif
 
 std::string secsToTimeString(uint64 timeInSecs, bool shortText, bool hoursOnly)
 {
@@ -494,4 +509,21 @@ std::string ByteArrayToHexStr(uint8 const* bytes, uint32 arrayLen, bool reverse 
     }
 
     return ss.str();
+}
+
+bool StringToBool(std::string const& str)
+{
+    std::string lowerStr = str;
+    std::transform(str.begin(), str.end(), lowerStr.begin(), ::tolower);
+    return lowerStr == "1" || lowerStr == "true" || lowerStr == "yes";
+}
+
+uint64 GetCurrentMilliseconds()
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+int64 GetCurrentMillisecondsDiff(uint64 milliseconds)
+{
+    return GetCurrentMilliseconds() - milliseconds;
 }

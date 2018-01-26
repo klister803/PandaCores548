@@ -33,7 +33,7 @@
 
 int PetAI::Permissible(const Creature* creature)
 {
-    if (creature->isPet())
+    if (creature->IsPet())
         return PERMIT_BASE_SPECIAL;
 
     return PERMIT_BASE_NO;
@@ -96,7 +96,7 @@ void PetAI::_stopAttack()
 {
     if (!me->isAlive())
     {
-        sLog->outDebug(LOG_FILTER_PETS, "Creature stoped attacking cuz his dead [guid=%u]", me->GetGUIDLow());
+        TC_LOG_DEBUG("pets", "Creature stoped attacking cuz his dead [guid=%u]", me->GetGUIDLow());
         me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveIdle();
         me->CombatStop();
@@ -142,7 +142,7 @@ void PetAI::UpdateAI(uint32 diff)
 
         if (_needToStop())
         {
-            sLog->outDebug(LOG_FILTER_PETS, "Pet AI stopped attacking [guid=%u]", me->GetGUIDLow());
+            TC_LOG_DEBUG("pets", "Pet AI stopped attacking [guid=%u]", me->GetGUIDLow());
             _stopAttack();
             return;
         }
@@ -163,7 +163,7 @@ void PetAI::UpdateAI(uint32 diff)
     }
     else if (owner && charmInfo) //no victim
     {
-        //sLog->outDebug(LOG_FILTER_PETS, "PetAI::UpdateAI [guid=%u] no victim GetCasterPet %i", me->GetGUIDLow(), me->GetCasterPet());
+        //TC_LOG_DEBUG("pets", "PetAI::UpdateAI [guid=%u] no victim GetCasterPet %i", me->GetGUIDLow(), me->GetCasterPet());
         // Only aggressive pets do target search every update.
         // Defensive pets do target search only in these cases:
         //  * Owner attacks something - handled by OwnerAttacked()
@@ -202,7 +202,7 @@ void PetAI::UpdateAI(uint32 diff)
     {
         typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
-        //sLog->outDebug(LOG_FILTER_PETS, "AnyPetAI::UpdateAI GetPetAutoSpellSize %i", me->GetPetAutoSpellSize());
+        //TC_LOG_DEBUG("pets", "AnyPetAI::UpdateAI GetPetAutoSpellSize %i", me->GetPetAutoSpellSize());
 
         for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
         {
@@ -214,7 +214,7 @@ void PetAI::UpdateAI(uint32 diff)
             if (!spellInfo)
                 continue;
 
-            //sLog->outDebug(LOG_FILTER_PETS, "PetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
+            //TC_LOG_DEBUG("pets", "PetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
             //spellID, me->HasSpellCooldown(spellID), spellInfo->IsPositive(), spellInfo->CanBeUsedInCombat(), me->GetGUIDLow());
 
             if (charmInfo && charmInfo->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
@@ -480,7 +480,7 @@ Unit* PetAI::SelectNextTarget()
 void PetAI::HandleReturnMovement()
 {
     // Handles moving the pet back to stay or owner
-    //sLog->outDebug(LOG_FILTER_PETS, "PetAI::HandleReturnMovement [guid=%u] GetCommandState %i", me->GetGUIDLow(), me->GetCharmInfo()->GetCommandState());
+    //TC_LOG_DEBUG("pets", "PetAI::HandleReturnMovement [guid=%u] GetCommandState %i", me->GetGUIDLow(), me->GetCharmInfo()->GetCommandState());
 
     if (me->GetCharmInfo()->HasCommandState(COMMAND_STAY))
     {
@@ -552,7 +552,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
 
 void PetAI::MovementInform(uint32 moveType, uint32 data)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "PetAI::MovementInform Pet %u moveType %i data %i", me->GetEntry(), moveType, data);
+    //TC_LOG_DEBUG("pets", "PetAI::MovementInform Pet %u moveType %i data %i", me->GetEntry(), moveType, data);
     // Receives notification when pet reaches stay or follow owner
     switch (moveType)
     {
@@ -640,19 +640,19 @@ void PetAI::ReceiveEmote(Player* player, uint32 emote)
         switch (emote)
         {
             case TEXT_EMOTE_COWER:
-                if (me->isPet() && me->ToPet()->IsPetGhoul())
+                if (me->IsPet() && me->ToPet()->IsPetGhoul())
                     me->HandleEmoteCommand(EMOTE_ONESHOT_OMNICAST_GHOUL);
                 break;
             case TEXT_EMOTE_ANGRY:
-                if (me->isPet() && me->ToPet()->IsPetGhoul())
+                if (me->IsPet() && me->ToPet()->IsPetGhoul())
                     me->HandleEmoteCommand(EMOTE_STATE_STUN);
                 break;
             case TEXT_EMOTE_GLARE:
-                if (me->isPet() && me->ToPet()->IsPetGhoul())
+                if (me->IsPet() && me->ToPet()->IsPetGhoul())
                     me->HandleEmoteCommand(EMOTE_STATE_STUN);
                 break;
             case TEXT_EMOTE_SOOTHE:
-                if (me->isPet() && me->ToPet()->IsPetGhoul())
+                if (me->IsPet() && me->ToPet()->IsPetGhoul())
                     me->HandleEmoteCommand(EMOTE_ONESHOT_OMNICAST_GHOUL);
                 break;
         }

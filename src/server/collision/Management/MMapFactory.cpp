@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,31 +17,20 @@
  */
 
 #include "MMapFactory.h"
-#include "World.h"
 #include "Config.h"
-#include "DisableMgr.h"
-#include <set>
 
 namespace MMAP
 {
     // ######################## MMapFactory ########################
     // our global singleton copy
-    MMapManager* g_MMapManager = NULL;
+    MMapManager* g_MMapManager = nullptr;
 
     MMapManager* MMapFactory::createOrGetMMapManager()
     {
-        if (g_MMapManager == NULL)
+        if (g_MMapManager == nullptr)
             g_MMapManager = new MMapManager();
 
         return g_MMapManager;
-    }
-
-    bool MMapFactory::IsPathfindingEnabled(uint32 mapId)
-    {
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP, mapId, NULL, MMAP_DISABLE_PATHFINDING))
-            return false;
-
-        return sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS);
     }
 
     void MMapFactory::clear()
@@ -49,7 +38,7 @@ namespace MMAP
         if (g_MMapManager)
         {
             delete g_MMapManager;
-            g_MMapManager = NULL;
+            g_MMapManager = nullptr;
         }
     }
 }

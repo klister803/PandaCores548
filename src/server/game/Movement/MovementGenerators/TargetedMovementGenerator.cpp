@@ -78,38 +78,38 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
             x = pos.m_positionX;
             y = pos.m_positionY;
             z = pos.m_positionZ;
-            //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
+            //TC_LOG_DEBUG("pets", "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
         }
     }
     else
     {
-        if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet() && !i_target->IsWithinLOSInMap(&owner))
+        if(owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsPet() && !i_target->IsWithinLOSInMap(&owner))
         {
             Position pos;
             i_target->GetFirstCollisionPosition(pos, distance, angle);
             x = pos.m_positionX;
             y = pos.m_positionY;
             z = pos.m_positionZ;
-            //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
+            //TC_LOG_DEBUG("pets", "_setTargetLocation Pet %u IsWithinLOSInMap (%f %f %f) GetAttackDist %f", owner.GetEntry(), x, y , z, ((Creature*)&owner)->GetAttackDist());
         }
         else
             i_target->GetContactPoint(&owner, x, y, z, distance);
     }
 
     if (!i_path)
-        i_path = new PathFinderMovementGenerator(&owner);
+        i_path = new PathGenerator(&owner);
 
     // allow pets following their master to cheat while generating paths
-    bool forceDest = (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->isPet() && owner.HasUnitState(UNIT_STATE_FOLLOW));
+    bool forceDest = (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsPet() && owner.HasUnitState(UNIT_STATE_FOLLOW));
     if (Creature* c = owner.ToCreature())
         forceDest |= c->isWorldBoss() || c->IsDungeonBoss();
 
-    i_path->calculate(x, y, z, forceDest);
+    i_path->CalculatePath(x, y, z, forceDest);
 
-    //sLog->outDebug(LOG_FILTER_PETS, "_setTargetLocation Pet %u (%f %f %f) forceDest %i PathType %i Length %f size %i type %u",
-    //owner.GetEntry(), x, y, z, forceDest, i_path->getPathType(), i_path->GetTotalLength(), i_path->getPath().size(), static_cast<D*>(this)->GetMovementGeneratorType());
+    //TC_LOG_DEBUG("pets", "_setTargetLocation Pet %u (%f %f %f) forceDest %i PathType %i Length %f size %i type %u",
+    //owner.GetEntry(), x, y, z, forceDest, i_path->GetPathType(), i_path->GetTotalLength(), i_path->GetPath().size(), static_cast<D*>(this)->GetMovementGeneratorType());
 
-    if (i_path->getPathType() & PATHFIND_NOPATH && !forceDest)
+    if (i_path->GetPathType() & PATHFIND_NOPATH && !forceDest)
     {
         // When patch can't run to target?
         //if (!i_target->IsWithinLOSInMap(&owner))
@@ -125,10 +125,10 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     i_recalculateTravel = false;
 
     Movement::MoveSplineInit init(owner);
-    if (i_path->getPathType() & PATHFIND_NOPATH || i_target.getTarget()->GetTransGUID())
+    if (i_path->GetPathType() & PATHFIND_NOPATH || i_target.getTarget()->GetTransGUID())
         init.MoveTo(x,y,z);
     else
-        init.MovebyPath(i_path->getPath());
+        init.MovebyPath(i_path->GetPath());
     init.SetWalk(((D*)this)->EnableWalking());
     init.Launch();
 }
@@ -165,7 +165,7 @@ void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> 
     i_offset = fDistance;
     i_recalculateTravel = true;
 
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator UpdateFinalDistance");
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator UpdateFinalDistance");
 }
 
 template<class T, typename D>
@@ -232,7 +232,7 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
         G3D::Vector3 dest = owner.movespline->FinalDestination();
         float allowed_dist = 0.0f;
         bool targetIsVictim = owner.getVictim() && owner.getVictim()->GetGUID() == i_target->GetGUID();
-        if (((Creature*)&owner)->isPet())
+        if (((Creature*)&owner)->IsPet())
             allowed_dist = sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE);
         else if (targetIsVictim)
             allowed_dist = owner.GetMeleeReach() + owner.getVictim()->GetMeleeReach()/* + owner.getVictim()->GetObjectSize()*/;
@@ -260,7 +260,7 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
                 targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowed_dist);
         }
 
-        if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->isPet())
+        if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet())
         {
             if ((!owner.getVictim() || !owner.getVictim()->isAlive()) && owner.movespline->Finalized())
                 return false;
@@ -287,7 +287,7 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
 
         if (targetMoved || (owner.movespline->Finalized() && !i_target->IsWithinLOSInMap(&owner)))
         {
-            //sLog->outDebug(LOG_FILTER_PETS, "DoUpdate Pet %u targetMoved %i search %i Finalized %i i_recalculateTravel %i allowed_dist %f Type %i",
+            //TC_LOG_DEBUG("pets", "DoUpdate Pet %u targetMoved %i search %i Finalized %i i_recalculateTravel %i allowed_dist %f Type %i",
             //owner.GetEntry(), targetMoved, i_targetSearchingTimer, owner.movespline->Finalized(), i_recalculateTravel, allowed_dist, static_cast<D*>(this)->GetMovementGeneratorType());
 
             if (targetMoved)
@@ -314,7 +314,7 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
     {
         if (i_recalculateTravel)
         {
-            //sLog->outDebug(LOG_FILTER_PETS, "DoUpdate i_recalculateTravel");
+            //TC_LOG_DEBUG("pets", "DoUpdate i_recalculateTravel");
             _setTargetLocation(owner);
         }
     }
@@ -332,7 +332,7 @@ void ChaseMovementGenerator<T>::_reachTarget(T &owner)
 template<>
 void ChaseMovementGenerator<Player>::DoInitialize(Player &owner)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "ChaseMovementGenerator DoInitialize Player");
+    //TC_LOG_DEBUG("pets", "ChaseMovementGenerator DoInitialize Player");
     owner.AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner);
 }
@@ -340,7 +340,7 @@ void ChaseMovementGenerator<Player>::DoInitialize(Player &owner)
 template<>
 void ChaseMovementGenerator<Creature>::DoInitialize(Creature &owner)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "ChaseMovementGenerator DoInitialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "ChaseMovementGenerator DoInitialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
     owner.SetWalk(false);
     owner.AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner);
@@ -350,7 +350,7 @@ template<class T>
 void ChaseMovementGenerator<T>::DoFinalize(T &owner)
 {
     owner.ClearUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
-    if (owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->isPet() && owner.isAlive())
+    if (owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet() && owner.isAlive())
     {
         if (!owner.isInCombat() || ( this->i_target.getTarget() && !this->i_target.getTarget()->isInAccessiblePlaceFor(((Creature*)&owner))))
         {
@@ -384,7 +384,7 @@ void ChaseMovementGenerator<Creature>::MovementInform(Creature &unit)
 template<class T>
 void FetchMovementGenerator<T>::_reachTarget(T &owner)
 {
-   //sLog->outDebug(LOG_FILTER_PETS, "FetchMovementGenerator _reachTarget i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+   //TC_LOG_DEBUG("pets", "FetchMovementGenerator _reachTarget i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
 }
 
 template<>
@@ -393,20 +393,20 @@ void FetchMovementGenerator<Creature>::DoInitialize(Creature &owner)
     owner.SetWalk(false);
     owner.AddUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner);
-    //sLog->outDebug(LOG_FILTER_PETS, "FetchMovementGenerator Initialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FetchMovementGenerator Initialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
 }
 
 template<class T>
 void FetchMovementGenerator<T>::DoFinalize(T &owner)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "FetchMovementGenerator Finalize i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FetchMovementGenerator Finalize i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
     owner.ClearUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
 }
 
 template<class T>
 void FetchMovementGenerator<T>::DoReset(T &owner)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "FetchMovementGenerator Reset i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FetchMovementGenerator Reset i_target %u, owner %u", this->i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
     DoInitialize(owner);
 }
 
@@ -470,10 +470,10 @@ template<>
 void FollowMovementGenerator<Creature>::_updateSpeed(Creature &u)
 {
     // pet only sync speed with owner
-    if (!((Creature&)u).isPet() || !i_target.isValid() || i_target->GetGUID() != u.GetOwnerGUID())
+    if (!((Creature&)u).IsPet() || !i_target.isValid() || i_target->GetGUID() != u.GetOwnerGUID())
         return;
 
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator _updateSpeed i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), u.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator _updateSpeed i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), u.GetGUIDLow());
 
     u.UpdateSpeed(MOVE_RUN,true);
     u.UpdateSpeed(MOVE_WALK,true);
@@ -484,10 +484,10 @@ template<class T, typename D>
 void TargetedMovementGeneratorMedium<T,D>::_updateSpeed(T &u)
 {
     // pet only sync speed with owner
-    if (!((Creature&)u).isPet() || !i_target.isValid() || i_target->GetGUID() != u.GetOwnerGUID())
+    if (!((Creature&)u).IsPet() || !i_target.isValid() || i_target->GetGUID() != u.GetOwnerGUID())
         return;
 
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator _updateSpeed i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), u.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator _updateSpeed i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), u.GetGUIDLow());
 
     u.UpdateSpeed(MOVE_RUN,true);
     u.UpdateSpeed(MOVE_WALK,true);
@@ -501,7 +501,7 @@ void FollowMovementGenerator<Player>::DoInitialize(Player &owner)
     _updateSpeed(owner);
     _setTargetLocation(owner);
 
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator DoInitialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator DoInitialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
 }
 
 template<>
@@ -511,7 +511,7 @@ void FollowMovementGenerator<Creature>::DoInitialize(Creature &owner)
     _updateSpeed(owner);
     _setTargetLocation(owner);
 
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator DoInitialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator DoInitialize i_target %u, owner %u", i_target.getTarget()->GetGUIDLow(), owner.GetGUIDLow());
 }
 
 template<class T>
@@ -520,13 +520,13 @@ void FollowMovementGenerator<T>::DoFinalize(T &owner)
     owner.ClearUnitState(UNIT_STATE_FOLLOW|UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
 
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator DoFinalize owner %u", owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator DoFinalize owner %u", owner.GetGUIDLow());
 }
 
 template<class T>
 void FollowMovementGenerator<T>::DoReset(T &owner)
 {
-    //sLog->outDebug(LOG_FILTER_PETS, "FollowMovementGenerator DoReset owner %u", owner.GetGUIDLow());
+    //TC_LOG_DEBUG("pets", "FollowMovementGenerator DoReset owner %u", owner.GetGUIDLow());
     DoInitialize(owner);
 }
 

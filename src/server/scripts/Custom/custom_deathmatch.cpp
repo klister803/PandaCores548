@@ -361,7 +361,7 @@ public:
 
     void OnUpdate(uint32 diff)
     {
-       // sLog->outError(LOG_FILTER_SERVER_LOADING, "%u", sWorld->GetCountQueueOnDM());
+       // TC_LOG_ERROR("server", "%u", sWorld->GetCountQueueOnDM());
         
         if(!sGameEventMgr->IsActiveEvent(120) || sWorld->GetCountQueueOnDM() < 0)
             sWorld->CountQueueOnDMNull();

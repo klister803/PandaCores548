@@ -117,7 +117,7 @@ uint8 ScenarioProgress::UpdateCurrentStep(bool loading)
             Reward(true);
     }
 
-    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "UpdateCurrentStep currentStep %u oldStep %u loading %u", currentStep, oldStep, loading);
+    //TC_LOG_DEBUG("achievement", "UpdateCurrentStep currentStep %u oldStep %u loading %u", currentStep, oldStep, loading);
     return currentStep;
 }
 
@@ -132,7 +132,7 @@ uint32 ScenarioProgress::GetScenarioCriteriaByStep(uint8 step)
 
 void ScenarioProgress::Reward(bool bonus)
 {
-    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "ScenarioProgress::Reward bonus %u rewarded %u bonusRewarded %u", bonus, rewarded, bonusRewarded);
+    //TC_LOG_DEBUG("achievement", "ScenarioProgress::Reward bonus %u rewarded %u bonusRewarded %u", bonus, rewarded, bonusRewarded);
 
     if (bonus && bonusRewarded)
         return;
@@ -357,7 +357,7 @@ bool ScenarioProgress::CanUpdateCriteria(uint32 criteriaId, uint32 recursTree /*
         }
     }
 
-    //sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "cenarioProgress::CanUpdateCriteria criteriaId %u recursTree %u cTreeList %i check %i", criteriaId, recursTree, cTreeList ? cTreeList->size() : -1, check);
+    //TC_LOG_DEBUG("achievement", "cenarioProgress::CanUpdateCriteria criteriaId %u recursTree %u cTreeList %i check %i", criteriaId, recursTree, cTreeList ? cTreeList->size() : -1, check);
     return check;
 }
 
@@ -439,7 +439,7 @@ ScenarioSteps const* ScenarioMgr::GetScenarioSteps(uint32 scenarioId)
 
 void WorldSession::HandleScenarioPOIQuery(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SCENARIO_POI_QUERY");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_SCENARIO_POI_QUERY");
 
     uint32 count = recvData.ReadBits(22);
     if (!count)

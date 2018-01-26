@@ -36,7 +36,7 @@
 
 void WorldSession::HandleMoveWorldportResponseOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got CMSG_MOVE_WORLDPORT_RESPONSE");
+    TC_LOG_DEBUG("network", "WORLD: got CMSG_MOVE_WORLDPORT_RESPONSE");
     HandleMoveWorldportResponseOpcode();
 }
 
@@ -71,7 +71,7 @@ void WorldSession::HandleMoveWorldportResponseOpcode()
     Map* oldMap = GetPlayer()->GetMap();
     if (GetPlayer()->IsInWorld())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Player (Name %s) is still in world when teleported from map %u to new map %u", GetPlayer()->GetName(), oldMap->GetId(), loc.GetMapId());
+        TC_LOG_ERROR("network", "Player (Name %s) is still in world when teleported from map %u to new map %u", GetPlayer()->GetName(), oldMap->GetId(), loc.GetMapId());
         oldMap->RemovePlayerFromMap(GetPlayer(), false);
     }
 
@@ -81,7 +81,7 @@ void WorldSession::HandleMoveWorldportResponseOpcode()
     // while the player is in transit, for example the map may get full
     if (!newMap || !newMap->CanEnter(GetPlayer()))
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Map %d could not be created for player %d, porting player to homebind", loc.GetMapId(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network", "Map %d could not be created for player %d, porting player to homebind", loc.GetMapId(), GetPlayer()->GetGUIDLow());
         GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
         return;
     }
@@ -94,7 +94,7 @@ void WorldSession::HandleMoveWorldportResponseOpcode()
     GetPlayer()->SendInitialPacketsBeforeAddToMap();
     if (!GetPlayer()->GetMap()->AddPlayerToMap(GetPlayer()))
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: failed to teleport player %s (%d) to map %d because of unknown reason!", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.GetMapId());
+        TC_LOG_ERROR("network", "WORLD: failed to teleport player %s (%d) to map %d because of unknown reason!", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.GetMapId());
         GetPlayer()->ResetMap();
         GetPlayer()->SetMap(oldMap);
         GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
@@ -207,7 +207,7 @@ void WorldSession::HandleMoveWorldportResponseOpcode()
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_TELEPORT_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_TELEPORT_ACK");
 
     ObjectGuid guid;
     uint32 ackIndex, time;
@@ -216,8 +216,8 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
     recvPacket.ReadGuidMask<1, 7, 2, 5, 0, 6, 3, 4>(guid);
     recvPacket.ReadGuidBytes<1, 5, 4, 3, 0, 7, 6, 2>(guid);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Guid " UI64FMTD, uint64(guid));
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "ackIndex %u, time %u", ackIndex, time / IN_MILLISECONDS);
+    TC_LOG_DEBUG("network", "Guid " UI64FMTD, uint64(guid));
+    TC_LOG_DEBUG("network", "ackIndex %u, time %u", ackIndex, time / IN_MILLISECONDS);
 
     Player* plMover = _player->m_mover->ToPlayer();
 
@@ -313,14 +313,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     // prevent tampered movement data
     if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
     {
-        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        //TC_LOG_ERROR("network", "HandleMovementOpcodes: guid error");
         recvPacket.rfinish();                     // prevent warnings spam
         return;
     }
 
     if (!movementInfo.position.IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        TC_LOG_ERROR("network", "HandleMovementOpcodes: Invalid Position");
         recvPacket.rfinish();                     // prevent warnings spam
         return;
     }
@@ -332,13 +332,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
     }
 
-    //sLog->outError(LOG_FILTER_NETWORKIO, "%s, posX - %f, posY - %f, posZ - %f, moveTime(client) - %u, flags - %u", GetOpcodeNameForLogging(opcode, CMSG).c_str(), movementInfo.position.m_positionX, movementInfo.position.m_positionY, movementInfo.position.m_positionZ, movementInfo.moveTime, movementInfo.flags);
+    //TC_LOG_ERROR("network", "%s, posX - %f, posY - %f, posZ - %f, moveTime(client) - %u, flags - %u", GetOpcodeNameForLogging(opcode, CMSG).c_str(), movementInfo.position.m_positionX, movementInfo.position.m_positionY, movementInfo.position.m_positionZ, movementInfo.moveTime, movementInfo.flags);
 
     /* handle special cases */
     if (movementInfo.hasTransportData && movementInfo.transportGUID)
     {
         // if(World::GetEnableMvAnticheatDebug())
-            // sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes t_guid %u, opcode[%s]", movementInfo.transportGUID, GetOpcodeNameForLogging(opcode).c_str());
+            // TC_LOG_ERROR("network", "HandleMovementOpcodes t_guid %u, opcode[%s]", movementInfo.transportGUID, GetOpcodeNameForLogging(opcode).c_str());
 
         // transports size limited
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)
@@ -481,7 +481,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             float curD = sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
             /*if (curD > plrMover->GetSpeed(plrMover->GetMovementType(movementInfo.flags)) && !plrMover->m_movementInfo.heartbeatCount)
-            sLog->outError("Possible teleport/XYZ hack");*/
+            TC_LOG_ERROR("Possible teleport/XYZ hack");*/
 
             if (!plrMover->MovementCheckPassed(opcode, curD, movementInfo))
             {
@@ -498,9 +498,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
 
                 //plrMover->SetBlocked(true, "Anticheat System : teleport/XYZ hack detected. You are disabled and kicked in 10 seconds");
-                sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, teleport distance - %f), player - %s",
-                    plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
-                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode).c_str(), curD, plrMover->GetName());
+                // TC_LOG_DEBUG("warden","CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, teleport distance - %f), player - %s",
+                    // plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
+                    // plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode).c_str(), curD, plrMover->GetName());
                 //KickPlayer();
                 return;
             }
@@ -515,10 +515,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             float curD = sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
             /*if (curD > plrMover->GetSpeed(plrMover->GetMovementType(plrMover->m_movementInfo.GetMovementFlags())) && !plrMover->m_movementInfo.heartbeatCount)
-            sLog->outError("Possible teleport/XYZ hack");*/
+            TC_LOG_ERROR("Possible teleport/XYZ hack");*/
 
             //if (GetAccountId() == 2656035)
-            //sLog->outWarden("Distance - %f, server speed - %f", curD, plrMover->GetSpeed(plrMover->GetMovementType(plrMover->m_movementInfo.GetMovementFlags())));
+            //TC_LOG_DEBUG("warden","Distance - %f, server speed - %f", curD, plrMover->GetSpeed(plrMover->GetMovementType(plrMover->m_movementInfo.GetMovementFlags())));
 
             if (!plrMover->OldMovementCheckPassed(opcode, curD, movementInfo))
             {
@@ -534,10 +534,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
                 AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
 
-                sLog->outWarden("CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
-                    plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
-                    plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode).c_str(),
-                    plrMover->GetVehicle() ? "true" : "false", plrMover->GetTransport() ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
+                // TC_LOG_DEBUG("warden","CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
+                    // plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
+                    // plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name : "<unknown>", movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), GetOpcodeNameForLogging(opcode).c_str(),
+                    // plrMover->GetVehicle() ? "true" : "false", plrMover->GetTransport() ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
                 //KickPlayer();
                 //return;
             }
@@ -557,7 +557,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
                     AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
 
-                    sLog->outWarden("CLIENT WARDEN: XYZ hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
+                    TC_LOG_DEBUG("warden","CLIENT WARDEN: XYZ hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
                         plrMover->GetMapId(), mapEntry ? mapEntry->name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>",
                         plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ(), destZoneId, destZoneEntry ? destZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", destAreaId, destAreaEntry ? destAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), LookupOpcodeName(opcode),
                         plrMover->GetVehicle() ? "true" : "false", (plrMover->GetTransport() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT)) ? "true" : "false", plrMover->m_taxi.GetCurrentTaxiPath() ? "true" : "false", (plrMover->IsFalling() || plrMover->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) ? "true" : "false", plrMover->isMoving() ? "true" : "false", curD, plrMover->GetName());
@@ -572,7 +572,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     bool check_passed = true;
     if(World::GetEnableMvAnticheatDebug())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] flags2[%X] UnitState[%X] opcode[%s] | mover (xyzo): %f, %f, %fo(%f)",
+        TC_LOG_ERROR("network", "AC2-%s > time: %d fall-time: %d | xyzo: %f, %f, %fo(%f) flags[%X] flags2[%X] UnitState[%X] opcode[%s] | mover (xyzo): %f, %f, %fo(%f)",
             plrMover->GetName(), movementInfo.moveTime, movementInfo.fallTime, movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY(), movementInfo.position.GetPositionZ(), movementInfo.position.GetOrientation(),
             movementInfo.flags, movementInfo.flags2, mover->GetUnitState(), GetOpcodeNameForLogging(opcode).c_str(), mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ(), mover->GetOrientation());
     }
@@ -629,7 +629,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
             const int32 sync_time = plrMover->m_anti_DeltaClientTime - plrMover->m_anti_DeltaServerTime;
 
             if(World::GetEnableMvAnticheatDebug())
-                sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s Time > cClientTimeDelta: %d, cServerTime: %d | deltaC: %d - deltaS: %d | SyncTime: %d, opcode[%s]",
+                TC_LOG_ERROR("network", "AC2-%s Time > cClientTimeDelta: %d, cServerTime: %d | deltaC: %d - deltaS: %d | SyncTime: %d, opcode[%s]",
                 plrMover->GetName(), cClientTimeDelta, cServerTime, plrMover->m_anti_DeltaClientTime, plrMover->m_anti_DeltaServerTime, sync_time, GetOpcodeNameForLogging(opcode).c_str());
 
             // mistiming checks
@@ -644,7 +644,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 if (bMistimingModulo)
                 {
                     if(World::GetEnableMvAnticheatDebug())
-                        sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, mistiming exception #%d, mistiming: %dms, opcode[%s]", plrMover->GetName(), plrMover->m_anti_MistimingCount, sync_time, GetOpcodeNameForLogging(opcode).c_str());
+                        TC_LOG_ERROR("network", "AC2-%s, mistiming exception #%d, mistiming: %dms, opcode[%s]", plrMover->GetName(), plrMover->m_anti_MistimingCount, sync_time, GetOpcodeNameForLogging(opcode).c_str());
 
                     check_passed = false;
                 }                   
@@ -738,7 +738,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     + (tg_z > 2.2 ? pow(delta_z, 2)/2.37f : 0);                                      // mountain fall allowed delta
 
                     if(World::GetEnableMvAnticheatDebug())
-                        sLog->outError(LOG_FILTER_NETWORKIO, "AC444 out m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u _vmapHeight %f, _Height %f, ZLiquidStatus %u, opcode[%s]",
+                        TC_LOG_ERROR("network", "AC444 out m_anti_JupmTime %u current_speed %f allowed_delta %f real_delta %f fly_auras %u fly_flags %u _vmapHeight %f, _Height %f, ZLiquidStatus %u, opcode[%s]",
                                         mover->m_anti_JupmTime, current_speed, allowed_delta, real_delta, fly_auras, fly_flags, _vmapHeight, _Height, plrMover->Zliquid_status, GetOpcodeNameForLogging(opcode).c_str());
 
                 if (movementInfo.moveTime > plrMover->m_anti_LastSpeedChangeTime)
@@ -754,9 +754,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 {
                     if(World::GetEnableMvAnticheatDebug())
                         if (real_delta < 4900.0f)
-                            sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f, opcode[%s]", plrMover->GetName(), real_delta, allowed_delta, current_speed, plrMover->m_anti_Last_HSpeed, time_delta, GetOpcodeNameForLogging(opcode).c_str());
+                            TC_LOG_ERROR("network", "AC2-%s, speed exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f, opcode[%s]", plrMover->GetName(), real_delta, allowed_delta, current_speed, plrMover->m_anti_Last_HSpeed, time_delta, GetOpcodeNameForLogging(opcode).c_str());
                         else
-                            sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f, opcode[%s]", plrMover->GetName(), real_delta, allowed_delta, current_speed, plrMover->m_anti_Last_HSpeed, time_delta, GetOpcodeNameForLogging(opcode).c_str());
+                            TC_LOG_ERROR("network", "AC2-%s, teleport exception | cDelta=%f aDelta=%f | cSpeed=%f lSpeed=%f deltaTime=%f, opcode[%s]", plrMover->GetName(), real_delta, allowed_delta, current_speed, plrMover->m_anti_Last_HSpeed, time_delta, GetOpcodeNameForLogging(opcode).c_str());
 
                     if(speed_check || real_delta > 4900.0f)
                         check_passed = false;
@@ -767,12 +767,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                 // Fly hack checks
                 if (!fly_auras && (fly_flags || ground_Z > 2.3f) && !forvehunit && exeption_fly && !plrMover->Zliquid_status)
                 {
-                    if(World::GetEnableMvAnticheatDebug())
-                        sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plrMover->GetVehicle()=[%X]} forvehunit=[%X], opcode[%s]",
-                            plrMover->GetName(),
-                            plrMover->HasAuraType(SPELL_AURA_FLY), plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
-                            plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plrMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
-                            plrMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plrMover->GetVehicle(), forvehunit, GetOpcodeNameForLogging(opcode).c_str());
+                    // if(World::GetEnableMvAnticheatDebug())
+                        // TC_LOG_ERROR("network", "AC2-%s, flight exception. {SPELL_AURA_FLY=[%X]} {SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED=[%X]} {SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS=[%X]} {SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK=[%X]} {plrMover->GetVehicle()=[%X]} forvehunit=[%X], opcode[%s]",
+                            // plrMover->GetName(),
+                            // plrMover->HasAuraType(SPELL_AURA_FLY), plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED),
+                            // plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED), plrMover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS),
+                            // plrMover->HasAuraType(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK), plrMover->GetVehicle(), forvehunit, GetOpcodeNameForLogging(opcode).c_str());
 
                     //check_passed = false;
                     plrMover->SendMovementSetCanFly(true);
@@ -790,11 +790,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                         if (plane_z > 0.1f || plane_z < -0.1f)
                         {
                             if(World::GetEnableMvAnticheatDebug())
-                                sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, teleport to plane exception. plane_z: %f, opcode[%s]", plrMover->GetName(), plane_z, GetOpcodeNameForLogging(opcode).c_str());
+                                TC_LOG_ERROR("network", "AC2-%s, teleport to plane exception. plane_z: %f, opcode[%s]", plrMover->GetName(), plane_z, GetOpcodeNameForLogging(opcode).c_str());
 
                             if(World::GetEnableMvAnticheatDebug())
                                 if (plrMover->m_anti_TeleToPlane_Count > World::GetTeleportToPlaneAlarms())
-                                    sLog->outError(LOG_FILTER_NETWORKIO, "AC2-%s, teleport to plane exception. Exception count: %d, opcode[%s]", plrMover->GetName(), plrMover->m_anti_TeleToPlane_Count, GetOpcodeNameForLogging(opcode).c_str());
+                                    TC_LOG_ERROR("network", "AC2-%s, teleport to plane exception. Exception count: %d, opcode[%s]", plrMover->GetName(), plrMover->m_anti_TeleToPlane_Count, GetOpcodeNameForLogging(opcode).c_str());
 
                             ++(plrMover->m_anti_TeleToPlane_Count);
                             check_passed = false;
@@ -909,7 +909,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
 
     ObjectGuid guid;
 
@@ -920,13 +920,13 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
     if (GetPlayer()->IsInWorld())
     {
         if (_player->m_mover->GetGUID() != guid)
-            sLog->outError(LOG_FILTER_NETWORKIO, "HandleSetActiveMoverOpcode: incorrect mover guid: mover is " UI64FMTD " (%s - Entry: %u) and should be " UI64FMTD, uint64(guid), GetLogNameForGuid(guid), GUID_ENPART(guid), _player->m_mover->GetGUID());
+            TC_LOG_ERROR("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is " UI64FMTD " (%s - Entry: %u) and should be " UI64FMTD, uint64(guid), GetLogNameForGuid(guid), GUID_ENPART(guid), _player->m_mover->GetGUID());
     }
 }
 
 void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
 
     uint64 old_mover_guid;
     recvData.readPackGUID(old_mover_guid);
@@ -964,7 +964,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 
 void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_KNOCK_BACK_ACK");
 
     if (Unit* mover = _player->m_mover)
         mover->AddUnitState(UNIT_STATE_JUMPING);
@@ -984,7 +984,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recvData)
 
 void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_FEATHER_FALL_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_FEATHER_FALL_ACK");
 
     /*Unit* mover = _player->m_mover;
 
@@ -1009,14 +1009,14 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
     // prevent tampered movement data
     if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
     {
-        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        //TC_LOG_ERROR("network", "HandleMovementOpcodes: guid error");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
 
     if (!movementInfo.position.IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        TC_LOG_ERROR("network", "HandleMovementOpcodes: Invalid Position");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
@@ -1029,7 +1029,7 @@ void WorldSession::HandleMoveFeatherFallAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_GRAVITY_ENABLE_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_GRAVITY_ENABLE_ACK");
 
     uint32 ackIndex;
     recvData.read_skip<float>();
@@ -1044,7 +1044,7 @@ void WorldSession::HandleMoveGravityEnableAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_HOVER_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_HOVER_ACK");
 
     /*Unit* mover = _player->m_mover;
 
@@ -1069,14 +1069,14 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
     // prevent tampered movement data
     if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
     {
-        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        //TC_LOG_ERROR("network", "HandleMovementOpcodes: guid error");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
 
     if (!movementInfo.position.IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        TC_LOG_ERROR("network", "HandleMovementOpcodes: Invalid Position");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
@@ -1089,7 +1089,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_WATER_WALK_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_WATER_WALK_ACK");
 
     /*Unit* mover = _player->m_mover;
 
@@ -1114,14 +1114,14 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
     // prevent tampered movement data
     if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
     {
-        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        //TC_LOG_ERROR("network", "HandleMovementOpcodes: guid error");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
 
     if (!movementInfo.position.IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        TC_LOG_ERROR("network", "HandleMovementOpcodes: Invalid Position");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
@@ -1134,7 +1134,7 @@ void WorldSession::HandleMoveWaterwalkAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_FLY_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_SET_CAN_FLY_ACK");
 
     /*Unit* mover = _player->m_mover;
 
@@ -1159,14 +1159,14 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
     // prevent tampered movement data
     if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
     {
-        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        //TC_LOG_ERROR("network", "HandleMovementOpcodes: guid error");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
 
     if (!movementInfo.position.IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        TC_LOG_ERROR("network", "HandleMovementOpcodes: Invalid Position");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
@@ -1179,7 +1179,7 @@ void WorldSession::HandleMoveSetCanFlyAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_CAN_TRANS_BETWEEN_SWIM_AND_FLY_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_SET_CAN_TRANS_BETWEEN_SWIM_AND_FLY_ACK");
 
     uint32 ackIndex;
     recvData.read_skip<float>();
@@ -1191,7 +1191,7 @@ void WorldSession::HandleMoveSetCanTransBtwSwimFlyAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveSetCollisionHeightAck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_SET_COLLISION_HEIGHT_ACK");
+    TC_LOG_DEBUG("network", "CMSG_MOVE_SET_COLLISION_HEIGHT_ACK");
 
     /*Unit* mover = _player->m_mover;
 
@@ -1216,14 +1216,14 @@ void WorldSession::HandleMoveSetCollisionHeightAck(WorldPacket& recvData)
     // prevent tampered movement data
     if (movementInfo.moverGUID != mover->GetGUID() || !mover->IsInWorld())
     {
-        //sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: guid error");
+        //TC_LOG_ERROR("network", "HandleMovementOpcodes: guid error");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
 
     if (!movementInfo.position.IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Invalid Position");
+        TC_LOG_ERROR("network", "HandleMovementOpcodes: Invalid Position");
         recvData.rfinish();                     // prevent warnings spam
         return;
     }
@@ -1258,7 +1258,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     MovementStatusElements* sequence = GetMovementStatusElementsSequence(data.GetOpcode());
     if (sequence == NULL)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::ReadMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
+        TC_LOG_ERROR("network", "WorldSession::ReadMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
         return;
     }
 
@@ -1476,7 +1476,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
     MovementStatusElements* sequence = GetMovementStatusElementsSequence(data.GetOpcode());
     if (!sequence)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::WriteMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
+        TC_LOG_ERROR("network", "WorldSession::WriteMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
         return;
     }
 

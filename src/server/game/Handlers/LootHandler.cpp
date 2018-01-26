@@ -33,7 +33,7 @@
 
 void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_AUTOSTORE_LOOT_ITEM");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_AUTOSTORE_LOOT_ITEM");
     Player* player = GetPlayer();
     uint64 lguid = player->GetLootGUID();
     Loot* loot = NULL;
@@ -69,7 +69,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
                 if(sObjectMgr->GetPersonalLootData(go->GetEntry()))
                     loot = &player->personalLoot;
 
-            //sLog->outDebug(LOG_FILTER_LOOT, "HandleAutostoreLootItemOpcode lguid %u, pguid %u lguid %u", lguid, player->personalLoot.GetGUID(), loot->GetGUID());
+            //TC_LOG_DEBUG("loot", "HandleAutostoreLootItemOpcode lguid %u, pguid %u lguid %u", lguid, player->personalLoot.GetGUID(), loot->GetGUID());
         }
         else if (IS_ITEM_GUID(lguid))
         {
@@ -138,7 +138,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_LOOT_MONEY");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_LOOT_MONEY");
 
     Player* player = GetPlayer();
     uint64 guid = player->GetLootGUID();
@@ -298,7 +298,7 @@ void WorldSession::LootCorps(uint64 corpsGUID, WorldObject* lootedBy)
     if (!_creature)
         return;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_LOOT corpsGUID %u", corpsGUID);
+    TC_LOG_DEBUG("network", "WORLD: CMSG_LOOT corpsGUID %u", corpsGUID);
 
     std::list<Creature*> corpesList;
     _looted->GetCorpseCreatureInGrid(corpesList, LOOT_DISTANCE);
@@ -332,7 +332,7 @@ void WorldSession::LootCorps(uint64 corpsGUID, WorldObject* lootedBy)
 
 void WorldSession::HandleLootReleaseOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_LOOT_RELEASE");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_LOOT_RELEASE");
 
     // cheaters can modify lguid to prevent correct apply loot release code and re-loot
     // use internal stored guid
@@ -349,7 +349,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
     Player  *player = GetPlayer();
     Loot    *loot;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: DoLootRelease lguid %u", lguid);
+    TC_LOG_DEBUG("network", "WORLD: DoLootRelease lguid %u", lguid);
 
     player->DelAoeLootList(lguid);
     player->SetLootGUID(0);
@@ -516,7 +516,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
             looter = player;
 
         // Restore Fetch state for pet.
-        if (looter->isPet())
+        if (looter->IsPet())
         {
             if(Unit* _petowner = looter->GetOwner())
                 if (_petowner == player)
@@ -574,7 +574,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
 
 void WorldSession::HandleLootSpecIdOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_LOOT_METHOD_FOR_SPECIALIZATION");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_LOOT_METHOD_FOR_SPECIALIZATION");
 
     uint32 specID;
     recvData >> specID;

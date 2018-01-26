@@ -32,7 +32,7 @@ void ValidateAndSetOpcode<true, true>(uint16 opcode, char const* name, SessionSt
 {
     if (opcodeTable[type][opcode] != NULL)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Tried to override handler of %s with %s (opcode %u)", opcodeTable[type][opcode]->name, name, opcode);
+        TC_LOG_ERROR("network", "Tried to override handler of %s with %s (opcode %u)", opcodeTable[type][opcode]->name, name, opcode);
         return;
     }
 
@@ -42,13 +42,13 @@ void ValidateAndSetOpcode<true, true>(uint16 opcode, char const* name, SessionSt
 template<>
 void ValidateAndSetOpcode<false, true>(uint16 opcode, char const* /*name*/, SessionStatus /*status*/, PacketProcessing /*processing*/, pOpcodeHandler /*handler*/, PacketType type)
 {
-    sLog->outError(LOG_FILTER_NETWORKIO, "Tried to set handler for an invalid opcode %d PacketType %u", opcode, type);
+    TC_LOG_ERROR("network", "Tried to set handler for an invalid opcode %d PacketType %u", opcode, type);
 }
 
 template<>
 void ValidateAndSetOpcode<true, false>(uint16 /*opcode*/, char const* name, SessionStatus /*status*/, PacketProcessing /*processing*/, pOpcodeHandler /*handler*/, PacketType type)
 {
-    sLog->outError(LOG_FILTER_NETWORKIO, "Opcode %s PacketType %u got value 0", name, type);
+    TC_LOG_ERROR("network", "Opcode %s PacketType %u got value 0", name, type);
 }
 
 #define DEFINE_OPCODE_HANDLER(type, opcode, status, processing, handler)                                      \

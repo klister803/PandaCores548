@@ -68,7 +68,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
 
     if (!info)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (entry %u) caster %s no spellInfo", triggerEntry, caster->GetString().c_str());
+        TC_LOG_ERROR("server", "AreaTrigger (entry %u) caster %s no spellInfo", triggerEntry, caster->GetString().c_str());
         return false;
     }
 
@@ -78,7 +78,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
 
     if (!caster->isAlive())
     {
-        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) caster %s is dead ", info->Id, caster->GetString().c_str());
+        TC_LOG_ERROR("server", "AreaTrigger (spell %u) caster %s is dead ", info->Id, caster->GetString().c_str());
         return false;
     }
 
@@ -86,7 +86,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     Relocate(pos);
     if (!IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_GENERAL, "AreaTrigger (spell %u) not created. Invalid coordinates (X: %f Y: %f)", info->Id, GetPositionX(), GetPositionY());
+        TC_LOG_ERROR("server", "AreaTrigger (spell %u) not created. Invalid coordinates (X: %f Y: %f)", info->Id, GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -146,7 +146,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         {
             case AT_MOVE_TYPE_DEFAULT:
             {
-                Vector3 curPos, nextPos;
+                G3D::Vector3 curPos, nextPos;
                 pos.PositionToVector(curPos);
                 m_movePath.push_back(curPos);
                 m_movePath.push_back(curPos);
@@ -157,7 +157,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
             }
             case AT_MOVE_TYPE_LIMIT:
             {
-                Vector3 curPos, nextPos;
+                G3D::Vector3 curPos, nextPos;
                 pos.PositionToVector(curPos);
                 posMove.PositionToVector(nextPos);
                 m_movePath.push_back(curPos);
@@ -170,7 +170,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
             }
             case AT_MOVE_TYPE_SPIRAL:
             {
-                Vector3 curPos;
+                G3D::Vector3 curPos;
                 pos.PositionToVector(curPos);
                 m_movePath.push_back(curPos);
                 m_movePath.push_back(curPos);
@@ -180,10 +180,10 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
                 {
                     float rad = a * 3.14159265358979323846f / 180.0f;
                     float r = 1.0f * exp(rad * 0.3f);
-                    Vector3 nextPos {curPos.x - (r * sin(rad)), curPos.y + (r * cos(rad)), curPos.z};
+                    G3D::Vector3 nextPos {curPos.x - (r * sin(rad)), curPos.y + (r * cos(rad)), curPos.z};
                     m_movePath.push_back(nextPos);
 
-                    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create nextPos %f %f %f maxDist %f length %f rad %f r %f",
+                    //TC_LOG_DEBUG("spell", "AreaTrigger::Create nextPos %f %f %f maxDist %f length %f rad %f r %f",
                     //nextPos.x, nextPos.y, nextPos.z, maxDist, (m_movePath[m_movePath.size() - 2] - m_movePath[m_movePath.size() - 1]).length(), rad, r);
 
                     maxDist -= (m_movePath[m_movePath.size() - 2] - m_movePath[m_movePath.size() - 1]).length();
@@ -208,7 +208,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f _nextMoveTime %i _moveSpeed %f duration %i", 
+    TC_LOG_DEBUG("spell", "AreaTrigger::Create AreaTrigger caster %s spellID %u spell rage %f dist %f dest - X:%f,Y:%f,Z:%f _nextMoveTime %i _moveSpeed %f duration %i", 
     caster->GetString().c_str(), info->Id, _radius, GetSpellInfo()->GetMaxRange(), m_movePath.empty() ? 0.0f : m_movePath[m_currentNode].x, m_movePath.empty() ? 0.0f : m_movePath[m_currentNode].y, m_movePath.empty() ? 0.0f : m_movePath[m_currentNode].z, _nextMoveTime, _moveSpeed, duration);
     #endif
 
@@ -474,7 +474,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
 
     Unit* caster = _caster;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction caster %s unit %s type %u spellID %u, moment %u, targetFlags %u",
+    //TC_LOG_DEBUG("spell", "AreaTrigger::DoAction caster %s unit %s type %u spellID %u, moment %u, targetFlags %u",
     //caster->GetString().c_str(), unit->GetString().c_str(), action.action->actionType, action.action->spellId, action.action->moment, action.action->targetFlags);
 
     if (action.action->targetFlags & AT_TARGET_FLAG_FRIENDLY)
@@ -493,7 +493,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
         if (!unit->ToPlayer())
             return;
     if (action.action->targetFlags & AT_TARGET_FLAG_NOT_PET)
-        if (unit->isPet())
+        if (unit->IsPet())
             return;
     if (action.action->targetFlags & AT_TARGET_FLAG_NOT_FULL_HP)
         if (unit->IsFullHealth())
@@ -691,7 +691,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
     if (atInfo.hitType & (1 << action.action->actionType))
         _hitCount++;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::DoAction action _hitCount %i hitCount %i hitMaxCount %i hitType %i actionType %i", _hitCount, action.hitCount, action.action->hitMaxCount, atInfo.hitType, action.action->actionType);
+    //TC_LOG_DEBUG("spell", "AreaTrigger::DoAction action _hitCount %i hitCount %i hitMaxCount %i hitType %i actionType %i", _hitCount, action.hitCount, action.action->hitMaxCount, atInfo.hitType, action.action->actionType);
 
     if (action.charges > 0)
     {
@@ -859,12 +859,12 @@ void AreaTrigger::UpdateMovement(uint32 diff)
         }
         //_caster->SummonCreature(44548, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(),TEMPSUMMON_TIMED_DESPAWN, 20000); // For visual point test
         _nextMoveTime = (m_movePath[m_currentNode] - m_movePath[m_currentNode+1]).length() / speedNext * 1000;
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::UpdateMovement speedNext %f _nextMoveTime %u length %f abs %i", speedNext, _nextMoveTime, (m_movePath[m_currentNode] - m_movePath[m_currentNode+1]).length(), int32(m_currentNode/4));
+        //TC_LOG_DEBUG("spell", "AreaTrigger::UpdateMovement speedNext %f _nextMoveTime %u length %f abs %i", speedNext, _nextMoveTime, (m_movePath[m_currentNode] - m_movePath[m_currentNode+1]).length(), int32(m_currentNode/4));
     }
     else
         tempPos.SimplePosXYRelocationByAngle(*this, (speed * _moveTime) / 1000.0f, angle, true);
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::UpdateMovement %f %f %f %f %i angle %f _nextMoveTime %i m_currentNode %i speed %f", GetPositionX(), GetPositionY(), GetPositionZ(), getMoveSpeed(), _moveTime, angle, _nextMoveTime, m_currentNode, speed);
+    //TC_LOG_DEBUG("spell", "AreaTrigger::UpdateMovement %f %f %f %f %i angle %f _nextMoveTime %i m_currentNode %i speed %f", GetPositionX(), GetPositionY(), GetPositionZ(), getMoveSpeed(), _moveTime, angle, _nextMoveTime, m_currentNode, speed);
 
 }
 
@@ -897,7 +897,7 @@ bool AreaTrigger::IsInPolygon(Unit* unit, WorldObject const* obj)
     float x = dist * std::cos(angle);
     float y = dist * std::sin(angle);
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::IsInPolygon x_source %f y_source %f angle %f dist %f x %f y %f", x_source, y_source, angle, dist, x, y);
+    //TC_LOG_DEBUG("spell", "AreaTrigger::IsInPolygon x_source %f y_source %f angle %f dist %f x %f y %f", x_source, y_source, angle, dist, x, y);
 
     G3D::Vector2 pred_pt = atInfo.polygonPoints[0];
     pred_pt.x -= x;
@@ -988,7 +988,7 @@ float AreaTrigger::CalculateRadiusPolygon()
             distance = distsq;
     }
 
-    // sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AreaTrigger::CalculateRadius distance %f", distance);
+    // TC_LOG_DEBUG("spell", "AreaTrigger::CalculateRadius distance %f", distance);
 
     return distance;
 }

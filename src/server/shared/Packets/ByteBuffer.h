@@ -174,7 +174,7 @@ class ByteBufferPositionException : public ByteBufferException
         {
             ACE_Stack_Trace trace;
 
-            sLog->outError(LOG_FILTER_GENERAL, "Attempted to %s value with size: " SIZEFMTD " in ByteBuffer (pos: " SIZEFMTD " size: " SIZEFMTD ")\n[Stack trace: %s]" ,
+            TC_LOG_ERROR("server", "Attempted to %s value with size: " SIZEFMTD " in ByteBuffer (pos: " SIZEFMTD " size: " SIZEFMTD ")\n[Stack trace: %s]" ,
                 (_add ? "put" : "get"), ValueSize, Pos, Size, trace.c_str());
         }
 
@@ -196,7 +196,7 @@ class ByteBufferSourceException : public ByteBufferException
         {
             ACE_Stack_Trace trace;
 
-            sLog->outError(LOG_FILTER_GENERAL, "Attempted to put a %s in ByteBuffer (pos: " SIZEFMTD " size: " SIZEFMTD ")\n[Stack trace: %s]",
+            TC_LOG_ERROR("server", "Attempted to put a %s in ByteBuffer (pos: " SIZEFMTD " size: " SIZEFMTD ")\n[Stack trace: %s]",
                 (ValueSize > 0 ? "NULL-pointer" : "zero-sized value"), Pos, Size, trace.c_str());
         }
 };
@@ -773,7 +773,7 @@ class ByteBuffer
 
         void print_storage() const
         {
-            if (!sLog->ShouldLog(LOG_FILTER_NETWORKIO, LOG_LEVEL_TRACE)) // optimize disabled debug output
+            if (!sLog->ShouldLog("network", LOG_LEVEL_TRACE)) // optimize disabled debug output
                 return;
 
             std::ostringstream o;
@@ -782,12 +782,12 @@ class ByteBuffer
                 o << read<uint8>(i) << " - ";
             o << " ";
 
-            sLog->outTrace(LOG_FILTER_NETWORKIO, "%s", o.str().c_str());
+            TC_LOG_TRACE("network", "%s", o.str().c_str());
         }
 
         void textlike() const
         {
-            if (!sLog->ShouldLog(LOG_FILTER_NETWORKIO, LOG_LEVEL_TRACE)) // optimize disabled debug output
+            if (!sLog->ShouldLog("network", LOG_LEVEL_TRACE)) // optimize disabled debug output
                 return;
 
             std::ostringstream o;
@@ -799,12 +799,12 @@ class ByteBuffer
                 o << buf;
             }
             o << " ";
-            sLog->outTrace(LOG_FILTER_NETWORKIO, "%s", o.str().c_str());
+            TC_LOG_TRACE("network", "%s", o.str().c_str());
         }
 
         void hexlike() const
         {
-            if (!sLog->ShouldLog(LOG_FILTER_NETWORKIO, LOG_LEVEL_TRACE)) // optimize disabled debug output
+            if (!sLog->ShouldLog("network", LOG_LEVEL_TRACE)) // optimize disabled debug output
                 return;
 
             uint32 j = 1, k = 1;
@@ -831,7 +831,7 @@ class ByteBuffer
                 o << buf;
             }
             o << " ";
-            sLog->outTrace(LOG_FILTER_NETWORKIO, "%s", o.str().c_str());
+            TC_LOG_TRACE("network", "%s", o.str().c_str());
         }
 
         size_t GetBitPos() const

@@ -83,7 +83,7 @@ enum AreaTriggerMoveType
 };
 
 typedef std::vector<G3D::Vector2> PolygonPOIMap;
-typedef std::vector<Vector3> PositionsArray;
+typedef std::vector<G3D::Vector3> PositionsArray;
 
 struct AreaTriggerAction
 {

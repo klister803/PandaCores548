@@ -481,7 +481,7 @@ public:
             return false;
         }
 
-        if (creature->isPet())
+        if (creature->IsPet())
         {
             if (((Pet*)creature)->getPetType() == HUNTER_PET)
             {
@@ -522,7 +522,7 @@ public:
         else
             unit = handler->getSelectedCreature();
 
-        if (!unit || unit->isPet() || unit->isTotem())
+        if (!unit || unit->IsPet() || unit->isTotem())
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage(true);
@@ -920,7 +920,7 @@ public:
 
         Creature* creature = handler->getSelectedCreature();
 
-        if (!creature || creature->isPet())
+        if (!creature || creature->IsPet())
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage(true);
@@ -973,7 +973,7 @@ public:
 
         if (dontdel_str)
         {
-            //sLog->outError(LOG_FILTER_GENERAL, "DEBUG: All 3 params are set");
+            //TC_LOG_ERROR("server", "DEBUG: All 3 params are set");
 
             // All 3 params are set
             // GUID
@@ -981,7 +981,7 @@ public:
             // doNotDEL
             if (stricmp(dontdel_str, "NODEL") == 0)
             {
-                //sLog->outError(LOG_FILTER_GENERAL, "DEBUG: doNotDelete = true;");
+                //TC_LOG_ERROR("server", "DEBUG: doNotDelete = true;");
                 doNotDelete = true;
             }
         }
@@ -990,10 +990,10 @@ public:
             // Only 2 params - but maybe NODEL is set
             if (type_str)
             {
-                sLog->outError(LOG_FILTER_GENERAL, "DEBUG: Only 2 params ");
+                TC_LOG_ERROR("server", "DEBUG: Only 2 params ");
                 if (stricmp(type_str, "NODEL") == 0)
                 {
-                    //sLog->outError(LOG_FILTER_GENERAL, "DEBUG: type_str, NODEL ");
+                    //TC_LOG_ERROR("server", "DEBUG: type_str, NODEL ");
                     doNotDelete = true;
                     type_str = NULL;
                 }
@@ -1004,7 +1004,7 @@ public:
         {
             type_str = guid_str;
             creature = handler->getSelectedCreature();
-            if (!creature || creature->isPet())
+            if (!creature || creature->IsPet())
                 return false;
             lowguid = creature->GetDBTableGUIDLow();
         }
@@ -1106,7 +1106,7 @@ public:
 
         creature->SetPhaseMask(phasemask, true);
 
-        if (!creature->isPet())
+        if (!creature->IsPet())
             creature->SaveToDB();
 
         return true;
@@ -1356,7 +1356,7 @@ public:
     static bool HandleNpcTameCommand(ChatHandler* handler, const char* /*args*/)
     {
         Creature* creatureTarget = handler->getSelectedCreature();
-        if (!creatureTarget || creatureTarget->isPet())
+        if (!creatureTarget || creatureTarget->IsPet())
         {
             handler->PSendSysMessage (LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage (true);
@@ -1687,7 +1687,7 @@ public:
         else
             unit = handler->getSelectedCreature();
 
-        if (!unit || unit->isPet() || unit->isTotem())
+        if (!unit || unit->IsPet() || unit->isTotem())
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage(true);

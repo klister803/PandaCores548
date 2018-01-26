@@ -68,6 +68,8 @@ public:
 
 void stripLineInvisibleChars(std::string &src);
 
+struct tm* localtime_r(time_t const* time, struct tm *result);
+
 std::string secsToTimeString(uint64 timeInSecs, bool shortText = false, bool hoursOnly = false);
 uint32 TimeStringToSecs(const std::string& timestring);
 std::string TimeToTimestampStr(time_t t);
@@ -369,6 +371,12 @@ bool IsIPAddress(char const* ipaddress);
 uint32 CreatePIDFile(const std::string& filename);
 
 std::string ByteArrayToHexStr(uint8 const* bytes, uint32 length, bool reverse = false);
+
+bool StringToBool(std::string const& str);
+
+uint64 GetCurrentMilliseconds();
+int64 GetCurrentMillisecondsDiff(uint64 milliseconds);
+
 #endif
 
 //handler for operations on large flags
@@ -633,10 +641,8 @@ public:
         //This shouldn't happend.
         if (ptr)
         {
-            sLog->outU("Already initiated numerator %u", bool(numerator));
             if (numerator)
             {
-                sLog->outU("numerator >> numerator->counter %u numerator->ready %u parent %u", numerator->counter.load(), numerator->ready, parent);
                 if (numerator->ready)
                     return;
             }

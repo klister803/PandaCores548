@@ -373,23 +373,23 @@ void SpellCastTargets::Update(Unit* caster)
 void SpellCastTargets::OutDebug() const
 {
     if (!m_targetMask)
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "No targets");
+        TC_LOG_INFO("spell", "No targets");
 
-    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "target mask: %u", m_targetMask);
+    TC_LOG_INFO("spell", "target mask: %u", m_targetMask);
     if (m_targetMask & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_CORPSE_MASK | TARGET_FLAG_GAMEOBJECT_MASK))
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Object target: " UI64FMTD, m_objectTargetGUID);
+        TC_LOG_INFO("spell", "Object target: " UI64FMTD, m_objectTargetGUID);
     if (m_targetMask & TARGET_FLAG_ITEM)
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Item target: " UI64FMTD, m_itemTargetGUID);
+        TC_LOG_INFO("spell", "Item target: " UI64FMTD, m_itemTargetGUID);
     if (m_targetMask & TARGET_FLAG_TRADE_ITEM)
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Trade item target: " UI64FMTD, m_itemTargetGUID);
+        TC_LOG_INFO("spell", "Trade item target: " UI64FMTD, m_itemTargetGUID);
     if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Source location: transport guid:" UI64FMTD " trans offset: %s position: %s", m_src._transportGUID, m_src._transportOffset.ToString().c_str(), m_src._position.ToString().c_str());
+        TC_LOG_INFO("spell", "Source location: transport guid:" UI64FMTD " trans offset: %s position: %s", m_src._transportGUID, m_src._transportOffset.ToString().c_str(), m_src._position.ToString().c_str());
     if (m_targetMask & TARGET_FLAG_DEST_LOCATION)
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Destination location: transport guid:" UI64FMTD " trans offset: %s position: %s", m_dst._transportGUID, m_dst._transportOffset.ToString().c_str(), m_dst._position.ToString().c_str());
+        TC_LOG_INFO("spell", "Destination location: transport guid:" UI64FMTD " trans offset: %s position: %s", m_dst._transportGUID, m_dst._transportOffset.ToString().c_str(), m_dst._position.ToString().c_str());
     if (m_targetMask & TARGET_FLAG_STRING)
-        sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "String: %s", m_strTarget.c_str());
-    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "speed: %f", m_speed);
-    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "elevation: %f", m_elevation);
+        TC_LOG_INFO("spell", "String: %s", m_strTarget.c_str());
+    TC_LOG_INFO("spell", "speed: %f", m_speed);
+    TC_LOG_INFO("spell", "elevation: %f", m_elevation);
 }
 
 SpellValue::SpellValue(SpellInfo const* proto, uint8 diff)
@@ -523,7 +523,7 @@ Spell::~Spell()
     {
         // Clean the reference to avoid later crash.
         // If this error is repeating, we may have to add an ASSERT to better track down how we get into this case.
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "SPELL: deleting spell for spell ID %u. However, spell still referenced.", m_spellInfo->Id);
+        TC_LOG_ERROR("spell", "SPELL: deleting spell for spell ID %u. However, spell still referenced.", m_spellInfo->Id);
         *m_selfContainer = NULL;
     }
 
@@ -866,7 +866,7 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
             }
             break;
         case TARGET_SELECT_CATEGORY_NYI:
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL: target type %u, found in spellID %u, effect %u is not implemented yet!", m_spellInfo->Id, effIndex, targetType.GetTarget());
+            TC_LOG_DEBUG("spell", "SPELL: target type %u, found in spellID %u, effect %u is not implemented yet!", m_spellInfo->Id, effIndex, targetType.GetTarget());
             break;
         default:
             printf("Spell::SelectEffectImplicitTargets: received not implemented select target category / Spell ID = %u and Effect = %u and target type = %u \n", m_spellInfo->Id, effIndex, targetType.GetTarget());
@@ -886,7 +886,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
     Spell* channeledSpell = m_originalCaster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     if (!channeledSpell)
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitChannelTargets: cannot find channel spell for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
+        TC_LOG_DEBUG("spell", "Spell::SelectImplicitChannelTargets: cannot find channel spell for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
         return;
     }
     switch (targetType.GetTarget())
@@ -905,7 +905,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
             if (target && target->ToUnit())
                 AddUnitTarget(target->ToUnit(), 1 << effIndex);
             else
-                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
+                TC_LOG_DEBUG("spell", "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
             break;
         }
         case TARGET_DEST_CHANNEL_TARGET:
@@ -918,7 +918,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
                     m_targets.SetDst(*target);
             }
             else
-                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL: cannot find channel spell destination for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
+                TC_LOG_DEBUG("spell", "SPELL: cannot find channel spell destination for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
             break;
         case TARGET_DEST_CHANNEL_CASTER:
             m_targets.SetDst(*channeledSpell->GetCaster());
@@ -992,22 +992,22 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
                         m_targets.SetDst(st->target_X, st->target_Y, st->target_Z, st->target_Orientation);
                     return;
                 }else
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets: no target destination on db: spell_target_position of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
+                    TC_LOG_DEBUG("spell", "Spell::SelectImplicitNearbyTargets: no target destination on db: spell_target_position of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
                 break;
             default:
                 break;
         }
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets: no conditions entry for target with TARGET_CHECK_ENTRY of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
+        TC_LOG_DEBUG("spell", "Spell::SelectImplicitNearbyTargets: no conditions entry for target with TARGET_CHECK_ENTRY of spell ID %u, effect %u - selecting default targets", m_spellInfo->Id, effIndex);
     }
 
     WorldObject* target = SearchNearbyTarget(range, targetType.GetObjectType(), targetType.GetCheckType(), condList);
     if (!target)
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets: cannot find nearby target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
+        TC_LOG_DEBUG("spell", "Spell::SelectImplicitNearbyTargets: cannot find nearby target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
         return;
     }
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitNearbyTargets spell id %u caster %u target %u entry %i", m_spellInfo->Id,  m_caster->GetGUID(), target->GetGUID(), target->GetEntry());
+    //TC_LOG_DEBUG("spell", "Spell::SelectImplicitNearbyTargets spell id %u caster %u target %u entry %i", m_spellInfo->Id,  m_caster->GetGUID(), target->GetGUID(), target->GetEntry());
 
     CallScriptObjectTargetSelectHandlers(target, effIndex);
 
@@ -1126,7 +1126,7 @@ void Spell::SelectImplicitBetweenTargets(SpellEffIndex effIndex, SpellImplicitTa
         Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellBetweenTargetCheck> searcher(m_caster, targets, check, containerTypeMask);
         SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellBetweenTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, radius);
 
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitBetweenTargets coneAngle %f, radius %f, x %f, y %f, Id %u, targets.size %u", coneAngle, radius, center->GetPositionX(), center->GetPositionY(), m_spellInfo->Id, targets.size());
+        TC_LOG_DEBUG("spell", "Spell::SelectImplicitBetweenTargets coneAngle %f, radius %f, x %f, y %f, Id %u, targets.size %u", coneAngle, radius, center->GetPositionX(), center->GetPositionY(), m_spellInfo->Id, targets.size());
 
         CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
@@ -1295,11 +1295,11 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->Effects[effIndex]->ImplicitTargetConditions, effIndex);
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %u, effIndex %i, Conditions %i", m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), effIndex, m_spellInfo->Effects[effIndex]->ImplicitTargetConditions);
+    TC_LOG_DEBUG("spell", "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %u, effIndex %i, Conditions %i", m_spellInfo->Id, radius, (uint32)targetType.GetObjectType(), targets.size(), effIndex, (int32)m_spellInfo->Effects[effIndex]->ImplicitTargetConditions);
 
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitAreaTargets after filter %u, radius %f, GetObjectType %u, targets count %u, GetCheckType %i, X %f, Y %f",
+    TC_LOG_DEBUG("spell", "Spell::SelectImplicitAreaTargets after filter %u, radius %f, GetObjectType %u, targets count %u, GetCheckType %i, X %f, Y %f",
     m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), targetType.GetCheckType(), center->GetPositionX(), center->GetPositionY());
 
     std::list<Unit*> unitTargets;
@@ -1540,7 +1540,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
             }
             else
             {
-                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL: unknown target coordinates for spell ID %u", m_spellInfo->Id);
+                TC_LOG_DEBUG("spell", "SPELL: unknown target coordinates for spell ID %u", m_spellInfo->Id);
                 WorldObject* target = m_targets.GetObjectTarget();
                 m_targets.SetDst(target ? *target : *m_caster);
             }
@@ -1759,7 +1759,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
             checkIfValid = false;
             break;
         case TARGET_UNIT_PET:
-            if(m_caster->isPet())
+            if(m_caster->IsPet())
                 target = m_caster;
             else
                 target = m_caster->GetGuardianPet();
@@ -1794,7 +1794,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
 
 void Spell::SelectImplicitTargetObjectTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::SelectImplicitTargetObjectTargets Id %u effIndex %u", m_spellInfo->Id, effIndex);
+    //TC_LOG_DEBUG("spell", "Spell::SelectImplicitTargetObjectTargets Id %u effIndex %u", m_spellInfo->Id, effIndex);
 
     //ASSERT((m_targets.GetObjectTarget() || m_targets.GetItemTarget()) && "Spell::SelectImplicitTargetObjectTargets - no explicit object or item target available!");
     if(!m_targets.GetObjectTarget() && !m_targets.GetItemTarget())
@@ -1921,7 +1921,7 @@ void Spell::SelectImplicitTrajTargets()
     float a = (srcToDestDelta - dist2d * b) / (dist2d * dist2d);
     if (a > -0.0001f)
         a = 0;
-    DEBUG_TRAJ(sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::SelectTrajTargets: a %f b %f", a, b);)
+    DEBUG_TRAJ(TC_LOG_ERROR("spell", "Spell::SelectTrajTargets: a %f b %f", a, b);)
 
     float bestDist = m_spellInfo->GetMaxRange(false);
 
@@ -1937,11 +1937,11 @@ void Spell::SelectImplicitTrajTargets()
         const float objDist2d = m_targets.GetSrcPos()->GetExactDist2d(*itr) * std::cos(m_targets.GetSrcPos()->GetRelativeAngle(*itr));
         const float dz = (*itr)->GetPositionZ() - m_targets.GetSrcPos()->m_positionZ;
 
-        DEBUG_TRAJ(sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::SelectTrajTargets: check %u, dist between %f %f, height between %f %f.", (*itr)->GetEntry(), objDist2d - size, objDist2d + size, dz - size, dz + size);)
+        DEBUG_TRAJ(TC_LOG_ERROR("spell", "Spell::SelectTrajTargets: check %u, dist between %f %f, height between %f %f.", (*itr)->GetEntry(), objDist2d - size, objDist2d + size, dz - size, dz + size);)
 
         float dist = objDist2d - size;
         float height = dist * (a * dist + b);
-        DEBUG_TRAJ(sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::SelectTrajTargets: dist %f, height %f.", dist, height);)
+        DEBUG_TRAJ(TC_LOG_ERROR("spell", "Spell::SelectTrajTargets: dist %f, height %f.", dist, height);)
         if (dist < bestDist && height < dz + size && height > dz - size)
         {
             bestDist = dist > 0 ? dist : 0;
@@ -1949,7 +1949,7 @@ void Spell::SelectImplicitTrajTargets()
         }
 
 #define CHECK_DIST {\
-            DEBUG_TRAJ(sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::SelectTrajTargets: dist %f, height %f.", dist, height);)\
+            DEBUG_TRAJ(TC_LOG_ERROR("spell", "Spell::SelectTrajTargets: dist %f, height %f.", dist, height);)\
             if (dist > bestDist)\
                 continue;\
             if (dist < objDist2d + size && dist > objDist2d - size)\
@@ -2011,7 +2011,7 @@ void Spell::SelectImplicitTrajTargets()
             float distSq = (*itr)->GetExactDistSq(x, y, z);
             float sizeSq = (*itr)->GetObjectSize();
             sizeSq *= sizeSq;
-            DEBUG_TRAJ(sLog->outError(LOG_FILTER_SPELLS_AURAS, "Initial %f %f %f %f %f", x, y, z, distSq, sizeSq);)
+            DEBUG_TRAJ(TC_LOG_ERROR("spell", "Initial %f %f %f %f %f", x, y, z, distSq, sizeSq);)
             if (distSq > sizeSq)
             {
                 float factor = 1 - sqrt(sizeSq / distSq);
@@ -2020,7 +2020,7 @@ void Spell::SelectImplicitTrajTargets()
                 z += factor * ((*itr)->GetPositionZ() - z);
 
                 distSq = (*itr)->GetExactDistSq(x, y, z);
-                DEBUG_TRAJ(sLog->outError(LOG_FILTER_SPELLS_AURAS, "Initial %f %f %f %f %f", x, y, z, distSq, sizeSq);)
+                DEBUG_TRAJ(TC_LOG_ERROR("spell", "Initial %f %f %f %f %f", x, y, z, distSq, sizeSq);)
             }
         }
 
@@ -2464,7 +2464,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         if (m_delayMoment == 0 || m_delayMoment > targetInfo.timeDelay)
             m_delayMoment = targetInfo.timeDelay;
     }
-    else if((m_caster->GetTypeId() == TYPEID_PLAYER || (m_caster->ToCreature() && m_caster->ToCreature()->isPet())) && m_caster != target)
+    else if((m_caster->GetTypeId() == TYPEID_PLAYER || (m_caster->ToCreature() && m_caster->ToCreature()->IsPet())) && m_caster != target)
     {
         // TimeDelay for crowd control effects
         if (IsCCSpell(m_spellInfo, 0, false) && m_spellInfo->ExplicitTargetMask != TARGET_FLAG_DEST_LOCATION)
@@ -2883,7 +2883,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     }
     CallScriptOnHitHandlers();
 
-    //sLog->outDebug(LOG_FILTER_PROC, "DoAllEffectOnTarget: m_spellInfo->Id %i, mask %i, m_healing %i, canEffectTrigger %i, m_damage %i, m_addpower %i, procEx %i procAttacker %u procVictim %u damage %i damageBeforeHit %i",
+    //TC_LOG_DEBUG("uwow", "DoAllEffectOnTarget: m_spellInfo->Id %i, mask %i, m_healing %i, canEffectTrigger %i, m_damage %i, m_addpower %i, procEx %i procAttacker %u procVictim %u damage %i damageBeforeHit %i",
     //m_spellInfo->Id, mask, m_healing, canEffectTrigger, m_damage, m_addpower, procEx, procAttacker, procVictim, target->damage, target->damageBeforeHit);
 
     // All calculated do it!
@@ -3037,7 +3037,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
 
             // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
             // ignore pets or autorepeat/melee casts for speed (not exist quest for spells (hm...)
-            if (m_originalCaster && m_originalCaster->IsControlledByPlayer() && !spellHitTarget->ToCreature()->isPet() && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
+            if (m_originalCaster && m_originalCaster->IsControlledByPlayer() && !spellHitTarget->ToCreature()->IsPet() && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
                 if (Player* p = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself())
                     p->CastedCreatureOrGO(spellHitTarget->GetEntry(), spellHitTarget->GetGUID(), m_spellInfo->Id);
         }
@@ -3355,7 +3355,7 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
             if (CanExecuteTriggersOnHit(effMask, i->triggeredByAura) && roll_chance_i(i->chance) && !m_spellInfo->IsPassive())
             {
                 m_caster->CastSpell(unit, i->triggeredSpell, true);
-                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell %d triggered spell %d by SPELL_AURA_ADD_TARGET_TRIGGER aura", m_spellInfo->Id, i->triggeredSpell->Id);
+                TC_LOG_DEBUG("spell", "Spell %d triggered spell %d by SPELL_AURA_ADD_TARGET_TRIGGER aura", m_spellInfo->Id, i->triggeredSpell->Id);
 
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration of current aura to the triggered spell
@@ -3582,7 +3582,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
     {
         //#ifdef WIN32
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, result, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
+        //TC_LOG_DEBUG("spell", "Spell::prepare::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, result, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
         //#endif
         // Periodic auras should be interrupted when aura triggers a spell which can't be cast
         // for example bladestorm aura should be removed on disarm as of patch 3.3.5
@@ -3622,7 +3622,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (((m_spellInfo->IsChanneled() || m_casttime) && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->isMoving() && 
         m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && !m_caster->HasAuraCastWhileWalking(m_spellInfo) && !(_triggeredCastFlags & TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS))
     {
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare::checkcast fail. spell id %u res %u source %u customCastFlags %u mask %u, InterruptFlags %i", m_spellInfo->Id, SPELL_FAILED_MOVING, m_caster->GetEntry(), _triggeredCastFlags, m_targets.GetTargetMask(), m_spellInfo->InterruptFlags);
+        //TC_LOG_DEBUG("spell", "Spell::prepare::checkcast fail. spell id %u res %u source %u customCastFlags %u mask %u, InterruptFlags %i", m_spellInfo->Id, SPELL_FAILED_MOVING, m_caster->GetEntry(), _triggeredCastFlags, m_targets.GetTargetMask(), m_spellInfo->InterruptFlags);
         SendCastResult(SPELL_FAILED_MOVING);
         finish(false);
         return;
@@ -3631,7 +3631,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     // set timer base at cast time
     ReSetTimer();
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::prepare: spell id %u source %u caster %d customCastFlags %u mask %u target %s", m_spellInfo->Id, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask(), m_targets.GetUnitTarget() ? m_targets.GetUnitTarget()->GetString().c_str() : "-");
+    TC_LOG_DEBUG("spell", "Spell::prepare: spell id %u source %u caster %d customCastFlags %u mask %u target %s", m_spellInfo->Id, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask(), m_targets.GetUnitTarget() ? m_targets.GetUnitTarget()->GetString().c_str() : "-");
 
     LinkedSpell(m_caster, m_targets.GetUnitTarget(), SPELL_LINK_PREPARE_CAST);
 
@@ -3742,9 +3742,9 @@ void Spell::cast(bool skipCheck)
     if (!m_caster->CheckAndIncreaseCastCounter())
     {
         if (m_triggeredByAuraSpell)
-            sLog->outError(LOG_FILTER_GENERAL, "Spell %u triggered by aura spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
+            TC_LOG_ERROR("server", "Spell %u triggered by aura spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
         else
-            sLog->outError(LOG_FILTER_GENERAL, "Spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
+            TC_LOG_ERROR("server", "Spell %u too deep in cast chain for cast. Cast not allowed for prevent overflow stack crash.", m_spellInfo->Id);
 
         SendCastResult(SPELL_FAILED_ERROR);
         finish(false);
@@ -3797,7 +3797,7 @@ void Spell::cast(bool skipCheck)
     SetExecutedCurrently(true);
 
     if (m_originalCaster && m_originalCaster->GetTypeId() != TYPEID_PLAYER && m_targets.GetUnitTarget() && m_targets.GetUnitTarget() != m_originalCaster)
-        if (!m_spellInfo->AttributesEx5 & SPELL_ATTR5_DONT_TURN_DURING_CAST)
+        if (!(m_spellInfo->AttributesEx5 & SPELL_ATTR5_DONT_TURN_DURING_CAST))
             m_originalCaster->SetInFront(m_targets.GetUnitTarget());
 
     // Should this be done for original caster?
@@ -3818,7 +3818,7 @@ void Spell::cast(bool skipCheck)
         if (castResult != SPELL_CAST_OK)
         {
             #ifdef WIN32
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::cast::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, castResult, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
+            TC_LOG_DEBUG("spell", "Spell::cast::checkcast fail. spell id %u res %u source %u caster %d customCastFlags %u mask %u", m_spellInfo->Id, castResult, m_caster->GetEntry(), m_originalCaster ? m_originalCaster->GetEntry() : -1, _triggeredCastFlags, m_targets.GetTargetMask());
             #endif
             SendCastResult(castResult);
             SendInterrupted(0);
@@ -3961,7 +3961,7 @@ void Spell::cast(bool skipCheck)
 
     uint32 procAttacker = PROC_EX_NONE;
     uint32 procVictim   = PROC_EX_NONE;
-    //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, m_UniqueTargetInfo %i, procAttacker %i, target %u, infoTarget %u",
+    //TC_LOG_DEBUG("uwow", "Spell::cast Id %i, m_UniqueTargetInfo %i, procAttacker %i, target %u, infoTarget %u",
     //m_spellInfo->Id, m_UniqueTargetInfo.size(), procAttacker, procTarget ? procTarget->GetGUID() : 0, infoTarget ? infoTarget->targetGUID : 0);
 
     if (!procAttacker)
@@ -3969,7 +3969,7 @@ void Spell::cast(bool skipCheck)
         Unit* caster = m_originalCaster ? m_originalCaster : m_caster;
         uint32 mask = 7;
         bool canEffectTrigger = m_spellInfo->CanSpellProc(procTarget, mask, m_CastItem);
-        //sLog->outDebug(LOG_FILTER_PROC, "Spell::cast Id %i, mask %i, canEffectTrigger %i", m_spellInfo->Id, mask, canEffectTrigger);
+        //TC_LOG_DEBUG("uwow", "Spell::cast Id %i, mask %i, canEffectTrigger %i", m_spellInfo->Id, mask, canEffectTrigger);
 
         if(canEffectTrigger)
         {
@@ -4073,7 +4073,7 @@ void Spell::cast(bool skipCheck)
             //if (!(_triggeredCastFlags & TRIGGERED_DISALLOW_PROC_EVENTS))
                 procEx |= PROC_EX_ON_CAST;
 
-            sLog->outDebug(LOG_FILTER_PROC, "Cast m_spellInfo->Id %i, m_damage %i, procDamage %i, procEx %i", m_spellInfo->Id, m_damage, procDamage, procEx);
+            TC_LOG_DEBUG("uwow", "Cast m_spellInfo->Id %i, m_damage %i, procDamage %i, procEx %i", m_spellInfo->Id, m_damage, procDamage, procEx);
 
             if(procAttacker)
             {
@@ -4390,7 +4390,7 @@ void Spell::update(uint32 difftime)
 
     if (m_targets.GetUnitTargetGUID() && !m_targets.GetUnitTarget())
     {
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell %u is cancelled due to removal of target.", m_spellInfo->Id);
+        TC_LOG_DEBUG("spell", "Spell %u is cancelled due to removal of target.", m_spellInfo->Id);
         cancel();
         return;
     }
@@ -4431,7 +4431,7 @@ void Spell::update(uint32 difftime)
                 // check if there are alive targets left
                 if (!UpdateChanneledTargetList())
                 {
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Channeled spell %d is removed due to lack of targets", m_spellInfo->Id);
+                    TC_LOG_DEBUG("spell", "Channeled spell %d is removed due to lack of targets", m_spellInfo->Id);
                     SendChannelUpdate(0);
                     finish();
                 }
@@ -4529,7 +4529,7 @@ void Spell::finish(bool ok)
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
         if (spellInfo && spellInfo->SpellIconID == 2056)
         {
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Statue %d is unsummoned in spell %d finish", m_caster->GetGUIDLow(), m_spellInfo->Id);
+            TC_LOG_DEBUG("spell", "Statue %d is unsummoned in spell %d finish", m_caster->GetGUIDLow(), m_spellInfo->Id);
             m_caster->setDeathState(JUST_DIED);
             return;
         }
@@ -4583,7 +4583,7 @@ void Spell::finish(bool ok)
             if (item->IsEquipable() && !item->IsEquipped())
                 m_caster->ToPlayer()->ApplyItemEquipSpell(item, false);
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::finish Spell: %u", m_spellInfo->Id);
+    TC_LOG_DEBUG("spell", "Spell::finish Spell: %u", m_spellInfo->Id);
 
     // Hack codes
     switch (m_spellInfo->Id)
@@ -4682,7 +4682,7 @@ void Spell::SendCastResult(SpellCastResult result)
 
 void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cast_count, SpellCastResult result, SpellCustomErrors customError /*= SPELL_CUSTOM_ERROR_NONE*/)
 {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendCastResult  Spell: %u result %u.", spellInfo->Id, result);
+    TC_LOG_DEBUG("spell", "SendCastResult  Spell: %u result %u.", spellInfo->Id, result);
 
     if (result == SPELL_CAST_OK)
         return;
@@ -4733,10 +4733,6 @@ void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 cas
         {
             param1 = spellInfo->TotemCategory[0];
             param2 = spellInfo->TotemCategory[1];
-
-            //if (hasBit1 && hasBit2 && (!spellInfo->TotemCategory[0] || !spellInfo->TotemCategory[1]))
-            //    sLog->OutCS(">>> SPELL_FAILED_TOTEM_CATEGORY ");
-
             break;
         }
         case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
@@ -4850,7 +4846,7 @@ void Spell::SendSpellStart()
     if (!IsNeedSendToClient())
         return;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Sending SMSG_SPELL_START id=%u", m_spellInfo->Id);
+    //TC_LOG_DEBUG("spell", "Sending SMSG_SPELL_START id=%u", m_spellInfo->Id);
 
     uint32 castFlags = CAST_FLAG_HAS_TRAJECTORY;
 
@@ -4858,7 +4854,7 @@ void Spell::SendSpellStart()
         castFlags |= CAST_FLAG_PENDING;
 
     if ((m_caster->GetTypeId() == TYPEID_PLAYER ||
-        (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature()->isPet() || m_caster->ToCreature()->IsVehicle())))
+        (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature()->IsPet() || m_caster->ToCreature()->IsVehicle())))
         && !GetSpellInfo()->HasPower(POWER_HEALTH))
         castFlags |= CAST_FLAG_POWER_LEFT_SELF;
 
@@ -4867,7 +4863,7 @@ void Spell::SendSpellStart()
 
     if(m_spellInfo->Id == 125084)
         castFlags = 262913;
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
+    //TC_LOG_DEBUG("network", "WORLD: SMSG_SPELL_START, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
     ObjectGuid guid1A0 = ObjectGuid();
     ObjectGuid casterGuid = m_caster->GetObjectGuid();
@@ -5187,7 +5183,7 @@ void Spell::SendSpellGo()
     if (!IsNeedSendToClient())
         return;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Sending SMSG_SPELL_GO id=%u", m_spellInfo->Id);
+    //TC_LOG_DEBUG("spell", "Sending SMSG_SPELL_GO id=%u", m_spellInfo->Id);
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_9;
     // triggered spells with spell visual != 0
@@ -5282,7 +5278,7 @@ void Spell::SendSpellGo()
     for (std::list<GOTargetInfo>::const_iterator ighit = m_UniqueGOTargetInfo.begin(); ighit != m_UniqueGOTargetInfo.end() && hit <= 255; ++ighit)
         ++hit;
 
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SMSG_SPELL_GO, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
+    //TC_LOG_DEBUG("network", "WORLD: SMSG_SPELL_GO, castCount: %u, spellId: %u, castFlags: %u", m_cast_count, m_spellInfo->Id, castFlags);
 
     WorldPacket data(SMSG_SPELL_GO, 50);                        // guess size
     data.WriteBits(miss, 25);                                   // miss count 2
@@ -5744,7 +5740,7 @@ void Spell::SendLogExecute()
             }
             default:
             {
-                sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::SendLogExecute: Effect %u should not have data, skipping", effect);
+                TC_LOG_ERROR("spell", "Spell::SendLogExecute: Effect %u should not have data, skipping", effect);
                 delete m_effectExecuteData[i];
                 m_effectExecuteData[i] = NULL;
                 continue;
@@ -5882,12 +5878,12 @@ void Spell::SendChannelStart(uint32 duration)
 
     /*if(Unit* target = m_targets.GetUnitTarget())
     {
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendChannelStart target %u", target->GetGUID());
+        //TC_LOG_DEBUG("spell", "SendChannelStart target %u", target->GetGUID());
         if(m_spellInfo->AttributesEx & SPELL_ATTR1_CHANNEL_TRACK_TARGET)
             m_caster->SetFacingTo(m_targets.GetUnitTarget());
     }*/
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SendChannelStart id %u channelTarget %i dynObjGuid %i channelGuid %i ObjectTargetGUID %i", m_spellInfo->Id, channelTarget, dynObjGuid, channelGuid, m_targets.GetObjectTargetGUID());
+    //TC_LOG_DEBUG("spell", "SendChannelStart id %u channelTarget %i dynObjGuid %i channelGuid %i ObjectTargetGUID %i", m_spellInfo->Id, channelTarget, dynObjGuid, channelGuid, m_targets.GetObjectTargetGUID());
 
     ObjectGuid casterGuid = m_caster->GetObjectGuid();
     WorldPacket data(SMSG_CHANNEL_START, (8+4+4));
@@ -5974,7 +5970,7 @@ void Spell::TakeCastItem()
     {
         // This code is to avoid a crash
         // I'm not sure, if this is really an error, but I guess every item needs a prototype
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "Cast item has no item prototype highId=%d, lowId=%d", m_CastItem->GetGUIDHigh(), m_CastItem->GetGUIDLow());
+        TC_LOG_ERROR("spell", "Cast item has no item prototype highId=%d, lowId=%d", m_CastItem->GetGUIDHigh(), m_CastItem->GetGUIDLow());
         return;
     }
 
@@ -6100,7 +6096,7 @@ void Spell::TakePower()
 
     CallScriptTakePowerHandlers(powerType, m_powerCost);
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::TakePower hit %i, powerType %i, m_powerCost %i", hit, powerType, m_powerCost);
+    TC_LOG_DEBUG("spell", "Spell::TakePower hit %i, powerType %i, m_powerCost %i", hit, powerType, m_powerCost);
 
     if (!m_powerCost)
         return;
@@ -6114,7 +6110,7 @@ void Spell::TakePower()
 
     if (powerType >= MAX_POWERS)
     {
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::TakePower: Unknown power type '%d'", powerType);
+        TC_LOG_ERROR("spell", "Spell::TakePower: Unknown power type '%d'", powerType);
         return;
     }
 
@@ -6581,7 +6577,7 @@ void Spell::HandleThreatSpells()
             target->AddThreat(m_caster, threat, m_spellInfo->GetSchoolMask(), m_spellInfo);
         }
     }
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell %u, added an additional %f threat for %s %u target(s)", m_spellInfo->Id, threat, m_spellInfo->_IsPositiveSpell() ? "assisting" : "harming", uint32(m_UniqueTargetInfo.size()));
+    TC_LOG_DEBUG("spell", "Spell %u, added an additional %f threat for %s %u target(s)", m_spellInfo->Id, threat, m_spellInfo->_IsPositiveSpell() ? "assisting" : "harming", uint32(m_UniqueTargetInfo.size()));
 }
 
 void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode)
@@ -6604,7 +6600,7 @@ void Spell::HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOT
         damage = saveDamageCalculate[i];
 
     #ifdef WIN32
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell: %u Effect : %u, damage %i, mode %i", m_spellInfo->Id, eff, damage, mode);
+    TC_LOG_DEBUG("spell", "Spell: %u Effect : %u, damage %i, mode %i", m_spellInfo->Id, eff, damage, mode);
     #endif
 
     bool preventDefault = CallScriptEffectHandlers((SpellEffIndex)i, mode);
@@ -6670,7 +6666,7 @@ bool Spell::CheckEffFromDummy(Unit* /*target*/, uint32 eff)
         }
     }
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::CheckEffFromDummy: eff %i, prevent %i, Id %u", eff, prevent, m_spellInfo->Id);
+    //TC_LOG_DEBUG("spell", "Spell::CheckEffFromDummy: eff %i, prevent %i, Id %u", eff, prevent, m_spellInfo->Id);
 
     return prevent;
 }
@@ -6977,7 +6973,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 // Hackfix for Raigonn
                 if (m_caster->GetEntry() != WORLD_TRIGGER && target->GetEntry() != 56895) // Ignore LOS for gameobjects casts (wrongly casted by a trigger)
-                    if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
+                    if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_caster->IsWithinLOSInMap(target))
                         return SPELL_FAILED_LINE_OF_SIGHT;
 
                 if (m_spellInfo->RangeEntry->ID != 2 /*Combat Range*/ && m_caster->IsVisionObscured(target))
@@ -6992,7 +6988,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         float x, y, z;
         m_targets.GetDstPos()->GetPosition(x, y, z);
 
-        if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOS(x, y, z))
+        if (!(AttributesCustomEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && !m_caster->IsWithinLOS(x, y, z))
             return SPELL_FAILED_LINE_OF_SIGHT;
     }
 
@@ -7001,7 +6997,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         if (m_spellInfo->Effects[j]->TargetA.GetTarget() == TARGET_UNIT_PET)
         {
-            if (!m_caster->GetGuardianPet() && !m_caster->isPet())
+            if (!m_caster->GetGuardianPet() && !m_caster->IsPet())
             {
                 if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                     return SPELL_FAILED_DONT_REPORT;
@@ -8266,7 +8262,7 @@ SpellCastResult Spell::CheckPower()
         // Check valid power type
         if (power.powerType >= MAX_POWERS)
         {
-            sLog->outError(LOG_FILTER_SPELLS_AURAS, "Spell::CheckPower: Unknown power type '%d'", power.powerType);
+            TC_LOG_ERROR("spell", "Spell::CheckPower: Unknown power type '%d'", power.powerType);
             return SPELL_FAILED_UNKNOWN;
         }
     }
@@ -8817,7 +8813,7 @@ void Spell::Delayed() // only called in DealDamage()
     else
         m_timer += delaytime;
 
-    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Spell %u partially interrupted for (%d) ms at damage", m_spellInfo->Id, delaytime);
+    TC_LOG_INFO("spell", "Spell %u partially interrupted for (%d) ms at damage", m_spellInfo->Id, delaytime);
 
     ObjectGuid guid = m_caster->GetGUID();
 
@@ -8856,7 +8852,7 @@ void Spell::DelayedChannel()
     else
         m_timer -= delaytime;
 
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell %u partially interrupted for %i ms, new duration: %u ms", m_spellInfo->Id, delaytime, m_timer);
+    TC_LOG_DEBUG("spell", "Spell %u partially interrupted for %i ms, new duration: %u ms", m_spellInfo->Id, delaytime, m_timer);
 
     for (std::list<TargetInfo>::const_iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
         if ((*ihit).missCondition == SPELL_MISS_NONE)
@@ -9057,7 +9053,7 @@ SpellEvent::~SpellEvent()
     }
     else
     {
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "~SpellEvent: %s %u tried to delete non-deletable spell %u. Was not deleted, causes memory leak.",
+        TC_LOG_ERROR("spell", "~SpellEvent: %s %u tried to delete non-deletable spell %u. Was not deleted, causes memory leak.",
             (m_Spell->GetCaster()->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature"), m_Spell->GetCaster()->GetGUIDLow(), m_Spell->m_spellInfo->Id);
         //ASSERT(false);
     }
@@ -9478,7 +9474,7 @@ void Spell::LoadScripts()
             m_loadedScripts.erase(bitr);
             continue;
         }
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::LoadScripts: Script `%s` for spell `%u` is loaded now", (*itr)->_GetScriptName()->c_str(), m_spellInfo->Id);
+        TC_LOG_DEBUG("spell", "Spell::LoadScripts: Script `%s` for spell `%u` is loaded now", (*itr)->_GetScriptName()->c_str(), m_spellInfo->Id);
         (*itr)->Register();
         ++itr;
     }
@@ -10282,7 +10278,7 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
         _condSrcInfo->mConditionTargets[0] = target;
         bool check = sConditionMgr->IsObjectMeetToConditions(*_condSrcInfo, *_condList);
         //if(check)
-            //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::WorldObjectSpellTargetCheck spell id %u caster %u target %u entry %i", _spellInfo->Id,  _caster->GetGUID(), target->GetGUID(), target->GetEntry());
+            //TC_LOG_DEBUG("spell", "Spell::WorldObjectSpellTargetCheck spell id %u caster %u target %u entry %i", _spellInfo->Id,  _caster->GetGUID(), target->GetGUID(), target->GetEntry());
         return check;
     }
 
@@ -10290,7 +10286,7 @@ bool WorldObjectSpellTargetCheck::operator()(WorldObject* target)
     if (res != SPELL_CAST_OK)
     {
         #ifdef WIN32
-        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell::WorldObjectSpellTargetCheck::checkcast fail. spell id %u res %u caster %s target %s ", _spellInfo->Id, res, _caster->GetString().c_str(), target->GetString().c_str());
+        TC_LOG_DEBUG("spell", "Spell::WorldObjectSpellTargetCheck::checkcast fail. spell id %u res %u caster %s target %s ", _spellInfo->Id, res, _caster->GetString().c_str(), target->GetString().c_str());
         #endif
         return false;
     }

@@ -129,7 +129,7 @@ WorldObject::~WorldObject()
     {
         if (GetTypeId() == TYPEID_CORPSE)
         {
-            sLog->outFatal(LOG_FILTER_GENERAL, "Object::~Object Corpse guid=" UI64FMTD ", type=%d, entry=%u deleted but still in map!!", GetGUID(), ((Corpse*)this)->GetType(), GetEntry());
+            TC_LOG_FATAL("server", "Object::~Object Corpse guid=" UI64FMTD ", type=%d, entry=%u deleted but still in map!!", GetGUID(), ((Corpse*)this)->GetType(), GetEntry());
             ASSERT(false);
         }
         ResetMap();
@@ -140,16 +140,16 @@ Object::~Object()
 {
     if (IsInWorld())
     {
-        sLog->outFatal(LOG_FILTER_GENERAL, "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in world!!", GetGUID(), GetTypeId(), GetEntry());
+        TC_LOG_FATAL("server", "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in world!!", GetGUID(), GetTypeId(), GetEntry());
         if (isType(TYPEMASK_ITEM))
-            sLog->outFatal(LOG_FILTER_GENERAL, "Item slot %u", ((Item*)this)->GetSlot());
+            TC_LOG_FATAL("server", "Item slot %u", ((Item*)this)->GetSlot());
         //ASSERT(false);
         RemoveFromWorld();
     }
 
     if (m_objectUpdated)
     {
-        sLog->outFatal(LOG_FILTER_GENERAL, "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in update list!!", GetGUID(), GetTypeId(), GetEntry());
+        TC_LOG_FATAL("server", "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in update list!!", GetGUID(), GetTypeId(), GetEntry());
         //ASSERT(false);
         sObjectAccessor->RemoveUpdateObject(this);
     }
@@ -1433,7 +1433,7 @@ void Object::SetByteValue(uint16 index, uint8 offset, uint8 value)
 
     if (offset > 4)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Object::SetByteValue: wrong offset %u", offset);
+        TC_LOG_ERROR("server", "Object::SetByteValue: wrong offset %u", offset);
         return;
     }
 
@@ -1457,7 +1457,7 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
 
     if (offset > 2)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Object::SetUInt16Value: wrong offset %u", offset);
+        TC_LOG_ERROR("server", "Object::SetUInt16Value: wrong offset %u", offset);
         return;
     }
 
@@ -1572,7 +1572,7 @@ void Object::SetByteFlag(uint16 index, uint8 offset, uint8 newFlag)
 
     if (offset > 4)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Object::SetByteFlag: wrong offset %u", offset);
+        TC_LOG_ERROR("server", "Object::SetByteFlag: wrong offset %u", offset);
         return;
     }
 
@@ -1595,7 +1595,7 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
 
     if (offset > 4)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Object::RemoveByteFlag: wrong offset %u", offset);
+        TC_LOG_ERROR("server", "Object::RemoveByteFlag: wrong offset %u", offset);
         return;
     }
 
@@ -1617,7 +1617,7 @@ void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
     //ASSERT(tab < m_dynamicTab.size() && index < 32);
     if(!(tab < m_dynamicTab.size() && index < 32))
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Object::SetDynamicUInt32Value: ASSERT FAILED index %u, tab %u, m_dynamicTab.size() %u", index, tab, m_dynamicTab.size());
+        TC_LOG_ERROR("server", "Object::SetDynamicUInt32Value: ASSERT FAILED index %u, tab %u, m_dynamicTab.size() %u", index, tab, m_dynamicTab.size());
         return;
     }
 
@@ -1635,7 +1635,7 @@ void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
 
 bool Object::PrintIndexError(uint32 index, bool set) const
 {
-    sLog->outError(LOG_FILTER_GENERAL, "Attempt %s non-existed value field: %u (count: %u) for object typeid: %u type mask: %u", (set ? "set value to" : "get value from"), index, m_valuesCount, GetTypeId(), m_objectType);
+    TC_LOG_ERROR("server", "Attempt %s non-existed value field: %u (count: %u) for object typeid: %u type mask: %u", (set ? "set value to" : "get value from"), index, m_valuesCount, GetTypeId(), m_objectType);
 
     // ASSERT must fail after function call
     return false;
@@ -1688,7 +1688,7 @@ void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float ang
     if (!Trinity::IsValidMapCoord(pos.m_positionX, pos.m_positionY))
     {
         pos.Relocate(this);
-        sLog->outFatal(LOG_FILTER_GENERAL, "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", pos.m_positionX, pos.m_positionY);
+        TC_LOG_FATAL("server", "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", pos.m_positionX, pos.m_positionY);
         return;
     }
 
@@ -1712,7 +1712,7 @@ void Position::SimplePosXYRelocationByAngle(float &x, float &y, float &z, float 
         x = m_positionX;
         y = m_positionY;
         z = m_positionZ;
-        sLog->outFatal(LOG_FILTER_GENERAL, "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", x, y);
+        TC_LOG_FATAL("server", "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", x, y);
         return;
     }
 
@@ -1760,42 +1760,42 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const& st
 
 void MovementInfo::OutDebug()
 {
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "MOVEMENT INFO");
-    //sLog->outInfo(LOG_FILTER_NETWORKIO, "moverGUID " UI64FMTD, moverGUID);
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "flags %u", flags);
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "flags2 %u", flags2);
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", position.ToString().c_str());
+    TC_LOG_INFO("network", "MOVEMENT INFO");
+    //TC_LOG_INFO("network", "moverGUID " UI64FMTD, moverGUID);
+    TC_LOG_INFO("network", "flags %u", flags);
+    TC_LOG_INFO("network", "flags2 %u", flags2);
+    TC_LOG_INFO("network", "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
+    TC_LOG_INFO("network", "position: `%s`", position.ToString().c_str());
 
     if (transportGUID)
     {
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "TRANSPORT:");
-        //sLog->outInfo(LOG_FILTER_NETWORKIO, "guid: " UI64FMTD, transportGUID);
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "position: `%s`", transportPosition.ToString().c_str());
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "seatIndex: %i", transportVehicleSeatIndex);
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "moveTime: %u", transportMoveTime);
+        TC_LOG_INFO("network", "TRANSPORT:");
+        //TC_LOG_INFO("network", "guid: " UI64FMTD, transportGUID);
+        TC_LOG_INFO("network", "position: `%s`", transportPosition.ToString().c_str());
+        TC_LOG_INFO("network", "seatIndex: %i", transportVehicleSeatIndex);
+        TC_LOG_INFO("network", "moveTime: %u", transportMoveTime);
         if (hasTransportPrevMoveTime)
-            sLog->outInfo(LOG_FILTER_NETWORKIO, "prevMoveTime: %u", transportPrevMoveTime);
+            TC_LOG_INFO("network", "prevMoveTime: %u", transportPrevMoveTime);
         if (hasTransportVehicleRecID)
-            sLog->outInfo(LOG_FILTER_NETWORKIO, "vehicleRecID: %u", transportVehicleRecID);
+            TC_LOG_INFO("network", "vehicleRecID: %u", transportVehicleRecID);
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "SWIMMING/FLYING:");
+    TC_LOG_INFO("network", "SWIMMING/FLYING:");
     if (hasPitch)
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "pitch: %f", pitch);
+        TC_LOG_INFO("network", "pitch: %f", pitch);
 
     if (hasFallData)
     {
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "FALLING/JUMPING:");
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "fallTime: %u", fallTime);
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "jumpVelocity: %f", fallJumpVelocity);
+        TC_LOG_INFO("network", "FALLING/JUMPING:");
+        TC_LOG_INFO("network", "fallTime: %u", fallTime);
+        TC_LOG_INFO("network", "jumpVelocity: %f", fallJumpVelocity);
         if (hasFallDirection)
-            sLog->outInfo(LOG_FILTER_NETWORKIO, "sinAngle: %f, cosAngle: %f, speed: %f", fallSinAngle, fallCosAngle, fallSpeed);
+            TC_LOG_INFO("network", "sinAngle: %f, cosAngle: %f, speed: %f", fallSinAngle, fallCosAngle, fallSpeed);
     }
 
-    sLog->outInfo(LOG_FILTER_NETWORKIO, "ELEVATION:");
+    TC_LOG_INFO("network", "ELEVATION:");
     if (hasStepUpStartElevation)
-        sLog->outInfo(LOG_FILTER_NETWORKIO, "stepUpStartElevation: %f", stepUpStartElevation);
+        TC_LOG_INFO("network", "stepUpStartElevation: %f", stepUpStartElevation);
 }
 
 WorldObject::WorldObject(bool isWorldObject): WorldLocation(),
@@ -2257,7 +2257,7 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
             // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
             if (!ToCreature()->CanFly())
             {
-                bool canSwim = ToCreature()->canSwim();
+                bool canSwim = ToCreature()->CanSwim();
                 float ground_z = z;
                 float max_z = canSwim
                     ? GetBaseMap()->GetWaterOrGroundLevel(x, y, z + _offset, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK))
@@ -2883,7 +2883,7 @@ void WorldObject::SetMap(Map* map)
         return;
     if (m_currMap)
     {
-        sLog->outFatal(LOG_FILTER_GENERAL, "WorldObject::SetMap: obj %u new map %u %u, old map %u %u", (uint32)GetTypeId(), map->GetId(), map->GetInstanceId(), m_currMap->GetId(), m_currMap->GetInstanceId());
+        TC_LOG_FATAL("server", "WorldObject::SetMap: obj %u new map %u %u, old map %u %u", (uint32)GetTypeId(), map->GetId(), map->GetInstanceId(), m_currMap->GetId(), m_currMap->GetInstanceId());
         ASSERT(false);
     }
     m_currMap = map;
@@ -2918,7 +2918,7 @@ void WorldObject::AddObjectToRemoveList()
     Map* map = FindMap();
     if (!map)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).", GetTypeId(), GetEntry(), GetGUIDLow(), GetMapId());
+        TC_LOG_ERROR("server", "Object (TypeId: %u Entry: %u GUID: %u) at attempt add to move list not have valid map (Id: %u).", GetTypeId(), GetEntry(), GetGUIDLow(), GetMapId());
         return;
     }
 
@@ -3054,7 +3054,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     summon->InitSummon();
     summon->CastPetAuras(true);
 
-    //sLog->outDebug(LOG_FILTER_PETS, "Map::SummonCreature summoner %u entry %i mask %i", summoner ? summoner->GetGUID() : 0, entry, mask);
+    //TC_LOG_DEBUG("pets", "Map::SummonCreature summoner %u entry %i mask %i", summoner ? summoner->GetGUID() : 0, entry, mask);
 
     //ObjectAccessor::UpdateObjectVisibility(summon);
 
@@ -3155,14 +3155,14 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     // petentry == 0 for hunter "call pet" (current pet summoned if any)
     if (!entry)
     {
-        sLog->outError(LOG_FILTER_PETS, "no such entry %u", entry);
+        TC_LOG_ERROR("pets", "no such entry %u", entry);
         delete pet;
         return NULL;
     }
 
     if (!pet->IsPositionValid())
     {
-        sLog->outError(LOG_FILTER_PETS, "Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)", pet->GetGUIDLow(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
+        TC_LOG_ERROR("pets", "Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)", pet->GetGUIDLow(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
         delete pet;
         return NULL;
     }
@@ -3171,7 +3171,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
     if (!pet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PET), map, GetPhaseMask(), entry, pet_number))
     {
-        sLog->outError(LOG_FILTER_PETS, "no such creature entry %u", entry);
+        TC_LOG_ERROR("pets", "no such creature entry %u", entry);
         delete pet;
         return NULL;
     }
@@ -3208,7 +3208,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (duration > 0)
         pet->SetDuration(duration);
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SummonPet entry %i, petType %i, spellId %i", entry, petType, spellId);
+    //TC_LOG_DEBUG("spell", "SummonPet entry %i, petType %i, spellId %i", entry, petType, spellId);
 
     pet->CastPetAuras(true);
     return pet;
@@ -3222,7 +3222,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
     if (!goinfo)
     {
-        sLog->outError(LOG_FILTER_SQL, "Gameobject template %u not found in database!", entry);
+        TC_LOG_ERROR("sql", "Gameobject template %u not found in database!", entry);
         return NULL;
     }
     Map* map = GetMap();
@@ -3465,7 +3465,7 @@ void WorldObject::MovePosition(Position &pos, float dist, float angle)
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
-        sLog->outFatal(LOG_FILTER_GENERAL, "WorldObject::MovePosition invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        TC_LOG_FATAL("server", "WorldObject::MovePosition invalid coordinates X: %f and Y: %f were passed!", destx, desty);
         return;
     }
 
@@ -3511,7 +3511,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
-        sLog->outFatal(LOG_FILTER_GENERAL, "WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        TC_LOG_FATAL("server", "WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
         return;
     }
 
@@ -3583,7 +3583,7 @@ void WorldObject::MovePositionToCollisionBetween(Position &pos, float distMin, f
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
-        sLog->outFatal(LOG_FILTER_GENERAL, "WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        TC_LOG_FATAL("server", "WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
         return;
     }
 

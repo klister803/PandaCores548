@@ -168,7 +168,7 @@ void BattlegroundDS::HandleKillPlayer(Player* player, Player* killer)
 
     if (!killer)
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundDS: Killer player not found");
+        TC_LOG_ERROR("bg", "BattlegroundDS: Killer player not found");
         return;
     }
 
@@ -204,7 +204,7 @@ void BattlegroundDS::HandleAreaTrigger(Player* Source, uint32 Trigger)
             HandlePlayerUnderMap(Source);
             break;
         default:
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg", "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -244,7 +244,7 @@ bool BattlegroundDS::SetupBattleground()
         || !AddCreature(BG_DS_NPC_TYPE_WATER_SPOUT, BG_DS_NPC_PIPE_KNOCKBACK_1, 0, 1369.977f, 817.2882f, 16.08718f, 3.106686f, RESPAWN_IMMEDIATELY)
         || !AddCreature(BG_DS_NPC_TYPE_WATER_SPOUT, BG_DS_NPC_PIPE_KNOCKBACK_2, 0, 1212.833f, 765.3871f, 16.09484f, 0.0f, RESPAWN_IMMEDIATELY))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundDS: Failed to spawn some object!");
+        TC_LOG_ERROR("sql", "BatteGroundDS: Failed to spawn some object!");
         return false;
     }
 

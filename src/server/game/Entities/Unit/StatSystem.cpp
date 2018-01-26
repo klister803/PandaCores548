@@ -455,7 +455,7 @@ void Player::UpdateMeleeHastMod(float auraMods)
     amount *= auraMods;
     amount -= 100.0f;
 
-    //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateMeleeHastMod mod %f", mod);
+    //TC_LOG_ERROR("network", "UpdateMeleeHastMod mod %f", mod);
 
     float value = 1.0f;
 
@@ -499,7 +499,7 @@ void Player::UpdateHastMod(float auraMods)
     amount *= auraMods;
     amount -= 100.0f;
 
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
+    //TC_LOG_DEBUG("network", "UpdateHastMod amount %f", amount);
 
     float value = 1.0f;
 
@@ -527,7 +527,7 @@ void Player::UpdateRangeHastMod(float auraMods)
     amount *= auraMods;
     amount -= 100.0f;
 
-    //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);
+    //TC_LOG_ERROR("network", "UpdateRangeHastMod mod %f", mod);
 
     float value = 1.0f;
 
@@ -1233,7 +1233,7 @@ void Unit::UpdateManaRegen()
     float manaRegen = ((baseRegen * baseMod + auraMp5regen + spirit_regen) * pctRegenMod) * regenFromHaste;
     float manaRegenInterupted = ((baseRegen * baseMod + auraMp5regen + spirit_regen * interruptMod / 100.0f) * pctRegenMod) * regenFromHaste;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdateManaRegen pctRegenMod %f, regenFromHaste %f, manaRegen %f", pctRegenMod, regenFromHaste, manaRegen);
+    //TC_LOG_DEBUG("spell", "Unit::UpdateManaRegen pctRegenMod %f, regenFromHaste %f, manaRegen %f", pctRegenMod, regenFromHaste, manaRegen);
 
     // out of combar
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + powerIndex, manaRegen);
@@ -1290,7 +1290,7 @@ void Unit::UpdateMeleeHastMod(float ownerMods)
 
     amount -= 100.0f;
 
-    //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateMeleeHastMod mod %f", mod);
+    //TC_LOG_ERROR("network", "UpdateMeleeHastMod mod %f", mod);
 
     float value = 1.0f;
 
@@ -1333,7 +1333,7 @@ void Unit::UpdateHastMod(float ownerMods)
     amount *= GetTotalForAurasMultiplier(&auratypelist);
     
     amount -= 100.0f;
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
+    //TC_LOG_DEBUG("network", "UpdateHastMod amount %f", amount);
 
     float value = 1.0f;
 
@@ -1372,7 +1372,7 @@ void Unit::UpdateRangeHastMod(float ownerMods)
     amount *= GetTotalForAurasMultiplier(&auratypelist);
 
     amount -= 100.0f;
-    //sLog->outError(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);
+    //TC_LOG_ERROR("network", "UpdateRangeHastMod mod %f", mod);
 
     float value = 1.0f;
 
@@ -1473,7 +1473,7 @@ void Unit::UpdatePowerRegen(uint32 power)
     if(regenInCombat)
         SetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex, val);
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen val %f, powerIndex %i, power %i, addvalue %f", val, powerIndex, power, addvalue);
+    //TC_LOG_DEBUG("spell", "Unit::UpdatePowerRegen val %f, powerIndex %i, power %i, addvalue %f", val, powerIndex, power, addvalue);
 }
 
 /*#######################################
@@ -1712,15 +1712,15 @@ bool Guardian::UpdateStats(Stats stat)
 
             if (IsPetGhoul() || IsPetGargoyle())
                 mod = 0.45f;
-            else if (owner->getClass() == CLASS_WARLOCK && isPet())
+            else if (owner->getClass() == CLASS_WARLOCK && IsPet())
                 mod = 0.75f;
-            else if (owner->getClass() == CLASS_MAGE && isPet())
+            else if (owner->getClass() == CLASS_MAGE && IsPet())
                 mod = 0.75f;
             else
             {
                 mod = 0.45f;
 
-                if (isPet())
+                if (IsPet())
                 {
                     switch (ToPet()->GetSpecializationId())
                     {
@@ -1814,7 +1814,7 @@ void Guardian::UpdateResistances(uint32 school)
             value = GetTotalAuraModValue(UnitMods(UNIT_MOD_RESISTANCE_START + school));
 
             // hunter and warlock pets gain 40% of owner's resistance
-            if (isPet())
+            if (IsPet())
                 value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
         }
         else
@@ -1837,7 +1837,7 @@ void Guardian::UpdateArmor()
     else
         value = m_owner->GetModifierValue(unitMod, BASE_VALUE);
 
-    //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateArmor value %f creature_ID %i", value, creature_ID);
+    //TC_LOG_DEBUG("pets", "Guardian::UpdateArmor value %f creature_ID %i", value, creature_ID);
 
     value += GetModifierValue(unitMod, BASE_PCT);
     value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
@@ -1875,7 +1875,7 @@ void Guardian::UpdateMaxHealth()
         //value += GetModifierValue(unitMod, TOTAL_VALUE);
         value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-        //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
+        //TC_LOG_DEBUG("pets", "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
     }
     else
     {
@@ -1916,7 +1916,7 @@ void Guardian::UpdateMaxPower(Powers power)
         val = RoundingFloatValue(value);
     }
 
-    //sLog->outDebug(LOG_FILTER_PETS, "Guardian::UpdateMaxPower value %f creature_ID %i", value, creature_ID);
+    //TC_LOG_DEBUG("pets", "Guardian::UpdateMaxPower value %f creature_ID %i", value, creature_ID);
 
     if (cur_maxpower != val)
         SetMaxPower(power, val);

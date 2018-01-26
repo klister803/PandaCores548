@@ -23,7 +23,7 @@
 
 void WorldSession::HandleGrantLevel(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GRANT_LEVEL");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_GRANT_LEVEL");
 
     uint64 guid;
     recvData.readPackGUID(guid);
@@ -65,7 +65,7 @@ void WorldSession::HandleGrantLevel(WorldPacket& recvData)
 
 void WorldSession::HandleAcceptGrantLevel(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_ACCEPT_LEVEL_GRANT");
+    TC_LOG_DEBUG("network", "WORLD: CMSG_ACCEPT_LEVEL_GRANT");
 
     ObjectGuid guid;
     recvData.ReadGuidMask<0, 6, 5, 1, 4, 7, 2, 3>(guid);

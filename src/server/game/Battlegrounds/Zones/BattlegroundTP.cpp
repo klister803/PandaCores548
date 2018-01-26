@@ -110,7 +110,7 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
                         if (GameObject* obj = GetBgMap()->GetGameObject(_droppedFlagGUID[team]))
                                 obj->Delete();
                             else
-                                sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTP: An error has occurred in PostUpdateImpl: Unknown dropped flag GUID: %u", GUID_LOPART(_droppedFlagGUID[team]));
+                                TC_LOG_ERROR("bg", "BattlegroundTP: An error has occurred in PostUpdateImpl: Unknown dropped flag GUID: %u", GUID_LOPART(_droppedFlagGUID[team]));
 
                         _droppedFlagGUID[team] = 0;
 
@@ -150,7 +150,7 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
                         if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[team]))
                             player->CastSpell(player, TP_SPELL_FOCUSED_ASSAULT, true);
                         else
-                            sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTP: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
+                            TC_LOG_ERROR("bg", "BattlegroundTP: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
                     }
                 }
                 else if (_flagDebuffState == 6) ///< Moment when you change the stacks
@@ -163,7 +163,7 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
                             player->CastCustomSpell(TP_SPELL_BRUTAL_ASSAULT, SPELLVALUE_AURA_STACK, _flagDebuffState, player);
                         }
                         else
-                            sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTP: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
+                            TC_LOG_ERROR("bg", "BattlegroundTP: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
                     }
                 }
                 else //< Continue to cast brutal Assault on target
@@ -173,7 +173,7 @@ void BattlegroundTP::PostUpdateImpl(uint32 diff)
                         if (Player* player = ObjectAccessor::FindPlayer(_flagKeepers[team]))
                             player->CastSpell(player, TP_SPELL_BRUTAL_ASSAULT, true);
                         else
-                            sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTP: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
+                            TC_LOG_ERROR("bg", "BattlegroundTP: Can't find flag keeper with GUID: %u, in team: %s", _flagKeepers[team], team == TEAM_ALLIANCE ? "ALLIANCE" : "HORDE");
                     }
                 }
             }
@@ -239,7 +239,7 @@ bool BattlegroundTP::SetupBattleground()
         || !AddObject(BG_TP_OBJECT_DOOR_H_3, BG_OBJECT_DOOR_H_3_TP_ENTRY, 1558.088f, 372.7654f, 1.723727f, 6.178466f, 0, 0, 0, 0, RESPAWN_IMMEDIATELY)
        )
     {
-        sLog->outError(LOG_FILTER_GENERAL, "BattegroundTP: Failed to spawn some objects. Battleground not created!");
+        TC_LOG_ERROR("server", "BattegroundTP: Failed to spawn some objects. Battleground not created!");
         return false;
     }
 
@@ -253,13 +253,13 @@ bool BattlegroundTP::SetupBattleground()
             uint8 team = i % 2; ///< If 0 team == TEAM_ALLIANCE else TEAM_HORDE
             if (!AddSpiritGuide(team == TEAM_ALLIANCE ? TP_SPIRIT_ALLIANCE : TP_SPIRIT_HORDE, grave->x, grave->y, grave->z, team == TEAM_ALLIANCE ?  M_PI : 0, team == TEAM_ALLIANCE ? ALLIANCE : HORDE))
             {
-                sLog->outError(LOG_FILTER_GENERAL, "BatteGroundTP: Failed to spawn spirit guide id: %u. Battleground not created!", grave->ID);
+                TC_LOG_ERROR("server", "BatteGroundTP: Failed to spawn spirit guide id: %u. Battleground not created!", grave->ID);
                 return false;
             }
         }
         else
         {
-                sLog->outError(LOG_FILTER_GENERAL, "BatteGroundTP: Failed to load spirit guide. Battleground not created!");
+                TC_LOG_ERROR("server", "BatteGroundTP: Failed to load spirit guide. Battleground not created!");
                 return false;
         }
     }
@@ -723,7 +723,7 @@ void BattlegroundTP::RemovePlayer(Player* player, uint64 guid, uint32 /* team */
                         pl->RemoveAurasDueToSpell(TP_SPELL_BRUTAL_ASSAULT);
                 }
                 else
-                    sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTP: An error has occurred in RemovePlayer: player with GUID: %u haven't been found. (_bothflagsKept is TRUE).", _flagKeepers[team]);
+                    TC_LOG_ERROR("bg", "BattlegroundTP: An error has occurred in RemovePlayer: player with GUID: %u haven't been found. (_bothflagsKept is TRUE).", _flagKeepers[team]);
             }
 
             /// Reset both flags things

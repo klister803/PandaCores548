@@ -77,7 +77,7 @@ class npc_profession : public CreatureScript
 
                         if (!SkillInfo)
                         {
-                                //sLog->outError("Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)");
+                                //TC_LOG_ERROR("Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)");
                                 return false;
                         }       
 
@@ -387,7 +387,7 @@ class npc_profession_for_donate: public CreatureScript
 
                         if (!SkillInfo)
                         {
-                                //sLog->outError("Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)");
+                                //TC_LOG_ERROR("Profession NPC: received non-valid skill ID (LearnAllRecipesInProfession)");
                                 return false;
                         }       
 

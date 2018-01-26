@@ -127,7 +127,7 @@ void ObjectGridLoader::LoadN(NGrid const &grid, Map *map, Cell cell)
         }
     }
 
-    sLog->outDebug(LOG_FILTER_MAPS, "%u GameObjects, %u Creatures, and %u Corpses/Bones loaded for grid [%d, %d] on map %u",
+    TC_LOG_DEBUG("maps", "%u GameObjects, %u Creatures, and %u Corpses/Bones loaded for grid [%d, %d] on map %u",
                  gameObjects, creatures, corpses, grid.getX(), grid.getY(), map->GetId());
 }
 
@@ -143,7 +143,7 @@ void ObjectGridEvacuator::Visit(CreatureMapType &m)
     for (std::size_t i = 0; i < count;)
     {
         auto &creature = m[i];
-        ASSERT(!creature->isPet() && "ObjectGridRespawnMover must not be called for pets");
+        ASSERT(!creature->IsPet() && "ObjectGridRespawnMover must not be called for pets");
 
         creature->GetMap()->CreatureRespawnRelocation(creature, true);
 

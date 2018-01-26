@@ -90,21 +90,21 @@ bool BattlegroundSSM::SetupBattleground()
         || !AddObject(BG_SSM_OBJECT_BERSERKBUFF, BG_OBJECTID_BERSERKERBUFF_ENTRY, 756.198f, 75.984f, 371.229f, 1.354f, 0, 0, 0.5591929f, 0.8290376f, BUFF_RESPAWN_TIME)
         )
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundSSM: Failed to spawn some object Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundSSM: Failed to spawn some object Battleground not created!");
         return false;
     }
 
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(BG_SSM_ALLIANCE_GRAVEYARD);
     if (!sg || !AddSpiritGuide(BG_SSM_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(BG_SSM_HORDE_GRAVEYARD);
     if (!sg || !AddSpiritGuide(BG_SSM_SPIRIT_MAIN_HORDE, sg->x, sg->y, sg->z, 3.193953f, HORDE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
         return false;
     }
 
@@ -209,7 +209,7 @@ void BattlegroundSSM::CheckSomeoneLeftPoint()
                 Player* player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[i][j]);
                 if (!player)
                 {
-                    sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundSSM:CheckSomeoneLeftPoint Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[i][j]));
+                    TC_LOG_ERROR("bg", "BattlegroundSSM:CheckSomeoneLeftPoint Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[i][j]));
                     //move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
                     m_PlayersNearPoint[SSM_POINTS_MAX].push_back(m_PlayersNearPoint[i][j]);
                     m_PlayersNearPoint[i].erase(m_PlayersNearPoint[i].begin() + j);
@@ -245,7 +245,7 @@ void BattlegroundSSM::CheckSomeoneJoinedPoint()
                 Player* player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[SSM_POINTS_MAX][j]);
                 if (!player)
                 {
-                    //sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundSSM:CheckSomeoneJoinedPoint: Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[SSM_POINTS_MAX][j]));
+                    //TC_LOG_ERROR("bg", "BattlegroundSSM:CheckSomeoneJoinedPoint: Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[SSM_POINTS_MAX][j]));
                     ++j;
                     continue;
                 }

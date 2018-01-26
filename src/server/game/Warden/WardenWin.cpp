@@ -44,7 +44,7 @@ WardenWin::~WardenWin()
 
 void WardenWin::InitializeModule()
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Initialize module(0x03)");
+    TC_LOG_DEBUG("warden", "WARDEN: Initialize module(0x03)");
 
     ByteBuffer buff;
     InitializeMPQCheckFunc(buff);
@@ -171,13 +171,13 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
 
     if (strcmp(hashStr.c_str(), realHashStr.c_str()))
     {
-        sLog->outWarden("Player %s (guid: %u, account: %u) failed hash reply. Action: Kick",
+        TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed hash reply. Action: Kick",
             _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
 
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash reply - succeeded");
+    TC_LOG_DEBUG("warden", "WARDEN: Request hash reply - succeeded");
 
     ARC4::rc4_init(&_clientRC4State, _currentModule->ClientKeySeed, 16);
     ARC4::rc4_init(&_serverRC4State, _currentModule->ServerKeySeed, 16);
@@ -189,7 +189,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
 
 void WardenWin::HandleModuleFailed()
 {
-    sLog->outWarden("Player %s (guid: %u, account: %u) has received CMSG_WARDEN_MODULE_FAILED. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+    TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) has received CMSG_WARDEN_MODULE_FAILED. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
     _session->KickPlayer();
 }
 
@@ -416,7 +416,7 @@ uint16 WardenWin::BuildCheckData(WardenCheck* wd, ByteBuffer &buff, ByteBuffer &
 
 void WardenWin::RequestBaseData()
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request static data");
+    TC_LOG_DEBUG("warden", "WARDEN: Request static data");
 
     _serverTicks = getMSTime();
     uint8 xorByte = _currentModule->ClientKeySeed[0];
@@ -442,8 +442,8 @@ void WardenWin::RequestBaseData()
     // for (std::vector<uint16>::iterator itr = _currentChecks.begin(); itr != _currentChecks.end(); ++itr)
         // stream << *itr << " ";
 
-    // sLog->outDebug(LOG_FILTER_WARDEN, "%s", stream.str().c_str());
-    // sLog->outWarden("%s", stream.str().c_str());
+    // TC_LOG_DEBUG("warden", "%s", stream.str().c_str());
+    // TC_LOG_DEBUG("warden","%s", stream.str().c_str());
     // sWorld->SendServerMessage(SERVER_MSG_STRING, stream.str().c_str(), _session->GetPlayer());
 
     WorldPacket data1(SMSG_SERVERTIME, 8);
@@ -454,7 +454,7 @@ void WardenWin::RequestBaseData()
 
 void WardenWin::HandleData(ByteBuffer &buff)
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Handle common data");
+    TC_LOG_DEBUG("warden", "WARDEN: Handle common data");
 
     // reset response wait timer
     _clientResponseTimer = 0;
@@ -468,7 +468,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     if (!length)
     {
         buff.rfinish();
-        sLog->outWarden("Player %s (guid: %u, account: %u) failed packet length. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed packet length. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -476,7 +476,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     if (!IsValidCheckSum(checksum, buff.contents() + buff.rpos(), length))
     {
         buff.rfinish();
-        sLog->outWarden("Player %s (guid: %u, account: %u) failed checksum. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed checksum. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -489,7 +489,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     else
     {
         buff.rfinish();
-        sLog->outWarden("Player %s (guid: %u, account: %u) has received wrong Warden packet. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) has received wrong Warden packet. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
     }
 }
@@ -502,7 +502,7 @@ void WardenWin::HandleBaseChecksData(ByteBuffer &buff)
     if (!timeCheckResult)
     {
         buff.rfinish();
-        sLog->outWarden("Player %s (guid: %u, account: %u) failed TIME_CHECK. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed TIME_CHECK. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -513,10 +513,10 @@ void WardenWin::HandleBaseChecksData(ByteBuffer &buff)
     uint32 ticksNow = getMSTime();
     uint32 ourTicks = newClientTicks + (ticksNow - _serverTicks);
 
-    sLog->outDebug(LOG_FILTER_WARDEN, "ServerTicks %u", ticksNow);         // Now
-    sLog->outDebug(LOG_FILTER_WARDEN, "RequestTicks %u", _serverTicks);    // At request
-    sLog->outDebug(LOG_FILTER_WARDEN, "Ticks %u", newClientTicks);         // At response
-    sLog->outDebug(LOG_FILTER_WARDEN, "Ticks diff %u", ourTicks - newClientTicks);*/
+    TC_LOG_DEBUG("warden", "ServerTicks %u", ticksNow);         // Now
+    TC_LOG_DEBUG("warden", "RequestTicks %u", _serverTicks);    // At request
+    TC_LOG_DEBUG("warden", "Ticks %u", newClientTicks);         // At response
+    TC_LOG_DEBUG("warden", "Ticks diff %u", ourTicks - newClientTicks);*/
 
     uint8 headerRes;
     buff >> headerRes;
@@ -524,7 +524,7 @@ void WardenWin::HandleBaseChecksData(ByteBuffer &buff)
     if (headerRes)
     {
         buff.rfinish();
-        sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        TC_LOG_DEBUG("warden","WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -540,7 +540,7 @@ void WardenWin::HandleBaseChecksData(ByteBuffer &buff)
     else
     {
         buff.rfinish();
-        sLog->outWarden("WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+        TC_LOG_DEBUG("warden","WARDEN: Player %s (guid: %u, account: %u) failed validate Warden packet header. Action: Kick", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -556,7 +556,7 @@ void WardenWin::HandleDbcChecksData(ByteBuffer &buff)
     if (memResult)
     {
         buff.rfinish();
-        sLog->outWarden("Function for MEM_CHECK hasn't been called, CheckId Special account Id %u. Action: Kick", _session->GetAccountId());
+        TC_LOG_DEBUG("warden","Function for MEM_CHECK hasn't been called, CheckId Special account Id %u. Action: Kick", _session->GetAccountId());
         _session->KickPlayer();
         return;
     }
@@ -572,7 +572,7 @@ void WardenWin::HandleDbcChecksData(ByteBuffer &buff)
         if (!rd || !rd->Enabled)
         {
             buff.rfinish();
-            sLog->outWarden("Warden check with Id %u has disabled or checkStorage has corrupted data for player %s (guid: %u, account: %u). Action: None", *itr, _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+            TC_LOG_DEBUG("warden","Warden check with Id %u has disabled or checkStorage has corrupted data for player %s (guid: %u, account: %u). Action: None", *itr, _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
             return;
         }
 
@@ -582,7 +582,7 @@ void WardenWin::HandleDbcChecksData(ByteBuffer &buff)
         if (mpqResult)
         {
             buff.rfinish();
-            sLog->outWarden("Function for MPQ_CHECK hasn't been called, CheckId %u account Id %u. Action: Kick", *itr, _session->GetAccountId());
+            TC_LOG_DEBUG("warden","Function for MPQ_CHECK hasn't been called, CheckId %u account Id %u. Action: Kick", *itr, _session->GetAccountId());
             _session->KickPlayer();
             return;
         }
@@ -597,13 +597,13 @@ void WardenWin::HandleDbcChecksData(ByteBuffer &buff)
             result = customHash;
 
         // debug
-        //sLog->outWarden("RESULT MPQ_CHECK, CheckId %u account Id %u, realData - %s, packetData - %s, client locale - %u", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str(), clientLocale);
+        //TC_LOG_DEBUG("warden","RESULT MPQ_CHECK, CheckId %u account Id %u, realData - %s, packetData - %s, client locale - %u", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str(), clientLocale);
 
         if (strcmp(result.c_str(), packet_data.c_str()))
         {
             buff.rfinish();
-            sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), result.c_str(), packet_data.c_str());
-            sLog->outWarden("Account %s (Id: %u) failed Warden check %u. Action: %s", _session->GetAccountName().c_str(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
+            TC_LOG_DEBUG("warden","RESULT MPQ_CHECK fail, CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), result.c_str(), packet_data.c_str());
+            TC_LOG_DEBUG("warden","Account %s (Id: %u) failed Warden check %u. Action: %s", _session->GetAccountName().c_str(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
             _state = WARDEN_MODULE_SET_PLAYER_PENDING_LOCK;
             return;
         }
@@ -636,7 +636,7 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
         if (!rd || !rd->Enabled)
         {
             buff.rfinish();
-            sLog->outWarden("Warden check with Id %u has disabled or checkStorage has corrupted data for player %s (guid: %u, account: %u). Action: None", *itr, _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
+            TC_LOG_DEBUG("warden","Warden check with Id %u has disabled or checkStorage has corrupted data for player %s (guid: %u, account: %u). Action: None", *itr, _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId());
             return;
         }
 
@@ -652,7 +652,7 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                 if (memResult)
                 {
                     buff.rfinish();
-                    sLog->outWarden("Function for MEM_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
+                    TC_LOG_DEBUG("warden","Function for MEM_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
                     _session->KickPlayer();
                     return;
                 }
@@ -661,8 +661,8 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                 if (strcmp(rd->Result.c_str(), packet_data.c_str()))
                 {
                     buff.rfinish();
-                    sLog->outWarden("RESULT MEM_CHECK fail CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
-                    sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
+                    TC_LOG_DEBUG("warden","RESULT MEM_CHECK fail CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                    TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
                     return;
                 }
 
@@ -681,15 +681,15 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                     buff.rfinish();
 
                     if (type == PAGE_CHECK_A || type == PAGE_CHECK_B)
-                        sLog->outWarden("RESULT PAGE_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                        TC_LOG_DEBUG("warden","RESULT PAGE_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
                     if (type == MODULE_CHECK)
-                        sLog->outWarden("RESULT MODULE_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                        TC_LOG_DEBUG("warden","RESULT MODULE_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
                     if (type == DRIVER_CHECK)
-                        sLog->outWarden("RESULT DRIVER_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                        TC_LOG_DEBUG("warden","RESULT DRIVER_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
                     if (type == PROC_CHECK)
-                        sLog->outWarden("RESULT PROC_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                        TC_LOG_DEBUG("warden","RESULT PROC_CHECK fail, CheckId %u, account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
 
-                    sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
+                    TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
                     return;
                 }
 
@@ -704,7 +704,7 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                 /*if (mpqResult)
                 {
                     buff.rfinish();
-                    sLog->outWarden("Function for MPQ_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
+                    TC_LOG_DEBUG("warden","Function for MPQ_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
                     _session->KickPlayer();
                     return;
                 }
@@ -719,8 +719,8 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                 if (strcmp(rd->Result.c_str(), packet_data.c_str()))
                 {
                     buff.rfinish();
-                    sLog->outWarden("RESULT MPQ_CHECK fail, CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
-                    sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
+                    TC_LOG_DEBUG("warden","RESULT MPQ_CHECK fail, CheckId %u account Id %u, realData - %s, failedData - %s", *itr, _session->GetAccountId(), rd->Result.c_str(), packet_data.c_str());
+                    TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
                     SetPlayerLocked(*itr, rd);
                     return;
                 }
@@ -737,7 +737,7 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                 if (luaResult)
                 {
                     buff.rfinish();
-                    sLog->outWarden("Function for LUA_STR_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
+                    TC_LOG_DEBUG("warden","Function for LUA_STR_CHECK hasn't been called, CheckId %u account Id %u", *itr, _session->GetAccountId());
                     _session->KickPlayer();
                     return;
                 }
@@ -750,12 +750,12 @@ void WardenWin::CommonChecksHandler(ByteBuffer &buff)
                     char *str = new char[luaStrLen + 1];
                     memset(str, 0, luaStrLen + 1);
                     memcpy(str, buff.contents() + buff.rpos(), luaStrLen);
-                    sLog->outWarden("RESULT LUA_STR_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
-                    sLog->outWarden("Lua string found: %s", str);
+                    TC_LOG_DEBUG("warden","RESULT LUA_STR_CHECK fail, CheckId %u account Id %u", *itr, _session->GetAccountId());
+                    TC_LOG_DEBUG("warden","Lua string found: %s", str);
                     delete[] str;
 
                     buff.rfinish();
-                    sLog->outWarden("Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
+                    TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u) failed Warden check %u. Action: %s", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), *itr, Penalty(*itr).c_str());
                     return;
                 }
                 break;
@@ -784,14 +784,14 @@ std::string WardenWin::GetCustomMPQData(std::string dbcName, std::string packet,
     // logged koKR, zhCN, zhTW and allowed it
     if (clientLocale == LOCALE_koKR || clientLocale == LOCALE_zhCN || clientLocale == LOCALE_zhTW)
     {
-        sLog->outWarden("Detect rare locale %u, data from packet %s for future fixes", clientLocale, packet.c_str());
+        TC_LOG_DEBUG("warden","Detect rare locale %u, data from packet %s for future fixes", clientLocale, packet.c_str());
         result = packet;
     }
 
     // check custom patches
     std::string comment = "";
     if (_wardenMgr->CheckCustomMPQDataHash(dbcName, result, packet, comment))
-        sLog->outWarden("Account %s (id: %u) have custom MPQ patch (%s). Action: None", _session->GetAccountName().c_str(), _session->GetAccountId(), comment.c_str());
+        TC_LOG_DEBUG("warden","Account %s (id: %u) have custom MPQ patch (%s). Action: None", _session->GetAccountName().c_str(), _session->GetAccountId(), comment.c_str());
 
     return result;
 }

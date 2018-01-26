@@ -134,7 +134,6 @@ namespace Movement
             data << spline.getPoint(i);
             //const Vector3& v = spline.getPoint(i);
             //data << v.x << v.y << v.z;
-            //sLog->outU(">>>>> patch%i || %f-%f-%f", i, v.x, v.y, v.z);
         }
     }
 

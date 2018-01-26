@@ -2767,7 +2767,7 @@ class CreatureTargetFilter
         {
             if (Unit* unit = target->ToCreature())
                 if (!unit->isTotem())
-                    if (!unit->isPet())
+                    if (!unit->IsPet())
                         return false;
 
             return true;

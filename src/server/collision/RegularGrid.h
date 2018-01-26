@@ -3,17 +3,13 @@
 
 
 #include <G3D/Ray.h>
-#include <G3D/AABox.h>
 #include <G3D/Table.h>
 #include <G3D/BoundsTrait.h>
 #include <G3D/PositionTrait.h>
 
+#include "Log.h"
 #include "Errors.h"
-
-using G3D::Vector2;
-using G3D::Vector3;
-using G3D::AABox;
-using G3D::Ray;
+#include "GridDefines.h"
 
 template<class Node>
 struct NodeCreator{
@@ -32,6 +28,7 @@ public:
 
     enum{
         CELL_NUMBER = 64,
+        CELLS_MAX_NUMBER = 8,
     };
 
     #define HGRID_MAP_SIZE  (533.33333f * 64.f)     // shouldn't be changed
@@ -54,7 +51,7 @@ public:
 
     void insert(const T& value)
     {
-        Vector3 pos;
+        G3D::Vector3 pos;
         PositionFunc::getPosition(value, pos);
         Node& node = getGridFor(pos.x, pos.y);
         node.insert(value);
@@ -77,12 +74,27 @@ public:
     }
 
     bool contains(const T& value) const { return memberTable.containsKey(&value); }
-    int size() const { return memberTable.size(); }
+    bool empty() const { return memberTable.size() == 0; }
+    int size() const { return uint32(memberTable.size()); }
+
+    struct CellArea final
+    {
+        CellArea() { }
+        CellArea(CellCoord low, CellCoord high) : low_bound(low), high_bound(high) {}
+
+        bool operator!() const { return low_bound == high_bound; }
+
+        CellCoord low_bound;
+        CellCoord high_bound;
+    };
+
+    typedef CoordPair<CELL_NUMBER*CELLS_MAX_NUMBER> CellCoord;
 
     struct Cell
     {
         int x, y;
-        bool operator == (const Cell& c2) const { return x == c2.x && y == c2.y;}
+        bool operator == (const Cell& c2) const { return x == c2.x && y == c2.y; }
+        bool operator = (const Cell& c2) { return x = c2.x; y = c2.y; }
 
         static Cell ComputeCell(float fx, float fy)
         {
@@ -90,9 +102,28 @@ public:
             return c;
         }
 
+        static Cell CalculateCell(uint32 x, uint32 y)
+        {
+            Cell c = { int(x / MAX_NUMBER_OF_CELLS), int(y / CELLS_MAX_NUMBER) };
+            return c;
+        }
+
+        static CellArea CalculateCellArea(float x, float y, float radius)
+        {
+            if (radius <= 0.0f)
+            {
+                CellCoord center = Trinity::ComputeCellCoord(x, y).normalize();
+                return CellArea(center, center);
+            }
+
+            CellCoord centerX = Trinity::ComputeCellCoord(x - radius, y - radius).normalize();
+            CellCoord centerY = Trinity::ComputeCellCoord(x + radius, y + radius).normalize();
+
+            return CellArea(centerX, centerY);
+        }
+
         bool isValid() const { return x >= 0 && x < CELL_NUMBER && y >= 0 && y < CELL_NUMBER;}
     };
-
 
     Node& getGridFor(float fx, float fy)
     {
@@ -104,94 +135,54 @@ public:
     {
         ASSERT(x < CELL_NUMBER && y < CELL_NUMBER);
         if (!nodes[x][y])
-            nodes[x][y] = NodeCreatorFunc::makeNode(x,y);
+            nodes[x][y] = NodeCreatorFunc::makeNode(x, y);
         return *nodes[x][y];
     }
 
     template<typename RayCallback>
-    void intersectRay(const Ray& ray, RayCallback& intersectCallback, float max_dist)
+    void intersectRay(const G3D::Ray& ray, RayCallback& intersectCallback, float max_dist)
     {
         intersectRay(ray, intersectCallback, max_dist, ray.origin() + ray.direction() * max_dist);
     }
 
     template<typename RayCallback>
-    void intersectRay(const Ray& ray, RayCallback& intersectCallback, float& max_dist, const Vector3& end)
+    void intersectRay(const G3D::Ray& ray, RayCallback& intersectCallback, float& max_dist, const G3D::Vector3& end)
     {
+        float maxDist = max_dist;
         Cell cell = Cell::ComputeCell(ray.origin().x, ray.origin().y);
         if (!cell.isValid())
             return;
 
-        Cell last_cell = Cell::ComputeCell(end.x, end.y);
+        if (Node* node = nodes[cell.x][cell.y])
+            node->intersectRay(ray, intersectCallback, max_dist);
 
-        if (cell == last_cell)
-        {
-            if (Node* node = nodes[cell.x][cell.y])
-                node->intersectRay(ray, intersectCallback, max_dist);
+        if (maxDist > max_dist)
             return;
-        }
 
-        float voxel = (float)CELL_SIZE;
-        float kx_inv = ray.invDirection().x, bx = ray.origin().x;
-        float ky_inv = ray.invDirection().y, by = ray.origin().y;
+        CellArea area = Cell::CalculateCellArea(ray.origin().x, ray.origin().y, 250.0f);
+        if (!area)
+            return;
 
-        int stepX, stepY;
-        float tMaxX, tMaxY;
-        if (kx_inv >= 0)
+        for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
         {
-            stepX = 1;
-            float x_border = (cell.x+1) * voxel;
-            tMaxX = (x_border - bx) * kx_inv;
-        }
-        else
-        {
-            stepX = -1;
-            float x_border = (cell.x-1) * voxel;
-            tMaxX = (x_border - bx) * kx_inv;
-        }
-
-        if (ky_inv >= 0)
-        {
-            stepY = 1;
-            float y_border = (cell.y+1) * voxel;
-            tMaxY = (y_border - by) * ky_inv;
-        }
-        else
-        {
-            stepY = -1;
-            float y_border = (cell.y-1) * voxel;
-            tMaxY = (y_border - by) * ky_inv;
-        }
-
-        //int Cycles = std::max((int)ceilf(max_dist/tMaxX),(int)ceilf(max_dist/tMaxY));
-        //int i = 0;
-
-        float tDeltaX = voxel * fabs(kx_inv);
-        float tDeltaY = voxel * fabs(ky_inv);
-        do
-        {
-            if (Node* node = nodes[cell.x][cell.y])
+            for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
             {
-                //float enterdist = max_dist;
-                node->intersectRay(ray, intersectCallback, max_dist);
+                Cell cellAroun = Cell::CalculateCell(x, y);
+                if (!cellAroun.isValid() || cellAroun == cell)
+                    continue;
+
+                cell = cellAroun;
+                if (Node* node = nodes[cellAroun.x][cellAroun.y])
+                    node->intersectRay(ray, intersectCallback, max_dist);
+
+                if (maxDist > max_dist)
+                    return;
             }
-            if (cell == last_cell)
-                break;
-            if (tMaxX < tMaxY)
-            {
-                tMaxX += tDeltaX;
-                cell.x += stepX;
-            }
-            else
-            {
-                tMaxY += tDeltaY;
-                cell.y += stepY;
-            }
-            //++i;
-        } while (cell.isValid());
+        }
     }
 
     template<typename IsectCallback>
-    void intersectPoint(const Vector3& point, IsectCallback& intersectCallback)
+    void intersectPoint(const G3D::Vector3& point, IsectCallback& intersectCallback)
     {
         Cell cell = Cell::ComputeCell(point.x, point.y);
         if (!cell.isValid())
@@ -202,13 +193,39 @@ public:
 
     // Optimized verson of intersectRay function for rays with vertical directions
     template<typename RayCallback>
-    void intersectZAllignedRay(const Ray& ray, RayCallback& intersectCallback, float& max_dist)
+    void intersectZAllignedRay(const G3D::Ray& ray, RayCallback& intersectCallback, float& max_dist)
     {
+        float maxDist = max_dist;
         Cell cell = Cell::ComputeCell(ray.origin().x, ray.origin().y);
         if (!cell.isValid())
             return;
+
         if (Node* node = nodes[cell.x][cell.y])
             node->intersectRay(ray, intersectCallback, max_dist);
+
+        if (maxDist > max_dist)
+            return;
+
+        CellArea area = Cell::CalculateCellArea(ray.origin().x, ray.origin().y, 250.0f);
+        if (!area)
+            return;
+
+        for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+        {
+            for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+            {
+                Cell cellAroun = Cell::CalculateCell(x, y);
+                if (!cellAroun.isValid() || cellAroun == cell)
+                    continue;
+
+                cell = cellAroun;
+                if (Node* node = nodes[cellAroun.x][cellAroun.y])
+                    node->intersectRay(ray, intersectCallback, max_dist);
+
+                if (maxDist > max_dist)
+                    return;
+            }
+        }
     }
 };
 

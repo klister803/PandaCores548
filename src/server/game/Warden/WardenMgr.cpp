@@ -54,7 +54,7 @@ void WardenMgr::LoadWardenChecks()
 
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden checks. DB table `warden_checks` is empty!");
+        TC_LOG_INFO("server", ">> Loaded 0 Warden checks. DB table `warden_checks` is empty!");
         return;
     }
 
@@ -96,7 +96,7 @@ void WardenMgr::LoadWardenChecks()
         ++count;
     } while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u warden checks.", count);
+    TC_LOG_INFO("server", ">> Loaded %u warden checks.", count);
 }
 
 void WardenMgr::LoadWardenOverrides()
@@ -106,7 +106,7 @@ void WardenMgr::LoadWardenOverrides()
 
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden action overrides. DB table `warden_overrides` is empty!");
+        TC_LOG_INFO("server", ">> Loaded 0 Warden action overrides. DB table `warden_overrides` is empty!");
         return;
     }
 
@@ -125,10 +125,10 @@ void WardenMgr::LoadWardenOverrides()
 
         // Check if action value is in range (0-3, see WardenActions enum)
         if (action > WARDEN_ACTION_PENDING_KICK)
-            sLog->outError(LOG_FILTER_SQL, "Warden check override action out of range (ID: %u, action: %u)", checkId, action);
+            TC_LOG_ERROR("sql", "Warden check override action out of range (ID: %u, action: %u)", checkId, action);
         // Check if check actually exists before accessing the CheckStore vector
         else if (checkId > checkStore.size())
-            sLog->outError(LOG_FILTER_SQL, "Warden check action override for non-existing check (ID: %u, action: %u), skipped", checkId, action);
+            TC_LOG_ERROR("sql", "Warden check action override for non-existing check (ID: %u, action: %u), skipped", checkId, action);
         else
         {
             checkStore[checkId]->Enabled = enabled;
@@ -145,7 +145,7 @@ void WardenMgr::LoadWardenOverrides()
         }
     } while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u warden action overrides.", count);
+    TC_LOG_INFO("server", ">> Loaded %u warden action overrides.", count);
 }
 
 void WardenMgr::LoadWardenCustomMPQData()
@@ -155,7 +155,7 @@ void WardenMgr::LoadWardenCustomMPQData()
 
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Warden custom MPQ data. DB table `warden_custom_mpq_data` is empty!");
+        TC_LOG_INFO("server", ">> Loaded 0 Warden custom MPQ data. DB table `warden_custom_mpq_data` is empty!");
         return;
     }
 
@@ -176,7 +176,7 @@ void WardenMgr::LoadWardenCustomMPQData()
         ++count;
     } while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u warden custom MPQ data.", count);
+    TC_LOG_INFO("server", ">> Loaded %u warden custom MPQ data.", count);
 }
 
 void WardenMgr::LoadWardenModules(std::string os)
@@ -241,7 +241,7 @@ void WardenMgr::LoadWardenModules(std::string os)
     FindClose(hFil);
 
 #endif
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u %s warden modules.", count, os.c_str());
+    TC_LOG_INFO("server", ">> Loaded %u %s warden modules.", count, os.c_str());
 }
 
 bool WardenMgr::LoadModule(const char * fileName, std::string os)

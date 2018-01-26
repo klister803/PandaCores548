@@ -288,7 +288,7 @@ void BattlegroundDG::HandleAreaTrigger(Player* Source, uint32 Trigger)
             break;
         }
 //        default:
-//            sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+//            TC_LOG_ERROR("bg", "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
 //            Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
 //            break;
     }
@@ -371,28 +371,28 @@ bool BattlegroundDG::SetupBattleground()
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(BG_DG_LOC_SPIRIT_ALLIANCE_BOT);
     if (!sg || !AddSpiritGuide(BG_DG_SPIRIT_ALLIANCE_BOT, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundDG: Failed to spawn Alliance spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundDG: Failed to spawn Alliance spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(BG_DG_LOC_SPIRIT_HORDE_BOT);
     if (!sg || !AddSpiritGuide(BG_DG_SPIRIT_HORDE_BOT, sg->x, sg->y, sg->z, 3.193953f, HORDE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundDG: Failed to spawn Horde spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundDG: Failed to spawn Horde spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(BG_DG_LOC_SPIRIT_ALLIANCE_TOP);
     if (!sg || !AddSpiritGuide(BG_DG_SPIRIT_ALLIANCE_TOP, sg->x, sg->y, sg->z, 3.124139f, ALLIANCE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundDG: Failed to spawn Alliance spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundDG: Failed to spawn Alliance spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(BG_DG_LOC_SPIRIT_HORDE_TOP);
     if (!sg || !AddSpiritGuide(BG_DG_SPIRIT_HORDE_TOP, sg->x, sg->y, sg->z, 3.193953f, HORDE))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundDG: Failed to spawn Horde spirit guide! Battleground not created!");
+        TC_LOG_ERROR("sql", "BatteGroundDG: Failed to spawn Horde spirit guide! Battleground not created!");
         return false;
     }
 

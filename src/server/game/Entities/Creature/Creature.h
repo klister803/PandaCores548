@@ -597,8 +597,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool isCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
         bool isTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool isGuard() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD; }
-        bool canWalk() const { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
-        bool canSwim() const { return GetCreatureTemplate()->InhabitType & INHABIT_WATER; }
+        bool CanWalk() const { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
+        bool CanSwim() const { return GetCreatureTemplate()->InhabitType & INHABIT_WATER; }
         bool CanFly()  const { return GetCreatureTemplate()->InhabitType & INHABIT_AIR; }
 
         void SetReactState(ReactStates st) { m_reactState = st; }
@@ -625,7 +625,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
                                                             // redefine Unit::IsImmunedToSpellEffect
         bool isElite() const
         {
-            if (isPet())
+            if (IsPet())
                 return false;
 
             uint32 rank = GetCreatureTemplate()->rank;
@@ -634,7 +634,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool isWorldBoss() const
         {
-            if (isPet())
+            if (IsPet())
                 return false;
 
             return GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_BOSS;
@@ -642,7 +642,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool isBoss() const
         {
-            if (isPet())
+            if (IsPet())
                 return false;
 
             return GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS;

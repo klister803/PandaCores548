@@ -38,6 +38,7 @@ endif()
 
 include_directories(
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/fmt
   ${CMAKE_SOURCE_DIR}/src/server/shared
   ${CMAKE_SOURCE_DIR}/src/server/shared/Database
   ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
@@ -73,10 +74,12 @@ endif()
 
 target_link_libraries(authserver
   shared
+  fmt
   ${MYSQL_LIBRARY}
   ${OPENSSL_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${ACE_LIBRARY}
+  ${Boost_LIBRARIES}
 )
 
 if( WIN32 )

@@ -88,7 +88,7 @@ void WordFilterMgr::LoadLetterAnalogs()
     QueryResult result = WorldDatabase.Query("SELECT letter, analogs FROM letter_analogs");
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING,">> Loaded 0 letter analogs. DB table `letter_analogs` is empty!");
+        TC_LOG_INFO("server",">> Loaded 0 letter analogs. DB table `letter_analogs` is empty!");
         return;
     }
 
@@ -106,7 +106,7 @@ void WordFilterMgr::LoadLetterAnalogs()
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING,">> Loaded %u letter analogs in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server",">> Loaded %u letter analogs in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 
@@ -120,7 +120,7 @@ void WordFilterMgr::LoadBadWords()
     QueryResult result = WorldDatabase.Query("SELECT bad_word FROM bad_word");
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING,">> Loaded 0 bad words. DB table `bad_word` is empty!");
+        TC_LOG_INFO("server",">> Loaded 0 bad words. DB table `bad_word` is empty!");
         return;
     }
 
@@ -139,7 +139,7 @@ void WordFilterMgr::LoadBadWords()
     result = WorldDatabase.Query("SELECT bad_word FROM bad_word_mail");
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING,">> Loaded 0 bad words. DB table `bad_word_mail` is empty!");
+        TC_LOG_INFO("server",">> Loaded 0 bad words. DB table `bad_word_mail` is empty!");
         return;
     }
 
@@ -154,7 +154,7 @@ void WordFilterMgr::LoadBadWords()
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING,">> Loaded %u bad words in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server",">> Loaded %u bad words in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 inline void WordFilterMgr::ConvertLettersToAnalogs(std::string& text)

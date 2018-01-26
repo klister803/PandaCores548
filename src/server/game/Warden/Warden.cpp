@@ -44,7 +44,7 @@ bool Warden::Init(BigNumber *k)
 {
     if (!_currentModule)
     {
-        sLog->outWarden("Current module is not found. Abort Warden (%s)! Account %u (%s)", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetAccountName().c_str());
+        TC_LOG_DEBUG("warden","Current module is not found. Abort Warden (%s)! Account %u (%s)", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetAccountName().c_str());
         return false;
     }
 
@@ -58,15 +58,15 @@ bool Warden::Init(BigNumber *k)
     ARC4::rc4_init(&_clientRC4State, tempClientKeySeed, 16);
     ARC4::rc4_init(&_serverRC4State, tempServerKeySeed, 16);
 
-    //sLog->outWarden("Module Key: %s", ByteArrayToHexStr(_module->Key, 16).c_str());
-    //sLog->outWarden("Module ID: %s", ByteArrayToHexStr(_module->Id, 16).c_str());
+    //TC_LOG_DEBUG("warden","Module Key: %s", ByteArrayToHexStr(_module->Key, 16).c_str());
+    //TC_LOG_DEBUG("warden","Module ID: %s", ByteArrayToHexStr(_module->Id, 16).c_str());
     RequestModule();
 
-    //sLog->outDebug(LOG_FILTER_WARDEN, "Server side warden for client %u initializing...", session->GetAccountId());
-    //sLog->outDebug(LOG_FILTER_WARDEN, "C->S Key: %s", ByteArrayToHexStr(_inputKey, 16).c_str());
-    //sLog->outDebug(LOG_FILTER_WARDEN, "S->C Key: %s", ByteArrayToHexStr(_outputKey, 16).c_str());
-    //sLog->outDebug(LOG_FILTER_WARDEN, "Seed: %s", ByteArrayToHexStr(_seed, 16).c_str());
-    //sLog->outDebug(LOG_FILTER_WARDEN, "Loading Module...");
+    //TC_LOG_DEBUG("warden", "Server side warden for client %u initializing...", session->GetAccountId());
+    //TC_LOG_DEBUG("warden", "C->S Key: %s", ByteArrayToHexStr(_inputKey, 16).c_str());
+    //TC_LOG_DEBUG("warden", "S->C Key: %s", ByteArrayToHexStr(_outputKey, 16).c_str());
+    //TC_LOG_DEBUG("warden", "Seed: %s", ByteArrayToHexStr(_seed, 16).c_str());
+    //TC_LOG_DEBUG("warden", "Loading Module...");
     _state = WARDEN_MODULE_NOT_LOADED;
 
     return true;
@@ -74,7 +74,7 @@ bool Warden::Init(BigNumber *k)
 
 void Warden::RequestModule()
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request module(0x00)");
+    TC_LOG_DEBUG("warden", "WARDEN: Request module(0x00)");
 
     // Create packet structure
     WardenModuleUse request;
@@ -95,7 +95,7 @@ void Warden::RequestModule()
 
 void Warden::SendModuleToClient()
 {
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Send module to client(0x01)");
+    TC_LOG_DEBUG("warden", "WARDEN: Send module to client(0x01)");
 
     // Create packet structure
     WardenModuleTransfer packet;
@@ -129,7 +129,7 @@ void Warden::RequestHash()
     if (_session->GetOS() == "OSX")
         return;
 
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: Request hash(0x05)");
+    TC_LOG_DEBUG("warden", "WARDEN: Request hash(0x05)");
 
     // Create packet structure
     WardenHashRequest Request;
@@ -162,7 +162,7 @@ void Warden::Update()
     {
         if (!IsValidStateInWorld(_session->GetOS()))
         {
-            sLog->outWarden("Warden (%s) not correctly initialized (state: %u) on account %u, player %s", _session->GetOS().c_str(), uint8(_state), _session->GetAccountId(), _session->GetPlayerName().c_str());
+            TC_LOG_DEBUG("warden","Warden (%s) not correctly initialized (state: %u) on account %u, player %s", _session->GetOS().c_str(), uint8(_state), _session->GetAccountId(), _session->GetPlayerName().c_str());
             _state = WARDEN_MODULE_SET_PLAYER_LOCK;
             _pendingKickTimer = 10 * IN_MILLISECONDS;
         }
@@ -171,7 +171,7 @@ void Warden::Update()
             // custom state for pending lock after MPQ checks on auth
             if (_state == WARDEN_MODULE_SET_PLAYER_PENDING_LOCK)
             {
-                sLog->outWarden("Warden (%s) set pending lock on account %u, player %s", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetPlayerName().c_str());
+                TC_LOG_DEBUG("warden","Warden (%s) set pending lock on account %u, player %s", _session->GetOS().c_str(), _session->GetAccountId(), _session->GetPlayerName().c_str());
                 SetPlayerLocked("uWoW Anticheat: Banned MPQ patches detected.");
             }
         }
@@ -221,7 +221,7 @@ void Warden::ClientResponseTimerUpdate(uint32 diff)
     if (_clientResponseTimer <= diff)
     {
         _clientResponseTimer = 0;
-        sLog->outWarden("Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 90s - disconnecting client",
+        TC_LOG_DEBUG("warden","Player %s (guid: %u, account: %u, latency: %u, IP: %s) with module state %u exceeded Warden module (%s) response delay for more than 90s - disconnecting client",
             _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetLatency(), _session->GetRemoteAddress().c_str(), uint8(_state), _session->GetOS().c_str());
         _session->KickPlayer();
         return;
@@ -439,8 +439,8 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
 
     uint8 opcode;
     recvData >> opcode;
-    sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG opcode %02X, size %u", opcode, uint32(recvData.size()));
-    //sLog->outWarden("Raw Packet Decrypted Data - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
+    TC_LOG_DEBUG("warden", "WARDEN: CMSG opcode %02X, size %u", opcode, uint32(recvData.size()));
+    //TC_LOG_DEBUG("warden","Raw Packet Decrypted Data - %s", ByteArrayToHexStr(const_cast<uint8*>(recvData.contents()), recvData.size()).c_str());
 
     switch (opcode)
     {
@@ -461,7 +461,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
         }
         case WARDEN_CMSG_MEM_CHECKS_RESULT:
         {
-            sLog->outDebug(LOG_FILTER_WARDEN, "WARDEN: CMSG_MEM_CHECKS_RESULT received!");
+            TC_LOG_DEBUG("warden", "WARDEN: CMSG_MEM_CHECKS_RESULT received!");
             break;
         }
         case WARDEN_CMSG_HASH_RESULT:
@@ -478,7 +478,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)
         }
         default:
         {
-            sLog->outWarden("Unknown CMSG opcode %02X, size %u, account %s, module state - %u", opcode, uint32(recvData.size() - 5), GetAccountName().c_str(), uint8(_warden->GetState()));
+            TC_LOG_DEBUG("warden","Unknown CMSG opcode %02X, size %u, account %s, module state - %u", opcode, uint32(recvData.size() - 5), GetAccountName().c_str(), uint8(_warden->GetState()));
             break;
         }
     }

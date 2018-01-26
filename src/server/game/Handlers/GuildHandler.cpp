@@ -42,7 +42,7 @@ inline Guild* _GetPlayerGuild(WorldSession* session, bool sendError = false)
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_QUERY");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_QUERY");
 
     ObjectGuid guildGuid, playerGuid;
 
@@ -86,7 +86,7 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_INVITE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_INVITE");
     uint32 nameLength = recvPacket.ReadBits(9);
 
     std::string invitedName = recvPacket.ReadString(nameLength);
@@ -98,7 +98,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_REMOVE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_REMOVE");
 
     ObjectGuid playerGuid;
     recvPacket.ReadGuidMask<6, 5, 2, 0, 3, 4, 7, 1>(playerGuid);
@@ -110,7 +110,7 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_ACCEPT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_ACCEPT");
     // Player cannot be in guild
     if (!GetPlayer()->GetGuildId())
         // Guild where player was invited must exist
@@ -120,7 +120,7 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildDeclineOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_DECLINE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_DECLINE");
 
     if (Player* inviter = ObjectAccessor::FindPlayer(GetPlayer()->GetGuildInviterGuid()))
     {
@@ -139,7 +139,7 @@ void WorldSession::HandleGuildDeclineOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRosterOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_ROSTER");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_ROSTER");
 
     recvPacket.rfinish();
 
@@ -149,7 +149,7 @@ void WorldSession::HandleGuildRosterOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_PROMOTE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_PROMOTE");
 
     ObjectGuid targetGuid;
     recvPacket.ReadGuidMask<4, 7, 6, 2, 3, 1, 0, 5>(targetGuid);
@@ -161,7 +161,7 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_DEMOTE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_DEMOTE");
 
     ObjectGuid targetGuid;
     recvPacket.ReadGuidMask<2, 3, 7, 5, 0, 6, 4, 1>(targetGuid);
@@ -173,7 +173,7 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAssignRankOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_ASSIGN_MEMBER_RANK");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_ASSIGN_MEMBER_RANK");
 
     ObjectGuid targetGuid;
 
@@ -188,7 +188,7 @@ void WorldSession::HandleGuildAssignRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_LEAVE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_LEAVE");
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleLeaveMember(this);
@@ -196,7 +196,7 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_DISBAND");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_DISBAND");
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleDisband(this);
@@ -204,7 +204,7 @@ void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_LEADER");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_LEADER");
 
     std::string name = recvPacket.ReadString(recvPacket.ReadBits(9));
 
@@ -215,7 +215,7 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_MOTD");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_MOTD");
 
     std::string motd = recvPacket.ReadString(recvPacket.ReadBits(10));
 
@@ -225,7 +225,7 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSwapRanks(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SWITCH_RANK");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_SWITCH_RANK");
 
     uint32 id;
 
@@ -237,7 +237,7 @@ void WorldSession::HandleSwapRanks(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_NOTE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_SET_NOTE");
 
     ObjectGuid playerGuid;
 
@@ -253,12 +253,12 @@ void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleSetMemberNote(this, note, playerGuid, type);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: end CMSG_GUILD_SET_NOTE");
+    TC_LOG_DEBUG("network", "WORLD: end CMSG_GUILD_SET_NOTE");
 }
 
 void WorldSession::HandleGuildQueryRanksOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_QUERY_RANKS");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_QUERY_RANKS");
 
     ObjectGuid guildGuid;
     recvData.ReadGuidMask<5, 7, 2, 0, 4, 3, 6, 1>(guildGuid);
@@ -271,7 +271,7 @@ void WorldSession::HandleGuildQueryRanksOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_ADD_RANK");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_ADD_RANK");
 
     uint32 rankId;
     recvPacket >> rankId;
@@ -284,7 +284,7 @@ void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDelRankOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_DEL_RANK");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_DEL_RANK");
 
     uint32 rankId;
     recvPacket >> rankId;
@@ -295,7 +295,7 @@ void WorldSession::HandleGuildDelRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_INFO_TEXT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_INFO_TEXT");
 
     uint32 length = recvPacket.ReadBits(11);
     std::string info = recvPacket.ReadString(length);
@@ -306,7 +306,7 @@ void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SAVE_GUILD_EMBLEM");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_SAVE_GUILD_EMBLEM");
 
     ObjectGuid vendorGuid;
     EmblemInfo emblemInfo;
@@ -332,13 +332,13 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
     {
         // "That's not an emblem vendor!"
         Guild::SendSaveEmblemResult(this, ERR_GUILDEMBLEM_INVALIDVENDOR);
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSaveGuildEmblemOpcode - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(vendorGuid));
+        TC_LOG_DEBUG("network", "WORLD: HandleSaveGuildEmblemOpcode - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(vendorGuid));
     }
 }
 
 void WorldSession::HandleGuildEventLogQueryOpcode(WorldPacket& /* recvPacket */)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_EVENT_LOG_QUERY)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_EVENT_LOG_QUERY)");
 
     if (Guild* guild = _GetPlayerGuild(this))
         guild->SendEventLog(this);
@@ -346,7 +346,7 @@ void WorldSession::HandleGuildEventLogQueryOpcode(WorldPacket& /* recvPacket */)
 
 void WorldSession::HandleGuildBankMoneyWithdrawn(WorldPacket & /* recvData */)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_MONEY_WITHDRAWN_QUERY)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_MONEY_WITHDRAWN_QUERY)");
 
     if (Guild* guild = _GetPlayerGuild(this))
         guild->SendMoneyInfo(this);
@@ -354,7 +354,7 @@ void WorldSession::HandleGuildBankMoneyWithdrawn(WorldPacket & /* recvData */)
 
 void WorldSession::HandleGuildPermissions(WorldPacket& /* recvData */)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_PERMISSIONS)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_PERMISSIONS)");
 
     if (Guild* guild = _GetPlayerGuild(this))
         guild->SendPermissions(this);
@@ -363,7 +363,7 @@ void WorldSession::HandleGuildPermissions(WorldPacket& /* recvData */)
 // Called when clicking on Guild bank gameobject
 void WorldSession::HandleGuildBankerActivate(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_ACTIVATE)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_ACTIVATE)");
 
     ObjectGuid GoGuid;
     recvData.ReadGuidMask<5, 2, 1, 0, 4>(GoGuid);
@@ -384,7 +384,7 @@ void WorldSession::HandleGuildBankerActivate(WorldPacket& recvData)
 // Called when opening guild bank tab only (first one)
 void WorldSession::HandleGuildBankQueryTab(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_QUERY_TAB)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_QUERY_TAB)");
 
     ObjectGuid GoGuid;
     uint8 tabId;
@@ -403,7 +403,7 @@ void WorldSession::HandleGuildBankQueryTab(WorldPacket & recvData)
 
 void WorldSession::HandleGuildBankDepositMoney(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_DEPOSIT_MONEY)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_DEPOSIT_MONEY)");
 
     ObjectGuid goGuid;
     uint64 money;
@@ -420,7 +420,7 @@ void WorldSession::HandleGuildBankDepositMoney(WorldPacket & recvData)
 
 void WorldSession::HandleGuildBankWithdrawMoney(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_WITHDRAW_MONEY)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_WITHDRAW_MONEY)");
 
     ObjectGuid GoGuid;
     uint64 money;
@@ -437,7 +437,7 @@ void WorldSession::HandleGuildBankWithdrawMoney(WorldPacket & recvData)
 
 void WorldSession::HandleGuildBankSwapItems(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_SWAP_ITEMS)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_SWAP_ITEMS)");
 
     Guild* guild = _GetPlayerGuild(this);
     if (!guild)
@@ -505,7 +505,7 @@ void WorldSession::HandleGuildBankSwapItems(WorldPacket & recvData)
 
 void WorldSession::HandleGuildBankBuyTab(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_BUY_TAB)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_BUY_TAB)");
 
     ObjectGuid GoGuid;
     uint8 tabId;
@@ -520,7 +520,7 @@ void WorldSession::HandleGuildBankBuyTab(WorldPacket & recvData)
 
 void WorldSession::HandleGuildBankUpdateTab(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_BANK_UPDATE_TAB)");
+    TC_LOG_DEBUG("network", "WORLD: Received (CMSG_GUILD_BANK_UPDATE_TAB)");
 
     ObjectGuid GoGuid;
     uint8 tabId;
@@ -544,7 +544,7 @@ void WorldSession::HandleGuildBankUpdateTab(WorldPacket & recvData)
 
 void WorldSession::HandleGuildBankLogQuery(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (MSG_GUILD_BANK_LOG_QUERY)");
+    TC_LOG_DEBUG("network", "WORLD: Received (MSG_GUILD_BANK_LOG_QUERY)");
 
     uint32 tabId;
     recvData >> tabId;
@@ -555,7 +555,7 @@ void WorldSession::HandleGuildBankLogQuery(WorldPacket & recvData)
 
 void WorldSession::HandleQueryGuildBankTabText(WorldPacket &recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_BANK_QUERY_TEXT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_BANK_QUERY_TEXT");
 
     uint32 tabId;
     recvData >> tabId;
@@ -566,7 +566,7 @@ void WorldSession::HandleQueryGuildBankTabText(WorldPacket &recvData)
 
 void WorldSession::HandleSetGuildBankTabText(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_GUILD_BANK_TEXT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_SET_GUILD_BANK_TEXT");
 
     uint32 tabId;
     recvData >> tabId;
@@ -579,7 +579,7 @@ void WorldSession::HandleSetGuildBankTabText(WorldPacket& recvData)
 
 void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUERY_GUILD_XP");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUERY_GUILD_XP");
 
     ObjectGuid guildGuid;
     recvPacket.ReadGuidMask<7, 0, 6, 3, 2, 1, 4, 5>(guildGuid);
@@ -627,13 +627,13 @@ void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
 
     guild->HandleSetRankInfo(this, rankId, rankName, newRights, moneyPerDay * 10000, rightsAndSlots);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS moneyPerDay %u, rankId %u, newRights %u"
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_SET_RANK_PERMISSIONS moneyPerDay %u, rankId %u, newRights %u"
     , moneyPerDay, rankId, newRights);
 }
 
 void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_REQUEST_PARTY_STATE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GUILD_REQUEST_PARTY_STATE");
 
     ObjectGuid guildGuid;
     recvData.ReadGuidMask<0, 6, 5, 3, 4, 7, 2, 1>(guildGuid);

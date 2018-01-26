@@ -120,7 +120,7 @@ public:
                 }
             }
 
-            sLog->outDebug(LOG_FILTER_TSCR, "Instance Utgarde Keep: GetPlayerInMap, but PlayerList is empty!");
+            TC_LOG_DEBUG("server", "Instance Utgarde Keep: GetPlayerInMap, but PlayerList is empty!");
             return NULL;
         }
 

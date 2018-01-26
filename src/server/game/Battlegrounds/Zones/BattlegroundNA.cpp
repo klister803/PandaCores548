@@ -83,7 +83,7 @@ void BattlegroundNA::HandleKillPlayer(Player* player, Player* killer)
 
     if (!killer)
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundNA: Killer player not found");
+        TC_LOG_ERROR("bg", "BattlegroundNA: Killer player not found");
         return;
     }
 
@@ -117,7 +117,7 @@ void BattlegroundNA::HandleAreaTrigger(Player* Source, uint32 Trigger)
             HandlePlayerUnderMap(Source);
             break;
         default:
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg", "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -149,7 +149,7 @@ bool BattlegroundNA::SetupBattleground()
         || !AddObject(BG_NA_OBJECT_BUFF_1, BG_NA_OBJECT_TYPE_BUFF_1, 4009.189941f, 2895.250000f, 13.052700f, -1.448624f, 0, 0, 0.6626201f, -0.7489557f, 120)
         || !AddObject(BG_NA_OBJECT_BUFF_2, BG_NA_OBJECT_TYPE_BUFF_2, 4103.330078f, 2946.350098f, 13.051300f, -0.06981307f, 0, 0, 0.03489945f, -0.9993908f, 120))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundNA: Failed to spawn some object!");
+        TC_LOG_ERROR("sql", "BatteGroundNA: Failed to spawn some object!");
         return false;
     }
 

@@ -21,7 +21,7 @@
 
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
-#include "PathFinderMovementGenerator.h"
+#include "PathGenerator.h"
 #include "Spell.h"
 
 template<class T>
@@ -83,7 +83,7 @@ class EffectMovementGenerator : public MovementGenerator
 class ChargeMovementGenerator : public MovementGenerator
 {
     public:
-        explicit ChargeMovementGenerator(uint32 Id, float _x, float _y, float _z, float _speed = 0.0f, uint32 _triggerspellId = 0, PathFinderMovementGenerator* _path = NULL) : m_Id(Id),
+        explicit ChargeMovementGenerator(uint32 Id, float _x, float _y, float _z, float _speed = 0.0f, uint32 _triggerspellId = 0, PathGenerator* _path = NULL) : m_Id(Id),
         i_x(_x), i_y(_y), i_z(_z), speed(_speed), triggerspellId(_triggerspellId), i_path(_path)        {}
         ~ChargeMovementGenerator() { delete i_path; }
 
@@ -93,7 +93,7 @@ class ChargeMovementGenerator : public MovementGenerator
         bool Update(Unit &u, const uint32&) override;
         MovementGeneratorType GetMovementGeneratorType() { return POINT_MOTION_TYPE; }
         bool GetDestination(float& x, float& y, float& z) const { x=i_x; y=i_y; z=i_z; return true; }
-        bool IsReachable() const { return (i_path) ? (i_path->getPathType() & PATHFIND_NORMAL) : true; }
+        bool IsReachable() const { return (i_path) ? (i_path->GetPathType() & PATHFIND_NORMAL) : true; }
     private:
         uint32 m_Id;
         uint32 triggerspellId;
@@ -102,7 +102,7 @@ class ChargeMovementGenerator : public MovementGenerator
         bool i_recalculateSpeed;
         bool i_recalculateTravel : 1;
         bool i_targetReached : 1;
-        PathFinderMovementGenerator* i_path;
+        PathGenerator* i_path;
         void _setTargetLocation(Unit &);
 };
 

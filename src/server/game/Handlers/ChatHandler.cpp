@@ -55,7 +55,7 @@ bool WorldSession::processChatmessageFurtherAfterSecurityChecks(std::string& msg
         if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) && AccountMgr::IsPlayerAccount(GetSecurity())
                 && !ChatHandler(this).isValidChatMessage(msg.c_str()))
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName(),
+            TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName(),
                     GetPlayer()->GetGUIDLow(), msg.c_str());
             if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
                 KickPlayer();
@@ -113,21 +113,21 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             type = CHAT_MSG_INSTANCE;
             break;
         default:
-            sLog->outError(LOG_FILTER_NETWORKIO, "HandleMessagechatOpcode : Unknown chat opcode (%u)", recvData.GetOpcode());
+            TC_LOG_ERROR("network", "HandleMessagechatOpcode : Unknown chat opcode (%u)", recvData.GetOpcode());
             recvData.hexlike();
             return;
     }
 
     if (type >= MAX_CHAT_MSG_TYPE)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "CHAT: Wrong message type received: %u", type);
+        TC_LOG_ERROR("network", "CHAT: Wrong message type received: %u", type);
         recvData.rfinish();
         return;
     }
 
     Player* sender = GetPlayer();
 
-    //sLog->outDebug(LOG_FILTER_GENERAL, "CHAT: packet received. type %u, lang %u", type, lang);
+    //TC_LOG_DEBUG("server", "CHAT: packet received. type %u, lang %u", type, lang);
 
     if (!sender->CanSpeak() && type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
     {
@@ -560,7 +560,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             break;
         }
         default:
-            sLog->outError(LOG_FILTER_NETWORKIO, "CHAT: unknown message type %u, lang: %u", type, lang);
+            TC_LOG_ERROR("network", "CHAT: unknown message type %u, lang: %u", type, lang);
             break;
     }
 }
@@ -591,7 +591,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
             type = CHAT_MSG_WHISPER;
             break;
         default:
-            sLog->outError(LOG_FILTER_NETWORKIO, "HandleAddonMessagechatOpcode: Unknown addon chat opcode (%u)", recvData.GetOpcode());
+            TC_LOG_ERROR("network", "HandleAddonMessagechatOpcode: Unknown addon chat opcode (%u)", recvData.GetOpcode());
             recvData.hexlike();
             return;
     }
@@ -712,7 +712,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
         }
         default:
         {
-            sLog->outError(LOG_FILTER_GENERAL, "HandleAddonMessagechatOpcode: unknown addon message type %u", type);
+            TC_LOG_ERROR("server", "HandleAddonMessagechatOpcode: unknown addon message type %u", type);
             break;
         }
     }
@@ -725,7 +725,7 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recvData)
 
     if (emote > ANIM_FLYMONKOFFENSEATTACKWEAPON)
     {
-        sLog->outWarn(LOG_FILTER_WARDEN, "Detected debugger - %s", GetPlayerName(false).c_str());
+        TC_LOG_WARN("warden", "Detected debugger - %s", GetPlayerName(false).c_str());
         KickPlayer();
         return;
     }
@@ -848,7 +848,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData)
 {
     ObjectGuid guid;
     uint8 unk;
-    //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: Received CMSG_CHAT_IGNORED");
+    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_CHAT_IGNORED");
 
     recvData >> unk;                                       // probably related to spam reporting
 
@@ -867,7 +867,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData)
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)
 {
     recvPacket.rfinish();
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
+    TC_LOG_DEBUG("network", "Opcode %u", recvPacket.GetOpcode());
 }
 
 //! 5.4.1

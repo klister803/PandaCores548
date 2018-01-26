@@ -198,7 +198,7 @@ public:
 
             if (LiveTriggerGUID.size() < POS_LIVE || DeadTriggerGUID.size() < POS_DEAD)
             {
-                sLog->outError(LOG_FILTER_GENERAL, "Script Gothik: cannot summon triggers!");
+                TC_LOG_ERROR("server", "Script Gothik: cannot summon triggers!");
                 EnterEvadeMode();
                 return;
             }

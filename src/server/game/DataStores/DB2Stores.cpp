@@ -68,7 +68,7 @@ uint32 DB2FilesCount = 0;
 
 static bool LoadDB2_assert_print(uint32 fsize,uint32 rsize, const std::string& filename)
 {
-    sLog->outError(LOG_FILTER_GENERAL, "Size of '%s' setted by format string (%u) not equal size of C++ structure (%u).", filename.c_str(), fsize, rsize);
+    TC_LOG_ERROR("server", "Size of '%s' setted by format string (%u) not equal size of C++ structure (%u).", filename.c_str(), fsize, rsize);
 
     // ASSERT must fail after function call
     return false;
@@ -281,7 +281,7 @@ void LoadDB2Stores(const std::string& dataPath)
     // error checks
     if (bad_db2_files.size() >= DB2FilesCount)
     {
-        sLog->outError(LOG_FILTER_GENERAL, "\nIncorrect DataDir value in worldserver.conf or ALL required *.db2 files (%d) not found by path: %sdb2", DB2FilesCount, dataPath.c_str());
+        TC_LOG_ERROR("server", "\nIncorrect DataDir value in worldserver.conf or ALL required *.db2 files (%d) not found by path: %sdb2", DB2FilesCount, dataPath.c_str());
         exit(1);
     }
     else if (!bad_db2_files.empty())
@@ -290,7 +290,7 @@ void LoadDB2Stores(const std::string& dataPath)
         for (std::list<std::string>::iterator i = bad_db2_files.begin(); i != bad_db2_files.end(); ++i)
             str += *i + "\n";
 
-        sLog->outError(LOG_FILTER_GENERAL, "\nSome required *.db2 files (%u from %d) not found or not compatible:\n%s", (uint32)bad_db2_files.size(), DB2FilesCount,str.c_str());
+        TC_LOG_ERROR("server", "\nSome required *.db2 files (%u from %d) not found or not compatible:\n%s", (uint32)bad_db2_files.size(), DB2FilesCount,str.c_str());
         exit(1);
     }
 
@@ -298,11 +298,11 @@ void LoadDB2Stores(const std::string& dataPath)
     if (!sItemStore.LookupEntry(107499)            ||       // last item added in 5.4.1 17538
         !sItemExtendedCostStore.LookupEntry(5268)  )        // last item extended cost added in 5.4.1 17538
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Please extract correct db2 files from client 5.0.5 16057.");
+        TC_LOG_ERROR("server", "Please extract correct db2 files from client 5.0.5 16057.");
         exit(1);
     }
 
-    sLog->outInfo(LOG_FILTER_GENERAL, ">> Initialized %d DB2 data stores.", DB2FilesCount);
+    TC_LOG_INFO("server", ">> Initialized %d DB2 data stores.", DB2FilesCount);
 }
 
 std::list<uint32> GetPackageItemList(uint32 packageEntry)

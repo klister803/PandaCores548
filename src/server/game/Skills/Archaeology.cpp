@@ -434,7 +434,7 @@ void Player::GenerateResearchSites()
 
     _archaeologyChanged = true;
 
-    sLog->outInfo(LOG_FILTER_SPELLS_AURAS, "Player::GenerateResearchSites(): %u", _researchSites.size());
+    TC_LOG_INFO("spell", "Player::GenerateResearchSites(): %u", _researchSites.size());
 
     ShowResearchSites();
 }
@@ -820,7 +820,7 @@ void Player::SendCompletedProjects()
 void WorldSession::HandleRequestResearchHistory(WorldPacket& recv_data)
 {
     // null opcode
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "World: received CMSG_REQUEST_RESEARCH_HISTORY from %s (account %u)", GetPlayerName().c_str(), GetAccountId());
+    TC_LOG_DEBUG("network", "World: received CMSG_REQUEST_RESEARCH_HISTORY from %s (account %u)", GetPlayerName().c_str(), GetAccountId());
 
     _player->SendCompletedProjects();
 }

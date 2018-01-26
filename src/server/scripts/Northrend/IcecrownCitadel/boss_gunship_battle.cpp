@@ -1208,7 +1208,7 @@ class npc_gunship_skybreaker : public CreatureScript
 
             void EnterEvadeMode()
             {
-                //sLog->outError("npc_gunship_skybreaker EnterEvadeMode");
+                //TC_LOG_ERROR("npc_gunship_skybreaker EnterEvadeMode");
             }
 
             void JustDied(Unit* killer)
@@ -1270,7 +1270,7 @@ class npc_gunship_orgrimmar : public CreatureScript
 
             void EnterEvadeMode()
             {
-                //sLog->outError("npc_gunship_orgrimmar EnterEvadeMode");
+                //TC_LOG_ERROR("npc_gunship_orgrimmar EnterEvadeMode");
             }
 
             void JustDied(Unit* killer)

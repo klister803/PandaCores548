@@ -33,7 +33,7 @@ namespace FactorySelector
         const CreatureAICreator* ai_factory = NULL;
         CreatureAIRegistry& ai_registry(*CreatureAIRegistry::instance());
 
-        if (creature->isPet())
+        if (creature->IsPet())
             ai_factory = ai_registry.GetRegistryItem("PetAI");
 
         //scriptname in db
@@ -97,7 +97,7 @@ namespace FactorySelector
         // select NullCreatureAI if not another cases
         ainame = (ai_factory == NULL) ? "NullCreatureAI" : ai_factory->key();
 
-        sLog->outDebug(LOG_FILTER_TSCR, "Creature %u used AI is %s.", creature->GetGUIDLow(), ainame.c_str());
+        TC_LOG_DEBUG("server", "Creature %u used AI is %s.", creature->GetGUIDLow(), ainame.c_str());
         creature->SetNPCAIName(ainame);
         return (ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature));
     }
@@ -149,7 +149,7 @@ namespace FactorySelector
 
         std::string ainame = (ai_factory == NULL || go->GetScriptId()) ? "NullGameObjectAI" : ai_factory->key();
 
-        sLog->outDebug(LOG_FILTER_TSCR, "GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
+        TC_LOG_DEBUG("server", "GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
 
         return (ai_factory == NULL ? new NullGameObjectAI(go) : ai_factory->Create(go));
     }

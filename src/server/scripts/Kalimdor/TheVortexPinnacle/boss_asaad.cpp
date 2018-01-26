@@ -302,7 +302,7 @@ class spell_unstable_grounding_field : public SpellScriptLoader
             {
                 /*for (std::list<WorldObject*>::iterator itr = unitList.begin() ; itr != unitList.end();)
                 {
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "spell_unstable_grounding_field TargetA name %s, entry %u", (*itr)->GetName().c_str(), (*itr)->GetEntry());
+                    TC_LOG_DEBUG("spell", "spell_unstable_grounding_field TargetA name %s, entry %u", (*itr)->GetName().c_str(), (*itr)->GetEntry());
                     itr++;
                 }*/
             }
@@ -311,7 +311,7 @@ class spell_unstable_grounding_field : public SpellScriptLoader
             {
                 /*for (std::list<WorldObject*>::iterator itr = unitList.begin() ; itr != unitList.end();)
                 {
-                    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "spell_unstable_grounding_field TargetB name %s, entry %u", (*itr)->GetName().c_str(), (*itr)->GetEntry());
+                    TC_LOG_DEBUG("spell", "spell_unstable_grounding_field TargetB name %s, entry %u", (*itr)->GetName().c_str(), (*itr)->GetEntry());
                     itr++;
                 }*/
             }

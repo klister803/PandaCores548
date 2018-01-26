@@ -2719,7 +2719,7 @@ class spell_monk_touch_of_death : public SpellScriptLoader
 
                 if (caster->HasAura(124490))
                 {
-                    if (target->GetTypeId() == TYPEID_PLAYER || target->isPet())
+                    if (target->GetTypeId() == TYPEID_PLAYER || target->IsPet())
                         if (target->GetHealthPct() > 10)
                             return SPELL_FAILED_BAD_TARGETS;
                 }

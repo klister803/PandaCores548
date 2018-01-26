@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -17,31 +17,29 @@
  */
 
 #include "Log.h"
-#include "Common.h"
-#include "Config.h"
-#include "Util.h"
 #include "AppenderConsole.h"
 #include "AppenderFile.h"
-#include "AppenderDB.h"
+#include "AsioHacksImpl.h"
+#include "Common.h"
+#include "Config.h"
+#include "Errors.h"
+#include "Logger.h"
+#include "LogMessage.h"
 #include "LogOperation.h"
-
-#include <cstdarg>
-#include <cstdio>
+#include "Util.h"
+#include <chrono>
 #include <sstream>
 
-Log::Log() : worker(NULL)
+Log::Log() : AppenderId(0), lowestLogLevel(LOG_LEVEL_FATAL), _ioService(nullptr), _strand(nullptr)
 {
-    arenaLogFile = NULL;
-    diffLogFile = NULL;
-    spammLogFile = NULL;
-    wardenLogFile = NULL;
-    SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
-    LoadFromConfig();
+    RegisterAppender<AppenderConsole>();
+    RegisterAppender<AppenderFile>();
 }
 
 Log::~Log()
 {
+    delete _strand;
     Close();
 }
 
@@ -50,179 +48,114 @@ uint8 Log::NextAppenderId()
     return AppenderId++;
 }
 
-int32 GetConfigIntDefault(std::string base, const char* name, int32 value)
-{
-    base.append(name);
-    return ConfigMgr::GetIntDefault(base.c_str(), value);
-}
-
-std::string GetConfigStringDefault(std::string base, const char* name, const char* value)
-{
-    base.append(name);
-    return ConfigMgr::GetStringDefault(base.c_str(), value);
-}
-
-// Returns default logger if the requested logger is not found
-Logger* Log::GetLoggerByType(LogFilterType filter)
-{
-    LoggerMap::iterator it = loggers.begin();
-    while (it != loggers.end() && it->second.getType() != filter)
-        ++it;
-
-    return it == loggers.end() ? &(loggers[0]) : &(it->second);
-}
-
 Appender* Log::GetAppenderByName(std::string const& name)
 {
-    AppenderMap::iterator it = appenders.begin();
+    auto it = appenders.begin();
     while (it != appenders.end() && it->second && it->second->getName() != name)
         ++it;
 
-    return it == appenders.end() ? NULL : it->second;
+    return it == appenders.end() ? nullptr : it->second.get();
 }
 
-void Log::CreateAppenderFromConfig(const char* name)
+void Log::CreateAppenderFromConfig(std::string const& appenderName)
 {
-    if (!name || *name == '\0')
+    if (appenderName.empty())
         return;
 
-    // Format=type,level,flags,optional1,optional2
+    // Format = type, level, flags, optional1, optional2
     // if type = File. optional1 = file and option2 = mode
     // if type = Console. optional1 = Color
-    std::string options = "Appender.";
-    options.append(name);
-    options = ConfigMgr::GetStringDefault(options.c_str(), "");
-    Tokenizer tokens(options, ',');
-    Tokenizer::const_iterator iter = tokens.begin();
+    std::string options = ConfigMgr::GetStringDefault(appenderName, "");
 
-    if (tokens.size() < 2)
+    Tokenizer tokens(options, ',');
+    auto iter = tokens.begin();
+
+    size_t size = tokens.size();
+    std::string name = appenderName.substr(9);
+
+    if (size < 2)
     {
-        fprintf(stderr, "Log::CreateAppenderFromConfig: Wrong configuration for appender %s. Config line: %s\n", name, options.c_str());
+        fprintf(stderr, "Log::CreateAppenderFromConfig: Wrong configuration for appender %s. Config line: %s\n", name.c_str(), options.c_str());
         return;
     }
 
     AppenderFlags flags = APPENDER_FLAGS_NONE;
-    AppenderType type = AppenderType(atoi(*iter));
-    ++iter;
-    LogLevel level = LogLevel(atoi(*iter));
+    AppenderType type = AppenderType(atoi(*iter++));
+    LogLevel level = LogLevel(atoi(*iter++));
+
     if (level > LOG_LEVEL_FATAL)
     {
-        fprintf(stderr, "Log::CreateAppenderFromConfig: Wrong Log Level %u for appender %s\n", level, name);
+        fprintf(stderr, "Log::CreateAppenderFromConfig: Wrong Log Level %d for appender %s\n", level, name.c_str());
         return;
     }
 
-    if (++iter != tokens.end())
-        flags = AppenderFlags(atoi(*iter));
+    if (size > 2)
+        flags = AppenderFlags(atoi(*iter++));
 
-    switch (type)
+    auto factoryFunction = appenderFactory.find(type);
+    if (factoryFunction == appenderFactory.end())
     {
-        case APPENDER_CONSOLE:
-        {
-            AppenderConsole* appender = new AppenderConsole(NextAppenderId(), name, level, flags);
-            appenders[appender->getId()] = appender;
-            if (++iter != tokens.end())
-                appender->InitColors(*iter);
-            //fprintf(stdout, "Log::CreateAppenderFromConfig: Created Appender %s (%u), Type CONSOLE, Mask %u\n", appender->getName().c_str(), appender->getId(), appender->getLogLevel()); // DEBUG - RemoveMe
-            break;
-        }
-        case APPENDER_FILE:
-        {
-            std::string filename;
-            std::string mode = "a";
+        fprintf(stderr, "Log::CreateAppenderFromConfig: Unknown type %d for appender %s\n", type, name.c_str());
+        return;
+    }
 
-            if (++iter == tokens.end())
-            {
-                fprintf(stderr, "Log::CreateAppenderFromConfig: Missing file name for appender %s\n", name);
-                return;
-            }
-
-            filename = *iter;
-
-            if (++iter != tokens.end())
-                mode = *iter;
-
-            if (flags & APPENDER_FLAGS_USE_TIMESTAMP)
-            {
-                size_t dot_pos = filename.find_last_of(".");
-                if (dot_pos != filename.npos)
-                    filename.insert(dot_pos, m_logsTimestamp);
-                else
-                    filename += m_logsTimestamp;
-            }
-
-            uint8 id = NextAppenderId();
-            appenders[id] = new AppenderFile(id, name, level, filename.c_str(), m_logsDir.c_str(), mode.c_str(), flags);
-            //fprintf(stdout, "Log::CreateAppenderFromConfig: Created Appender %s (%u), Type FILE, Mask %u, File %s, Mode %s\n", name, id, level, filename.c_str(), mode.c_str()); // DEBUG - RemoveMe
-            break;
-        }
-        case APPENDER_DB:
-        {
-            uint8 id = NextAppenderId();
-            appenders[id] = new AppenderDB(id, name, level, realm);
-            break;
-        }
-        default:
-            fprintf(stderr, "Log::CreateAppenderFromConfig: Unknown type %u for appender %s\n", type, name);
-            break;
+    try
+    {
+        Appender* appender = factoryFunction->second(NextAppenderId(), name, level, flags, std::vector<char const*>(iter, tokens.end()));
+        appenders[appender->getId()].reset(appender);
+    }
+    catch (InvalidAppenderArgsException const& iaae)
+    {
+        fprintf(stderr, "%s", iaae.what());
     }
 }
 
-void Log::CreateLoggerFromConfig(const char* name)
+void Log::CreateLoggerFromConfig(std::string const& appenderName)
 {
-    if (!name || *name == '\0')
+    if (appenderName.empty())
         return;
 
     LogLevel level = LOG_LEVEL_DISABLED;
-    int32 type = -1;
+    uint8 type = uint8(-1);
 
-    std::string options = "Logger.";
-    options.append(name);
-    options = ConfigMgr::GetStringDefault(options.c_str(), "");
+    std::string options = ConfigMgr::GetStringDefault(appenderName, "");
+    std::string name = appenderName.substr(7);
 
     if (options.empty())
     {
-        fprintf(stderr, "Log::CreateLoggerFromConfig: Missing config option Logger.%s\n", name);
+        fprintf(stderr, "Log::CreateLoggerFromConfig: Missing config option Logger.%s\n", name.c_str());
         return;
     }
 
     Tokenizer tokens(options, ',');
     Tokenizer::const_iterator iter = tokens.begin();
 
-    if (tokens.size() != 3)
+    if (tokens.size() != 2)
     {
-        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong config option Logger.%s=%s\n", name, options.c_str());
+        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong config option Logger.%s=%s\n", name.c_str(), options.c_str());
         return;
     }
 
-    type = atoi(*iter);
-    if (type > MaxLogFilter)
+    std::unique_ptr<Logger>& logger = loggers[name];
+    if (logger)
     {
-        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong type %u for logger %s\n", type, name);
+        fprintf(stderr, "Error while configuring Logger %s. Already defined\n", name.c_str());
         return;
     }
 
-    Logger& logger = loggers[type];
-    if (!logger.getName().empty())
-    {
-        fprintf(stderr, "Error while configuring Logger %s. Already defined\n", name);
-        return;
-    }
-
-    ++iter;
-    level = LogLevel(atoi(*iter));
+    level = LogLevel(atoi(*iter++));
     if (level > LOG_LEVEL_FATAL)
     {
-        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong Log Level %u for logger %s\n", type, name);
+        fprintf(stderr, "Log::CreateLoggerFromConfig: Wrong Log Level %u for logger %s\n", type, name.c_str());
         return;
     }
 
     if (level < lowestLogLevel)
-         lowestLogLevel = level;
+        lowestLogLevel = level;
 
-    logger.Create(name, LogFilterType(type), level);
-    //fprintf(stdout, "Log::CreateLoggerFromConfig: Created Logger %s, Type %u, mask %u\n", name, LogFilterType(type), level); // DEBUG - RemoveMe
+    logger = Trinity::make_unique<Logger>(name, level);
+    //fprintf(stdout, "Log::CreateLoggerFromConfig: Created Logger %s, Level %u\n", name.c_str(), level);
 
-    ++iter;
     std::istringstream ss(*iter);
     std::string str;
 
@@ -231,95 +164,114 @@ void Log::CreateLoggerFromConfig(const char* name)
     {
         if (Appender* appender = GetAppenderByName(str))
         {
-            logger.addAppender(appender->getId(), appender);
-            //fprintf(stdout, "Log::CreateLoggerFromConfig: Added Appender %s to Logger %s\n", appender->getName().c_str(), name); // DEBUG - RemoveMe
+            logger->addAppender(appender->getId(), appender);
+            //fprintf(stdout, "Log::CreateLoggerFromConfig: Added Appender %s to Logger %s\n", appender->getName().c_str(), name.c_str());
         }
         else
-            fprintf(stderr, "Error while configuring Appender %s in Logger %s. Appender does not exist", str.c_str(), name);
+            fprintf(stderr, "Error while configuring Appender %s in Logger %s. Appender does not exist", str.c_str(), name.c_str());
         ss >> str;
     }
 }
 
 void Log::ReadAppendersFromConfig()
 {
-    std::istringstream ss(ConfigMgr::GetStringDefault("Appenders", ""));
-    std::string name;
-
-    do
-    {
-        ss >> name;
-        CreateAppenderFromConfig(name.c_str());
-        name = "";
-    }
-    while (ss);
+    std::vector<std::string> keys = ConfigMgr::GetKeysByString("Appender.");
+    for (std::string const& appenderName : keys)
+        CreateAppenderFromConfig(appenderName);
 }
 
 void Log::ReadLoggersFromConfig()
 {
-    std::istringstream ss(ConfigMgr::GetStringDefault("Loggers", ""));
-    std::string name;
+    std::vector<std::string> keys = ConfigMgr::GetKeysByString("Logger.");
+    for (std::string const& loggerName : keys)
+        CreateLoggerFromConfig(loggerName);
 
-    do
+    // Bad config configuration, creating default config
+    if (loggers.find(LOGGER_ROOT) == loggers.end())
     {
-        ss >> name;
-        CreateLoggerFromConfig(name.c_str());
-        name = "";
+        fprintf(stderr, "Wrong Loggers configuration. Review your Logger config section.\n"
+                        "Creating default loggers [root (Error), server (Info)] to console\n");
+
+        Close(); // Clean any Logger or Appender created
+
+        AppenderConsole* appender = new AppenderConsole(NextAppenderId(), "Console", LOG_LEVEL_DEBUG, APPENDER_FLAGS_NONE, std::vector<char const*>());
+        appenders[appender->getId()].reset(appender);
+
+        Logger* rootLogger = new Logger(LOGGER_ROOT, LOG_LEVEL_ERROR);
+        rootLogger->addAppender(appender->getId(), appender);
+        loggers[LOGGER_ROOT].reset(rootLogger);
+
+        Logger* serverLogger = new Logger("server", LOG_LEVEL_INFO);
+        serverLogger->addAppender(appender->getId(), appender);
+        loggers["server"].reset(serverLogger);
     }
-    while (ss);
-
-    LoggerMap::const_iterator it = loggers.begin();
-
-    while (it != loggers.end() && it->first)
-      ++it;
-
-    // root logger must exist. Marking as disabled as its not configured
-    if (it == loggers.end())
-        loggers[0].Create("root", LOG_FILTER_GENERAL, LOG_LEVEL_DISABLED);
 }
 
-void Log::EnableDBAppenders()
+void Log::RegisterAppender(uint8 index, AppenderCreatorFn appenderCreateFn)
 {
-    for (AppenderMap::iterator it = appenders.begin(); it != appenders.end(); ++it)
-        if (it->second && it->second->getType() == APPENDER_DB)
-            ((AppenderDB *)it->second)->setEnable(true);
+    auto itr = appenderFactory.find(index);
+    ASSERT(itr == appenderFactory.end());
+    appenderFactory[index] = appenderCreateFn;
 }
 
-void Log::vlog(LogFilterType filter, LogLevel level, char const* str, va_list argptr)
+void Log::outMessage(std::string const& filter, LogLevel level, std::string&& message)
 {
-    char text[MAX_QUERY_LEN];
-    vsnprintf(text, MAX_QUERY_LEN, str, argptr);
-    write(new LogMessage(level, filter, text));
+    write(Trinity::make_unique<LogMessage>(level, filter, std::move(message)));
 }
 
-void Log::write(LogMessage* msg)
+void Log::outCommand(std::string&& message, std::string&& param1)
 {
-    if (worker)
+    write(Trinity::make_unique<LogMessage>(LOG_LEVEL_INFO, "commands.gm", std::move(message), std::move(param1)));
+}
+
+void Log::write(std::unique_ptr<LogMessage>&& msg) const
+{
+    Logger const* logger = GetLoggerByType(msg->type);
+
+    if (_ioService)
     {
-        msg->text.append("\n");
-        Logger* logger = GetLoggerByType(msg->type);
-        worker->enqueue(new LogOperation(logger, msg));
+        auto logOperation = std::make_shared<LogOperation>(logger, std::move(msg));
+
+        _ioService->post(_strand->wrap([logOperation](){ logOperation->call(); }));
     }
     else
-        delete msg;
+        logger->write(msg.get());
+}
+
+Logger const* Log::GetLoggerByType(std::string const& type) const
+{
+    auto it = loggers.find(type);
+    if (it != loggers.end())
+        return it->second.get();
+
+    if (type == LOGGER_ROOT)
+        return nullptr;
+
+    std::string parentLogger = LOGGER_ROOT;
+    size_t found = type.find_last_of('.');
+    if (found != std::string::npos)
+        parentLogger = type.substr(0, found);
+
+    return GetLoggerByType(parentLogger);
 }
 
 std::string Log::GetTimestampStr()
 {
-    time_t t = time(NULL);
-    tm* aTm = localtime(&t);
+    time_t tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+    std::tm aTm;
+    localtime_r(&tt, &aTm);
+
     //       YYYY   year
     //       MM     month (2 digits 01-12)
     //       DD     day (2 digits 01-31)
     //       HH     hour (2 digits 00-23)
     //       MM     minutes (2 digits 00-59)
     //       SS     seconds (2 digits 00-59)
-    char buf[20];
-    snprintf(buf, 20, "%04d-%02d", aTm->tm_year+1900, aTm->tm_mon+1);
-    // snprintf(buf, 20, "%04d-%02d-%02d_%02d-%02d-%02d", aTm->tm_year+1900, aTm->tm_mon+1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
-    return std::string(buf);
+    return Trinity::StringFormat("%04d-%02d", aTm.tm_year + 1900, aTm.tm_mon + 1);
 }
 
-bool Log::SetLogLevel(std::string const& name, const char* newLevelc, bool isLogger /* = true */)
+bool Log::SetLogLevel(std::string const& name, char const* newLevelc, bool isLogger /* = true */)
 {
     LogLevel newLevel = LogLevel(atoi(newLevelc));
     if (newLevel < 0)
@@ -327,17 +279,17 @@ bool Log::SetLogLevel(std::string const& name, const char* newLevelc, bool isLog
 
     if (isLogger)
     {
-        LoggerMap::iterator it = loggers.begin();
-        while (it != loggers.end() && it->second.getName() != name)
+        auto it = loggers.begin();
+        while (it != loggers.end() && it->second->getName() != name)
             ++it;
 
         if (it == loggers.end())
             return false;
 
+        it->second->setLogLevel(newLevel);
+
         if (newLevel != LOG_LEVEL_DISABLED && newLevel < lowestLogLevel)
             lowestLogLevel = newLevel;
-
-        it->second.setLogLevel(newLevel);
     }
     else
     {
@@ -347,309 +299,93 @@ bool Log::SetLogLevel(std::string const& name, const char* newLevelc, bool isLog
 
         appender->setLogLevel(newLevel);
     }
+
     return true;
 }
 
-bool Log::ShouldLog(LogFilterType type, LogLevel level) const
+void Log::outCharDump(char const* str, uint32 accountId, uint64 guid, char const* name)
 {
-    // Don't even look for a logger if the LogLevel is lower than lowest log levels across all loggers
-    if (level < lowestLogLevel)
-        return false;
-
-    LoggerMap::const_iterator it = loggers.begin();
-    while (it != loggers.end() && it->second.getType() != type)
-        ++it;
-
-    if (it != loggers.end())
-    {
-        LogLevel loggerLevel = it->second.getLogLevel();
-        return loggerLevel && loggerLevel <= level;
-    }
-
-    //WTF? Why we should alow all log data check this?
-    //if (type != LOG_FILTER_GENERAL)
-    //    return ShouldLog(LOG_FILTER_GENERAL, level);
-
-    return false;
-}
-
-void Log::outTrace(LogFilterType filter, const char * str, ...)
-{
-    if (!str || !ShouldLog(filter, LOG_LEVEL_TRACE))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(filter, LOG_LEVEL_TRACE, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outDebug(LogFilterType filter, const char * str, ...)
-{
-    if (!str || !ShouldLog(filter, LOG_LEVEL_DEBUG))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(filter, LOG_LEVEL_DEBUG, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outInfo(LogFilterType filter, const char * str, ...)
-{
-    if (!str || !ShouldLog(filter, LOG_LEVEL_INFO))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(filter, LOG_LEVEL_INFO, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outWarn(LogFilterType filter, const char * str, ...)
-{
-    if (!str || !ShouldLog(filter, LOG_LEVEL_WARN))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(filter, LOG_LEVEL_WARN, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outError(LogFilterType filter, const char * str, ...)
-{
-    if (!str || !ShouldLog(filter, LOG_LEVEL_ERROR))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(filter, LOG_LEVEL_ERROR, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outFatal(LogFilterType filter, const char * str, ...)
-{
-    if (!str || !ShouldLog(filter, LOG_LEVEL_FATAL))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(filter, LOG_LEVEL_FATAL, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outCharDump(char const* str, uint32 accountId, uint32 guid, char const* name)
-{
-    if (!str || !ShouldLog(LOG_FILTER_PLAYER_DUMP, LOG_LEVEL_INFO))
+    if (!str || !ShouldLog("entities.player.dump", LOG_LEVEL_INFO))
         return;
 
     std::ostringstream ss;
     ss << "== START DUMP == (account: " << accountId << " guid: " << guid << " name: " << name
-        << ")\n" << str << "\n== END DUMP ==\n";
+       << ")\n" << str << "\n== END DUMP ==\n";
 
-    LogMessage* msg = new LogMessage(LOG_LEVEL_INFO, LOG_FILTER_PLAYER_DUMP, ss.str());
-    ss.clear();
-    ss << guid << '_' << name;
+    std::unique_ptr<LogMessage> msg(new LogMessage(LOG_LEVEL_INFO, "entities.player.dump", ss.str()));
+    std::ostringstream param;
+    param << guid << '_' << name;
 
-    msg->param1 = ss.str();
+    msg->param1 = param.str();
 
-    write(msg);
+    write(std::move(msg));
 }
 
-void Log::outCommand(uint32 account, const char * str, ...)
+void Log::SetRealmId(uint32 id)
 {
-    if (!str || !ShouldLog(LOG_FILTER_GMCOMMAND, LOG_LEVEL_INFO))
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-    char text[MAX_QUERY_LEN];
-    vsnprintf(text, MAX_QUERY_LEN, str, ap);
-    va_end(ap);
-
-    LogMessage* msg = new LogMessage(LOG_LEVEL_INFO, LOG_FILTER_GMCOMMAND, text);
-
-    std::ostringstream ss;
-    ss << account;
-    msg->param1 = ss.str();
-
-    write(msg);
-}
-
-void Log::SetRealmID(uint32 id)
-{
-    realm = id;
+    for (auto it = appenders.begin(); it != appenders.end(); ++it)
+        it->second->setRealmId(id);
 }
 
 void Log::Close()
 {
-    if (arenaLogFile != NULL)
-        fclose(arenaLogFile);
-    arenaLogFile = NULL;
-
-    if (spammLogFile != NULL)
-        fclose(spammLogFile);
-    spammLogFile = NULL;
-
-    if (diffLogFile != NULL)
-        fclose(diffLogFile);
-    diffLogFile = NULL;
-
-    if (wardenLogFile != NULL)
-        fclose(wardenLogFile);
-    wardenLogFile = NULL;
-
-    delete worker;
-    worker = NULL;
     loggers.clear();
-    for (AppenderMap::iterator it = appenders.begin(); it != appenders.end(); ++it)
-    {
-        delete it->second;
-        it->second = NULL;
-    }
     appenders.clear();
+}
+
+bool Log::ShouldLog(std::string const& type, LogLevel level) const
+{
+    // TODO: Use cache to store "Type.sub1.sub2": "Type" equivalence, should
+    // Speed up in cases where requesting "Type.sub1.sub2" but only configured
+    // Logger "Type"
+
+    // Don't even look for a logger if the LogLevel is lower than lowest log levels across all loggers
+    if (level < lowestLogLevel)
+        return false;
+
+    Logger const* logger = GetLoggerByType(type);
+    if (!logger)
+        return false;
+
+    LogLevel logLevel = logger->getLogLevel();
+    return logLevel != LOG_LEVEL_DISABLED && logLevel <= level;
+}
+
+Log* Log::instance()
+{
+    static Log instance;
+    return &instance;
+}
+
+void Log::Initialize(boost::asio::io_service* ioService)
+{
+    if (ioService)
+    {
+        _ioService = ioService;
+        _strand = new Trinity::AsioStrand(*ioService);
+    }
+
+    LoadFromConfig();
+}
+
+void Log::SetSynchronous()
+{
+    delete _strand;
+    _strand = nullptr;
+    _ioService = nullptr;
 }
 
 void Log::LoadFromConfig()
 {
     Close();
-    AppenderId = 0;
-    lowestLogLevel = LOG_LEVEL_FATAL;
 
-    worker = new LogWorker();
+    lowestLogLevel = LOG_LEVEL_FATAL;
+    AppenderId = 0;
     m_logsDir = ConfigMgr::GetStringDefault("LogsDir", "");
     if (!m_logsDir.empty())
         if ((m_logsDir.at(m_logsDir.length() - 1) != '/') && (m_logsDir.at(m_logsDir.length() - 1) != '\\'))
             m_logsDir.push_back('/');
+
     ReadAppendersFromConfig();
     ReadLoggersFromConfig();
-    arenaLogFile = openLogFile("ArenaLogFile", NULL, "a");
-    spammLogFile = openLogFile("SpammLogFile", NULL, "a");
-    diffLogFile = openLogFile("diffLogFile", NULL, "a");
-    wardenLogFile = openLogFile("Warden.LogFile", NULL, "a");
-}
-
-void Log::outArena(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (arenaLogFile)
-    {
-        va_list ap;
-        outTimestamp(arenaLogFile);
-        va_start(ap, str);
-        vfprintf(arenaLogFile, str, ap);
-        fprintf(arenaLogFile, "\n");
-        va_end(ap);
-        fflush(arenaLogFile);
-    }
-}
-
-void Log::outTimestamp(FILE* file)
-{
-    time_t t = time(NULL);
-    tm* aTm = localtime(&t);
-    //       YYYY   year
-    //       MM     month (2 digits 01-12)
-    //       DD     day (2 digits 01-31)
-    //       HH     hour (2 digits 00-23)
-    //       MM     minutes (2 digits 00-59)
-    //       SS     seconds (2 digits 00-59)
-    fprintf(file, "%-4d-%02d-%02d %02d:%02d:%02d ", aTm->tm_year+1900, aTm->tm_mon+1, aTm->tm_mday, aTm->tm_hour, aTm->tm_min, aTm->tm_sec);
-}
-
-FILE* Log::openLogFile(char const* configFileName, char const* configTimeStampFlag, char const* mode)
-{
-    std::string logfn=ConfigMgr::GetStringDefault(configFileName, "");
-    if (logfn.empty())
-        return NULL;
-
-    if (configTimeStampFlag && ConfigMgr::GetBoolDefault(configTimeStampFlag, false))
-    {
-        size_t dot_pos = logfn.find_last_of(".");
-        if (dot_pos!=logfn.npos)
-            logfn.insert(dot_pos, m_logsTimestamp);
-        else
-            logfn += m_logsTimestamp;
-    }
-
-    return fopen((m_logsDir+logfn).c_str(), mode);
-}
-
-void Log::outSpamm(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (spammLogFile)
-    {
-        va_list ap;
-        outTimestamp(spammLogFile);
-        va_start(ap, str);
-        vfprintf(spammLogFile, str, ap);
-        fprintf(spammLogFile, "\n");
-        va_end(ap);
-        fflush(spammLogFile);
-    }
-}
-
-void Log::outDiff(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (diffLogFile)
-    {
-        va_list ap;
-        outTimestamp(diffLogFile);
-        va_start(ap, str);
-        vfprintf(diffLogFile, str, ap);
-        fprintf(diffLogFile, "\n");
-        va_end(ap);
-        fflush(diffLogFile);
-    }
-}
-
-void Log::outU(const char* str, ...)
-{
-    if (!str)
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(LOG_FILTER_UWOW_CORE, LOG_LEVEL_ERROR, str, ap);
-
-    va_end(ap);
-}
-
-void Log::outWarden(const char * str, ...)
-{
-    if (!str)
-        return;
-
-    if (wardenLogFile)
-    {
-        outTimestamp(wardenLogFile);
-        va_list ap;
-        va_start(ap, str);
-        vfprintf(wardenLogFile, str, ap);
-        fprintf(wardenLogFile, "\n");
-        fflush(wardenLogFile);
-        va_end(ap);
-    }
 }

@@ -83,7 +83,7 @@ void BattlegroundRL::HandleKillPlayer(Player* player, Player* killer)
 
     if (!killer)
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Killer player not found");
+        TC_LOG_ERROR("bg", "Killer player not found");
         return;
     }
 
@@ -118,7 +118,7 @@ void BattlegroundRL::HandleAreaTrigger(Player* Source, uint32 Trigger)
             HandlePlayerUnderMap(Source);
             break;
         default:
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg", "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -148,7 +148,7 @@ bool BattlegroundRL::SetupBattleground()
         || !AddObject(BG_RL_OBJECT_BUFF_1, BG_RL_OBJECT_TYPE_BUFF_1, 1328.719971f, 1632.719971f, 36.730400f, -1.448624f, 0, 0, 0.6626201f, -0.7489557f, 120)
         || !AddObject(BG_RL_OBJECT_BUFF_2, BG_RL_OBJECT_TYPE_BUFF_2, 1243.300049f, 1699.170044f, 34.872601f, -0.06981307f, 0, 0, 0.03489945f, -0.9993908f, 120))
     {
-        sLog->outError(LOG_FILTER_SQL, "BatteGroundRL: Failed to spawn some object!");
+        TC_LOG_ERROR("sql", "BatteGroundRL: Failed to spawn some object!");
         return false;
     }
 

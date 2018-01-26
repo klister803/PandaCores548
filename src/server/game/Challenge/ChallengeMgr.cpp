@@ -121,7 +121,7 @@ void ChallengeMgr::LoadFromDB()
             ChallengeMap::iterator itr = m_ChallengeMap.find(fields[0].GetUInt32());
             if (itr == m_ChallengeMap.end())
             {
-                sLog->outError(LOG_FILTER_SQL, "Tabble challenge_member. Challenge %u for member " UI64FMTD " does not exist!", fields[0].GetUInt32(), member.guid);
+                TC_LOG_ERROR("sql", "Tabble challenge_member. Challenge %u for member " UI64FMTD " does not exist!", fields[0].GetUInt32(), member.guid);
                 continue;
             }
             itr->second->member.insert(member);

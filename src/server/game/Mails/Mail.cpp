@@ -50,7 +50,7 @@ MailSender::MailSender(Object* sender, MailStationery stationery) : m_stationery
         default:
             m_messageType = MAIL_NORMAL;
             m_senderId = 0;                                 // will show mail from not existed player
-            sLog->outError(LOG_FILTER_GENERAL, "MailSender::MailSender - Mail have unexpected sender typeid (%u)", sender->GetTypeId());
+            TC_LOG_ERROR("server", "MailSender::MailSender - Mail have unexpected sender typeid (%u)", sender->GetTypeId());
             break;
     }
 }
@@ -113,7 +113,7 @@ void MailDraft::prepareItems(Player* receiver, SQLTransaction& trans)
                 item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
                 AddItem(item);
                 if(item->GetEntry() == 38186)
-                    sLog->outDebug(LOG_FILTER_EFIR, "MailDraft::prepareItems - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), lootitem->count, receiver->GetGUID(), item->GetGUID());
+                    TC_LOG_DEBUG("efir", "MailDraft::prepareItems - CreateItem of item %u; count = %u playerGUID %u, itemGUID %u", item->GetEntry(), lootitem->count, receiver->GetGUID(), item->GetGUID());
             }
         }
     }

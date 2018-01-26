@@ -243,7 +243,7 @@ class instance_dragon_soul : public InstanceMapScript
                                 }
                             }
                         }
-                        sLog->outError(LOG_FILTER_TSCR, "instance_dragon_soul: NPC_TWILIGHT_ASSAULTER_STALKER of unknown DB GUID was spawned: %u", pCreature->GetDBTableGUIDLow());
+                        TC_LOG_ERROR("server", "instance_dragon_soul: NPC_TWILIGHT_ASSAULTER_STALKER of unknown DB GUID was spawned: %u", pCreature->GetDBTableGUIDLow());
                         break;
                     }
                     case NPC_EIENDORMI:
@@ -867,7 +867,7 @@ class instance_dragon_soul : public InstanceMapScript
                     case CRITERIA_DESTROYERS_END:
                         return !IsLFR();
                     default:
-                        sLog->outError(LOG_FILTER_GENERAL, "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u", instance->GetId(), criteria_id);
+                        TC_LOG_ERROR("server", "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u", instance->GetId(), criteria_id);
                         break;
                 }
 

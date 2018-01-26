@@ -347,7 +347,7 @@ public:
                 count -=_item->GetCount();
 
             player->DestroyItemCount(_item, tempcount, true);
-            //sLog->outError("ItemDel item delete %u, count %u, tempcount %u", _item->GetEntry(), count, tempcount);
+            //TC_LOG_ERROR("ItemDel item delete %u, count %u, tempcount %u", _item->GetEntry(), count, tempcount);
             chH.PSendSysMessage(20021, sObjectMgr->GetItemTemplate(_item->GetEntry())->Name1.c_str());
         }
         return count;
@@ -778,7 +778,7 @@ public:
                 {
                     ChatHandler chH = ChatHandler(player);
                     player->DestroyItem(_item->GetBagSlot(), _item->GetSlot(), true);
-                    //sLog->outError("ItemIfExistDel item delete %u", _item->GetEntry());
+                    //TC_LOG_ERROR("ItemIfExistDel item delete %u", _item->GetEntry());
                     chH.PSendSysMessage(20020, sObjectMgr->GetItemTemplate(_item->GetEntry())->Name1.c_str());
                 }
             }

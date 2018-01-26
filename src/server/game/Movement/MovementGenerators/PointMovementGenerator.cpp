@@ -149,14 +149,14 @@ void EffectMovementGenerator::Finalize(Unit &unit)
 //----- Charge Movement Generator
 void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
 {
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChargeMovementGenerator GetDestination (%f %f %f)", i_x, i_y, i_z);
+    //TC_LOG_DEBUG("spell", "ChargeMovementGenerator GetDestination (%f %f %f)", i_x, i_y, i_z);
 
     if(!i_path)
-        i_path = new PathFinderMovementGenerator(&unit);
+        i_path = new PathGenerator(&unit);
 
-    i_path->calculate(i_x, i_y, i_z, false);
+    i_path->CalculatePath(i_x, i_y, i_z, false);
 
-    if (i_path->getPathType() & PATHFIND_NOPATH)
+    if (i_path->GetPathType() & PATHFIND_NOPATH)
         return;
 
     if (i_path->GetTotalLength() > 40)
@@ -166,10 +166,10 @@ void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
     i_recalculateTravel = false;
 
     Movement::MoveSplineInit init(unit);
-    if (i_path->getPathType() & PATHFIND_NOPATH || unit.GetTransGUID())
+    if (i_path->GetPathType() & PATHFIND_NOPATH || unit.GetTransGUID())
         init.MoveTo(i_x, i_y, i_z);
     else
-        init.MovebyPath(i_path->getPath());
+        init.MovebyPath(i_path->GetPath());
     if (speed > 0.0f)
         init.SetVelocity(speed);
     init.Launch();
@@ -182,7 +182,7 @@ bool ChargeMovementGenerator::Update(Unit &unit, const uint32&)
 
 void ChargeMovementGenerator::Initialize(Unit &unit)
 {
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChargeMovementGenerator Initialize (%f %f %f)", i_x, i_y, i_z);
+    //TC_LOG_DEBUG("spell", "ChargeMovementGenerator Initialize (%f %f %f)", i_x, i_y, i_z);
 
     if (!unit.IsStopped())
         unit.StopMoving();
@@ -196,7 +196,7 @@ void ChargeMovementGenerator::Finalize(Unit &unit)
     if (unit.GetTypeId() != TYPEID_UNIT && unit.GetTypeId() != TYPEID_PLAYER)
         return;
 
-    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "ChargeMovementGenerator Finalize (%f %f %f) spellId %i", i_x, i_y, i_z, triggerspellId);
+    //TC_LOG_DEBUG("spell", "ChargeMovementGenerator Finalize (%f %f %f) spellId %i", i_x, i_y, i_z, triggerspellId);
 
     unit.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 

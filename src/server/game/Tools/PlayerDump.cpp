@@ -476,7 +476,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
         std::string tn = gettablename(line);
         if (tn.empty())
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "LoadPlayerDump: Can't extract table name from line: '%s'!", line.c_str());
+            TC_LOG_ERROR("network", "LoadPlayerDump: Can't extract table name from line: '%s'!", line.c_str());
             ROLLBACK(DUMP_FILE_BROKEN);
         }
 
@@ -493,7 +493,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
         if (i == DUMP_TABLE_COUNT)
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "LoadPlayerDump: Unknown table: '%s'!", tn.c_str());
+            TC_LOG_ERROR("network", "LoadPlayerDump: Unknown table: '%s'!", tn.c_str());
             ROLLBACK(DUMP_FILE_BROKEN);
         }
 
@@ -663,7 +663,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                 break;
             }
             default:
-                sLog->outError(LOG_FILTER_NETWORKIO, "Unknown dump table type: %u", type);
+                TC_LOG_ERROR("network", "Unknown dump table type: %u", type);
                 break;
         }
 
@@ -769,7 +769,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
         std::string tn = gettablename(line);
         if (tn.empty())
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "LoadPlayerDump: Can't extract table name from line: '%s'!", line.c_str());
+            TC_LOG_ERROR("network", "LoadPlayerDump: Can't extract table name from line: '%s'!", line.c_str());
             return DUMP_FILE_BROKEN;
         }
 
@@ -786,7 +786,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
 
         if (i == DUMP_TABLE_COUNT)
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "LoadPlayerDump: Unknown table: '%s'!", tn.c_str());
+            TC_LOG_ERROR("network", "LoadPlayerDump: Unknown table: '%s'!", tn.c_str());
             continue;
         }
 
@@ -797,13 +797,13 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))           // characters.guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.guid update line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: characters.guid update line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
                 if (!changenth(line, 2, chraccount))        // characters.account update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.account update line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: characters.account update line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
@@ -830,30 +830,30 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                     if (result)
                         if (!changenth(line, 41, "129"))       // characters.at_login set to "rename on login"
                         {
-                            sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.at_login set to rename on login line: '%s'!", line.c_str());
+                            TC_LOG_DEBUG("network", "LoadPlayerDump: characters.at_login set to rename on login line: '%s'!", line.c_str());
                             return DUMP_FILE_BROKEN;
                         }
                 }
                 else if (!changenth(line, 3, name.c_str())) // characters.name
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.name line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: characters.name line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
                 const char null[5] = "NULL";
                 if (!changenth(line, 70, null))             // characters.deleteInfos_Account
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.deleteInfos_Account line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: characters.deleteInfos_Account line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 71, null))             // characters.deleteInfos_Name
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.deleteInfos_Name line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: characters.deleteInfos_Name line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 72, null))             // characters.deleteDate
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: characters.deleteDate line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: characters.deleteDate line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -862,7 +862,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))           // character_*.guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_.guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -871,12 +871,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))           // character_*.guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_queststatus.guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_queststatus.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 2, chraccount))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_queststatus.account update line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_queststatus.account update line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -885,7 +885,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_equipmentsets.guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_equipmentsets.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
@@ -893,7 +893,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 snprintf(newSetGuid, 24, UI64FMTD, sObjectMgr->GenerateEquipmentSetGuid());
                 if (!changenth(line, 2, newSetGuid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_equipmentsets.setguid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_equipmentsets.setguid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -902,18 +902,18 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))           // character_inventory.guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_inventory.guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_inventory.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid, true))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_inventory.bag line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_inventory.bag line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changeGuid(line, 4, items, sObjectMgr->_hiItemGuid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_inventory.item line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_inventory.item line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -926,12 +926,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
 
                 if (!changenth(line, 1, newItemId))           // character_void_storage.itemId update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_void_storage.itemId line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_void_storage.itemId line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 2, newguid))           // character_void_storage.playerGuid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_void_storage.playerGuid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_void_storage.playerGuid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -940,12 +940,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changeGuid(line, 1, mails, sObjectMgr->_mailId))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail.id line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: mail.id line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 6, newguid))           // mail.receiver update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail.receiver line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: mail.receiver line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -954,17 +954,17 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changeGuid(line, 1, mails, sObjectMgr->_mailId))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail_items.id line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: mail_items.id line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail_items.item_guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: mail_items.item_guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 3, newguid))           // mail_items.receiver
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: mail_items.receiver line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: mail_items.receiver line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -974,12 +974,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 // item, owner, data field:item, owner guid
                 if (!changeGuid(line, 1, items, sObjectMgr->_hiItemGuid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: item_instance.guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: item_instance.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 3, newguid))           // item_instance.owner_guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: item_instance.owner_guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: item_instance.owner_guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -988,12 +988,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))           // character_gifts.guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_gifts.guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_gifts.guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_gifts.item_guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_gifts.item_guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -1002,12 +1002,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 if (!changenth(line, 1, newguid))           // character_donate.owner_guid update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_donate.owner_guid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_donate.owner_guid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changeGuid(line, 2, items, sObjectMgr->_hiItemGuid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_donate.itemguid line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_donate.itemguid line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
@@ -1033,12 +1033,12 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
 
                 if (!changenth(line, 1, newpetid))          // character_pet.id update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_pet.id line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_pet.id line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 if (!changenth(line, 3, newguid))           // character_pet.owner update
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: character_pet.owne line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: character_pet.owne line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
@@ -1052,7 +1052,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 std::map<uint32, uint32> :: const_iterator petids_iter = petids.find(atoi(currpetid));
                 if (petids_iter == petids.end())             // couldn't find new inserted id
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: pet line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: pet line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
 
@@ -1060,13 +1060,13 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
 
                 if (!changenth(line, 1, newpetid))
                 {
-                    sLog->outDebug(LOG_FILTER_NETWORKIO, "LoadPlayerDump: pet line: '%s'!", line.c_str());
+                    TC_LOG_DEBUG("network", "LoadPlayerDump: pet line: '%s'!", line.c_str());
                     return DUMP_FILE_BROKEN;
                 }
                 break;
             }
             default:
-                sLog->outError(LOG_FILTER_NETWORKIO, "Unknown dump table type: %u", type);
+                TC_LOG_ERROR("network", "Unknown dump table type: %u", type);
                 break;
         }
 

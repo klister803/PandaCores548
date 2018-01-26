@@ -145,7 +145,7 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 
 void WorldSession::HandleDuelAcceptResultOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_DUEL_ACCEPT_RESULT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_DUEL_ACCEPT_RESULT");
 
     ObjectGuid guid;
     recvPacket.ReadGuidMask<3, 5, 2, 4, 0, 6>(guid);
@@ -168,9 +168,9 @@ void WorldSession::HandleDuelAcceptResultOpcode(WorldPacket& recvPacket)
         if (player == player->duel->initiator || !plTarget || player == plTarget || player->duel->startTime != 0 || plTarget->duel->startTime != 0)
             return;
 
-        //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: Received CMSG_DUEL_ACCEPTED");
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "Player 1 is: %u (%s)", player->GetGUIDLow(), player->GetName());
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "Player 2 is: %u (%s)", plTarget->GetGUIDLow(), plTarget->GetName());
+        //TC_LOG_DEBUG("network", "WORLD: Received CMSG_DUEL_ACCEPTED");
+        TC_LOG_DEBUG("network", "Player 1 is: %u (%s)", player->GetGUIDLow(), player->GetName());
+        TC_LOG_DEBUG("network", "Player 2 is: %u (%s)", plTarget->GetGUIDLow(), plTarget->GetName());
 
         time_t now = time(NULL);
         player->duel->startTimer = now;

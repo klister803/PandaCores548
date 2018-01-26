@@ -3832,7 +3832,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                     modCast = mod;
                 else if (mod->value == modCast->value)
                     modCast = ChangePriorityMods(modCast, mod, spellInfo);
-                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_CASTING_TIME totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
+                //TC_LOG_DEBUG("spell", "Player::ApplySpellMod SPELLMOD_CASTING_TIME totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
                 continue;
             }
             if (mod->op == SPELLMOD_COST && mod->value < 0)
@@ -3841,7 +3841,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
                     modCost = mod;
                 else if (mod->value == modCost->value)
                     modCost = ChangePriorityMods(modCost, mod, spellInfo);
-                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod SPELLMOD_COST totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
+                //TC_LOG_DEBUG("spell", "Player::ApplySpellMod SPELLMOD_COST totalflat %i totalmul %f basevalue %i spellId %i mod->spellId %i", totalflat, (totalmul - 1.0f), basevalue, spellId, mod->spellId);
                 continue;
             }
 
@@ -3858,13 +3858,13 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     {
         totalmul += CalculatePct(1.0f, modCast->value);
         DropModCharge(modCast, spell);
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCast->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCast->spellId);
+        //TC_LOG_DEBUG("spell", "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCast->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCast->spellId);
     }
     if (modCost)
     {
         totalmul += CalculatePct(1.0f, modCost->value);
         DropModCharge(modCost, spell);
-        //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCost->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCost->spellId);
+        //TC_LOG_DEBUG("spell", "Player::ApplySpellMod totalflat %i totalmul %f basevalue %i, modCost->spellId %i", totalflat, (totalmul - 1.0f), basevalue, modCost->spellId);
     }
     //float diff = (float)basevalue * (totalmul - 1.0f) + (float)totalflat;
     //basevalue = T((float)basevalue + diff);

@@ -501,14 +501,14 @@ class npc_air_force_bots : public CreatureScript
                 }
 
                 if (!SpawnAssoc)
-                    sLog->outError(LOG_FILTER_SQL, "TCSR: Creature template entry %u has ScriptName npc_air_force_bots, but it's not handled by that script", creature->GetEntry());
+                    TC_LOG_ERROR("sql", "TCSR: Creature template entry %u has ScriptName npc_air_force_bots, but it's not handled by that script", creature->GetEntry());
                 else
                 {
                     CreatureTemplate const* spawnedTemplate = sObjectMgr->GetCreatureTemplate(SpawnAssoc->spawnedCreatureEntry);
 
                     if (!spawnedTemplate)
                     {
-                        sLog->outError(LOG_FILTER_SQL, "TCSR: Creature template entry %u does not exist in DB, which is required by npc_air_force_bots", SpawnAssoc->spawnedCreatureEntry);
+                        TC_LOG_ERROR("sql", "TCSR: Creature template entry %u does not exist in DB, which is required by npc_air_force_bots", SpawnAssoc->spawnedCreatureEntry);
                         SpawnAssoc = NULL;
                         return;
                     }
@@ -528,7 +528,7 @@ class npc_air_force_bots : public CreatureScript
                     SpawnedGUID = summoned->GetGUID();
                 else
                 {
-                    sLog->outError(LOG_FILTER_SQL, "TCSR: npc_air_force_bots: wasn't able to spawn Creature %u", SpawnAssoc->spawnedCreatureEntry);
+                    TC_LOG_ERROR("sql", "TCSR: npc_air_force_bots: wasn't able to spawn Creature %u", SpawnAssoc->spawnedCreatureEntry);
                     SpawnAssoc = NULL;
                 }
 
@@ -1206,7 +1206,7 @@ void npc_doctor::npc_doctorAI::UpdateAI(uint32 diff)
                     patientEntry = HordeSoldierId[rand() % 3];
                     break;
                 default:
-                    sLog->outError(LOG_FILTER_TSCR, "Invalid entry for Triage doctor. Please check your database");
+                    TC_LOG_ERROR("server", "Invalid entry for Triage doctor. Please check your database");
                     return;
             }
 

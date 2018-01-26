@@ -91,7 +91,7 @@ void WorldSession::HandleLearnTalents(WorldPacket& recvData)
 
 void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "MSG_TALENT_WIPE_CONFIRM");
+    TC_LOG_DEBUG("network", "MSG_TALENT_WIPE_CONFIRM");
 
     uint8 specializationReset = recvData.read<uint8>();
     ObjectGuid guid;
@@ -149,18 +149,18 @@ void WorldSession::HandleQueryPlayerRecipes(WorldPacket& recvPacket)
     recvPacket.ReadGuidMask<6, 0, 2, 3, 5, 7, 1, 4>(guid);
     recvPacket.ReadGuidBytes<5, 6, 1, 3, 4, 0, 7, 2>(guid);
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_QUERY_PLAYER_RECIPES player: %s spell: %u skill: %u guid: %u", _player->GetName(), spellId, skillId, (uint64)guid);
+    TC_LOG_DEBUG("network", "CMSG_QUERY_PLAYER_RECIPES player: %s spell: %u skill: %u guid: %u", _player->GetName(), spellId, skillId, (uint64)guid);
 
     if (!sSkillLineStore.LookupEntry(skillId) || !sSpellMgr->GetSpellInfo(spellId))
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_QUERY_PLAYER_RECIPES player: no such spell or skill.");
+        TC_LOG_DEBUG("network", "CMSG_QUERY_PLAYER_RECIPES player: no such spell or skill.");
         return;
     }
 
     Player* player = sObjectAccessor->FindPlayer(guid);
     if (!player)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_QUERY_PLAYER_RECIPES player %u is not in world.", (uint64)guid);
+        TC_LOG_DEBUG("network", "CMSG_QUERY_PLAYER_RECIPES player %u is not in world.", (uint64)guid);
         return;
     }
 

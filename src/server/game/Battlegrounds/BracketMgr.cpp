@@ -22,7 +22,7 @@ void BracketMgr::LoadCharacterBrackets()
     QueryResult result = CharacterDatabase.Query("SELECT `bracket`, `rating`, `best`, `bestWeek`, `mmr`, `games`, `wins`, `weekGames`, `weekWins`, `guid` FROM `character_brackets_info`");
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 bracket info. DB table `character_brackets_info` is empty!");
+        TC_LOG_INFO("server", ">> Loaded 0 bracket info. DB table `character_brackets_info` is empty!");
         return;
     }
 
@@ -49,7 +49,7 @@ void BracketMgr::LoadCharacterBrackets()
         ++count;
     }
     while (result->NextRow());
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u brackets data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server", ">> Loaded %u brackets data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 Bracket* BracketMgr::TryGetOrCreateBracket(uint64 guid, BracketType bType)

@@ -1369,10 +1369,10 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void PrepareGunshipEvent()
             {
-                /*sLog->outDebug(LOG_FILTER_TSCR, "PrepareGunshipEvent %u, %u",isPrepared, GetBossState(DATA_GUNSHIP_EVENT));
+                /*TC_LOG_DEBUG("server", "PrepareGunshipEvent %u, %u",isPrepared, GetBossState(DATA_GUNSHIP_EVENT));
                 if (isPrepared || GetBossState(DATA_GUNSHIP_EVENT) == DONE)
                     return;
-                sLog->outDebug(LOG_FILTER_TSCR, "PrepareGunshipEvent");
+                TC_LOG_DEBUG("server", "PrepareGunshipEvent");
                 isPrepared = true;
 
                 if(TeamInInstance == ALLIANCE)
@@ -1422,7 +1422,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                     }
                     else
-                        sLog->outDebug(LOG_FILTER_TSCR, "LoadTransportInMap GO_ORGRIM_S_HAMMER_ALLIANCE_ICC error");
+                        TC_LOG_DEBUG("server", "LoadTransportInMap GO_ORGRIM_S_HAMMER_ALLIANCE_ICC error");
 
                     if(Transport* t = sMapMgr->LoadTransportInMap(instance, GO_THE_SKYBREAKER_ALLIANCE_ICC, 108000))
                     {
@@ -1470,7 +1470,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                     }
                     else
-                        sLog->outDebug(LOG_FILTER_TSCR, "LoadTransportInMap GO_THE_SKYBREAKER_ALLIANCE_ICC error");
+                        TC_LOG_DEBUG("server", "LoadTransportInMap GO_THE_SKYBREAKER_ALLIANCE_ICC error");
                 }
 
                if(TeamInInstance == HORDE)
@@ -1527,7 +1527,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                       }
                     }
                     else
-                        sLog->outDebug(LOG_FILTER_TSCR, "LoadTransportInMap GO_THE_SKYBREAKER_HORDE_ICC error");
+                        TC_LOG_DEBUG("server", "LoadTransportInMap GO_THE_SKYBREAKER_HORDE_ICC error");
                  
                     if(Transport* th = sMapMgr->LoadTransportInMap(instance,GO_ORGRIM_S_HAMMER_HORDE_ICC, 77800))
                     {
@@ -1563,7 +1563,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                     }
                     else
-                        sLog->outDebug(LOG_FILTER_TSCR, "LoadTransportInMap GO_ORGRIM_S_HAMMER_HORDE_ICC error");
+                        TC_LOG_DEBUG("server", "LoadTransportInMap GO_ORGRIM_S_HAMMER_HORDE_ICC error");
                 }*/
             }
 

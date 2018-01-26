@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,33 +15,20 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGWORKER_H
-#define LOGWORKER_H
+#ifndef ModelIgnoreFlags_h__
+#define ModelIgnoreFlags_h__
 
-#include "LogOperation.h"
+#include "Define.h"
 
-#include <ace/Task.h>
-#include <ace/Activation_Queue.h>
-
-class LogWorker: protected ACE_Task_Base
+namespace VMAP
 {
-    public:
-        LogWorker();
-        ~LogWorker();
-
-        typedef ACE_Message_Queue_Ex<LogOperation, ACE_MT_SYNCH> LogMessageQueueType;
-
-        enum
-        {
-            HIGH_WATERMARK = 8 * 1024 * 1024,
-            LOW_WATERMARK  = 8 * 1024 * 1024
-        };
-
-        int enqueue(LogOperation *op);
-
-    private:
-        virtual int svc();
-        LogMessageQueueType m_queue;
+enum class ModelIgnoreFlags : uint32
+{
+    Nothing = 0x00,
+    M2      = 0x01
 };
 
-#endif
+inline ModelIgnoreFlags operator&(ModelIgnoreFlags left, ModelIgnoreFlags right) { return ModelIgnoreFlags(uint32(left) & uint32(right)); }
+}
+
+#endif // ModelIgnoreFlags_h__

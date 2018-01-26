@@ -26,11 +26,11 @@
 //#include "GameObject.h"
 //#include "Map.h"
 
-#define OUT_SAVE_INST_DATA             sLog->outDebug(LOG_FILTER_TSCR, "Saving Instance Data for Instance %s (Map %d, Instance Id %d)", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
-#define OUT_SAVE_INST_DATA_COMPLETE    sLog->outDebug(LOG_FILTER_TSCR, "Saving Instance Data for Instance %s (Map %d, Instance Id %d) completed.", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
-#define OUT_LOAD_INST_DATA(a)          sLog->outDebug(LOG_FILTER_TSCR, "Loading Instance Data for Instance %s (Map %d, Instance Id %d). Input is '%s'", instance->GetMapName(), instance->GetId(), instance->GetInstanceId(), a)
-#define OUT_LOAD_INST_DATA_COMPLETE    sLog->outDebug(LOG_FILTER_TSCR, "Instance Data Load for Instance %s (Map %d, Instance Id: %d) is complete.", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
-#define OUT_LOAD_INST_DATA_FAIL        sLog->outError(LOG_FILTER_TSCR, "Unable to load Instance Data for Instance %s (Map %d, Instance Id: %d).", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
+#define OUT_SAVE_INST_DATA             TC_LOG_DEBUG("server", "Saving Instance Data for Instance %s (Map %d, Instance Id %d)", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
+#define OUT_SAVE_INST_DATA_COMPLETE    TC_LOG_DEBUG("server", "Saving Instance Data for Instance %s (Map %d, Instance Id %d) completed.", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
+#define OUT_LOAD_INST_DATA(a)          TC_LOG_DEBUG("server", "Loading Instance Data for Instance %s (Map %d, Instance Id %d). Input is '%s'", instance->GetMapName(), instance->GetId(), instance->GetInstanceId(), a)
+#define OUT_LOAD_INST_DATA_COMPLETE    TC_LOG_DEBUG("server", "Instance Data Load for Instance %s (Map %d, Instance Id: %d) is complete.", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
+#define OUT_LOAD_INST_DATA_FAIL        TC_LOG_ERROR("server", "Unable to load Instance Data for Instance %s (Map %d, Instance Id: %d).", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 
 class Map;
 class Unit;
@@ -134,13 +134,13 @@ class InstanceScript : public ZoneScript
         void OnCreatureRemove(Creature* /*creature*/) {}
         void OnGameObjectCreate(GameObject* go)
         {
-            //sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::OnGameObjectCreate go %u", go->GetEntry());
+            //TC_LOG_DEBUG("server", "InstanceScript::OnGameObjectCreate go %u", go->GetEntry());
             if(sObjectMgr->GetCreatureAIInstaceGoData(go->GetEntry()))
                 AddDoor(go, true);
         }
         void OnGameObjectRemove(GameObject* go)
         {
-            //sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::OnGameObjectRemove go %u", go->GetEntry());
+            //TC_LOG_DEBUG("server", "InstanceScript::OnGameObjectRemove go %u", go->GetEntry());
             if(sObjectMgr->GetCreatureAIInstaceGoData(go->GetEntry()))
                 AddDoor(go, false);
         }
@@ -258,7 +258,7 @@ class InstanceScript : public ZoneScript
         void UpdatePhasing();
         void SetBossNumber(uint32 number)
         {
-            //sLog->outDebug(LOG_FILTER_TSCR, "InstanceScript::SetBossNumber number %u", number);
+            //TC_LOG_DEBUG("server", "InstanceScript::SetBossNumber number %u", number);
             if(bosses.size() < number) bosses.resize(number);
         }
         void LoadDoorDataBase(std::vector<DoorData> const* data);

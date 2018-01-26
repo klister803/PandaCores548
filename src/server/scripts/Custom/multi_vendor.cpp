@@ -72,7 +72,7 @@ public:
         if (sObjectMgr->IsPlayerInLogList(player))
         {
             sObjectMgr->DumpDupeConstant(player);
-            sLog->outDebug(LOG_FILTER_DUPE, "---ItemBack; action: %u;", action);
+            TC_LOG_DEBUG("dupe", "---ItemBack; action: %u;", action);
         }
 
         float rate = sWorld->getRate(RATE_DONATE);
@@ -247,7 +247,7 @@ public:
 
                     if (Item* item = Item::CreateItem(EFIRALS, transcount, 0))
                     {
-                        sLog->outDebug(LOG_FILTER_EFIR, "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", EFIRALS, transcount, player->GetGUID(), item->GetGUID(), action);
+                        TC_LOG_DEBUG("efir", "EFIRALS_TRANS item %u; transcount efir = %u playerGUID %u, itemGUID %u receiver %u", EFIRALS, transcount, player->GetGUID(), item->GetGUID(), action);
 
                         player->SaveInventoryAndGoldToDB(trans);
                         item->SaveToDB(trans);                           // save for prevent lost at next mail load, if send fail then item will deleted
@@ -381,7 +381,7 @@ public:
 
     bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "item_back sender %u, action %u", sender, action);
+        TC_LOG_DEBUG("network", "item_back sender %u, action %u", sender, action);
 
         if(!player || !creature || sender != GOSSIP_SENDER_MAIN || !player->getAttackers().empty())
             return true;
@@ -397,10 +397,10 @@ public:
         if (sObjectMgr->IsPlayerInLogList(player))
         {
             sObjectMgr->DumpDupeConstant(player);
-            sLog->outDebug(LOG_FILTER_DUPE, "---ItemBack; action: %u;", action);
+            TC_LOG_DEBUG("dupe", "---ItemBack; action: %u;", action);
         }
 
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "item_back sender %u, action %u", sender, action);
+        TC_LOG_DEBUG("network", "item_back sender %u, action %u", sender, action);
 
         if(action > 0)
         {
@@ -445,7 +445,7 @@ public:
 
             if(Item *item = GetItemByGuid(action, player))
             {
-                sLog->outDebug(LOG_FILTER_EFIR, "ItemBack item %u; count efir = %u playerGUID %u, itemGUID %u", item->GetEntry(), count, player->GetGUID(), action);
+                TC_LOG_DEBUG("efir", "ItemBack item %u; count efir = %u playerGUID %u, itemGUID %u", item->GetEntry(), count, player->GetGUID(), action);
 
                 player->DestroyItemCount(item, count, true);
                 player->AddItem(EFIRALS, uint32(efircount * 0.8));

@@ -1326,7 +1326,7 @@ public:
     virtual bool Execute(uint64 , uint32)
     {
         LiquidData liquidStatus;
-        ZLiquidStatus status = player->GetMap()->getLiquidStatus(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
+        ZLiquidStatus status = player->GetMap()->GetLiquidStatus(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
         if (!player->IsOnVehicle() && status == LIQUID_MAP_IN_WATER)
             player->AddAura(spellId, player);
         return true;

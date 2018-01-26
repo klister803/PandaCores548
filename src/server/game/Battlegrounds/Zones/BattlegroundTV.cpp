@@ -87,7 +87,7 @@ void BattlegroundTV::HandleKillPlayer(Player* player, Player* killer)
 
     if (!killer)
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundTV: Killer player not found");
+        TC_LOG_ERROR("bg", "BattlegroundTV: Killer player not found");
         return;
     }
 
@@ -116,7 +116,7 @@ void BattlegroundTV::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 8452:                                          // out from waiting room
             break;
         default:
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg", "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendNotification("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -145,7 +145,7 @@ bool BattlegroundTV::SetupBattleground()
         || !AddObject(BG_TV_OBJECT_BUFF_1, BG_TV_OBJECT_TYPE_BUFF_1, -10715.7128f, 378.1027f, 24.4120f, 0, 0, 0, 0, 1.f, 120)
         || !AddObject(BG_TV_OBJECT_BUFF_2, BG_TV_OBJECT_TYPE_BUFF_2, -10714.3017f, 482.7957f, 24.4526f, 0, 0, 0, 0, 1.f, 120))
     {
-        sLog->outError(LOG_FILTER_SQL, "BattlegroundTV: Failed to spawn some object!");
+        TC_LOG_ERROR("sql", "BattlegroundTV: Failed to spawn some object!");
         return false;
     }
 

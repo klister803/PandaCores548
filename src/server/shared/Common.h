@@ -256,4 +256,14 @@ extern ACE_Based::LockedQueue<ArenaLog*,  ACE_Thread_Mutex> ArenaLogQueue;
   ACE_Read_Guard< MUTEX > TRINITY_GUARD_OBJECT (LOCK); \
     if (TRINITY_GUARD_OBJECT.locked() == 0) ASSERT(false);
 
+namespace Trinity
+{
+    //! std::make_unique implementation (TODO: remove this once C++14 is supported)
+    template<typename T, typename ...Args>
+    std::unique_ptr<T> make_unique(Args&& ...args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+}
+
 #endif

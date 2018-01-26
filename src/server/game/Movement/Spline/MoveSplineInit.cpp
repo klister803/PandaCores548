@@ -185,9 +185,9 @@ namespace Movement
     {
         if (generatePath)
         {
-            PathFinderMovementGenerator path(&unit);
-            path.calculate(dest.x, dest.y, dest.z, forceDestination);
-            MovebyPath(path.getPath());
+            PathGenerator path(&unit);
+            path.CalculatePath(dest.x, dest.y, dest.z, forceDestination);
+            MovebyPath(path.GetPath());
         }
         else
         {

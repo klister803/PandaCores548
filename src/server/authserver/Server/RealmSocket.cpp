@@ -59,7 +59,7 @@ int RealmSocket::open(void * arg)
 
     if (peer().get_remote_addr(addr) == -1)
     {
-        sLog->outError(LOG_FILTER_AUTHSERVER, "Error %s while opening realm socket!", ACE_OS::strerror(errno));
+        TC_LOG_ERROR("server", "Error %s while opening realm socket!", ACE_OS::strerror(errno));
         return -1;
     }
 

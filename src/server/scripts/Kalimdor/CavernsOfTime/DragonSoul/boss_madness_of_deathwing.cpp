@@ -2776,7 +2776,7 @@ class npc_madness_of_deathwing_jump_pad : public CreatureScript
 
                         if (!otherJumpPad)
                         {
-                            //sLog->outError(LOG_FILTER_TSCR, "OtherJumpPad not found for GUID %u", me->GetGUIDLow());
+                            //TC_LOG_ERROR("server", "OtherJumpPad not found for GUID %u", me->GetGUIDLow());
                             checkTimer = 1000;
                             return;
                         }

@@ -72,3 +72,4 @@ class EventProcessor
         std::recursive_mutex m_queue_lock;
 };
 #endif
+

@@ -248,7 +248,7 @@ void BattlefieldWG::OnBattleStart()
         m_titansRelic->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
     }
     else
-        sLog->outError(LOG_FILTER_BATTLEFIELD, "WG: Failed to spawn titan relic.");
+        TC_LOG_ERROR("bg.wg", "WG: Failed to spawn titan relic.");
 
 
     // Update tower visibility and update faction
@@ -577,7 +577,7 @@ uint8 BattlefieldWG::GetSpiritGraveyardId(uint32 areaId)
         case AREA_THE_CHILLED_QUAGMIRE:
             return BATTLEFIELD_WG_GY_HORDE;
         default:
-            sLog->outError(LOG_FILTER_BATTLEFIELD, "BattlefieldWG::GetSpiritGraveyardId: Unexpected Area Id %u", areaId);
+            TC_LOG_ERROR("bg.wg", "BattlefieldWG::GetSpiritGraveyardId: Unexpected Area Id %u", areaId);
             break;
     }
 
@@ -1223,7 +1223,7 @@ void BattlefieldWG::RewardMarkOfHonor(Player *plr, uint32 count)
 
     if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
     {
-        sLog->outError(LOG_FILTER_BATTLEFIELD, "Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
+        TC_LOG_ERROR("bg.wg", "Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
         return;
     }
 

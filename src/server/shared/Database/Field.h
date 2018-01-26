@@ -43,7 +43,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetUInt8() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetUInt8() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -60,7 +60,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GeInt8() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GeInt8() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -77,7 +77,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetUInt16() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetUInt16() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -94,7 +94,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetInt16() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetInt16() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -111,7 +111,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetUInt32() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetUInt32() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -128,7 +128,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetInt32() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetInt32() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -145,7 +145,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetUInt64() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetUInt64() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -162,7 +162,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetInt64() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetInt64() on non-numeric field.");
                 return 0;
             }
             #endif
@@ -179,7 +179,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetFloat() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetFloat() on non-numeric field.");
                 return 0.0f;
             }
             #endif
@@ -196,7 +196,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (!IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetDouble() on non-numeric field.");
+                TC_LOG_WARN("sql","Error: GetDouble() on non-numeric field.");
                 return 0.0f;
             }
             #endif
@@ -213,7 +213,7 @@ class Field
             #ifdef TRINITY_DEBUG
             if (IsNumeric())
             {
-                sLog->outWarn(LOG_FILTER_SQL,"Error: GetCString() on numeric field.");
+                TC_LOG_WARN("sql","Error: GetCString() on numeric field.");
                 return NULL;
             }
             #endif
@@ -332,7 +332,7 @@ class Field
                 MYSQL_TYPE_SET:
                 */
                 default:
-                    sLog->outWarn(LOG_FILTER_SQL,"SQL::SizeForType(): invalid field type %u", uint32(field->type));
+                    TC_LOG_WARN("sql","SQL::SizeForType(): invalid field type %u", uint32(field->type));
                     return 0;
             }
         }

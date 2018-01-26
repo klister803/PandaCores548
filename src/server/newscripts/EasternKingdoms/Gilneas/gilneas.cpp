@@ -176,7 +176,7 @@ public:
                 me->AddThreat(who, 1.0f);
                 me->AI()->AttackStart(who);
             }
-            else if (who->isPet())
+            else if (who->IsPet())
             {
                 me->getThreatManager().resetAllAggro();
                 me->AddThreat(who, 1.0f);
@@ -257,7 +257,7 @@ public:
                 me->AddThreat(who, 1.0f);
                 me->AI()->AttackStart(who);
             }
-            else if (who->isPet())
+            else if (who->IsPet())
             {
                 me->getThreatManager().resetAllAggro();
                 me->AddThreat(who, 1.0f);
@@ -385,7 +385,7 @@ public:
                 me->AI()->AttackStart(pWho);
                 dmgCount = 0;
             }
-            else if (pWho->isPet())
+            else if (pWho->IsPet())
             {
                 me->getThreatManager().resetAllAggro();
                 me->AddThreat(pWho, 100000.0f);
@@ -448,7 +448,7 @@ public:
                 DoMeleeAttackIfReady();
             else if (me->getVictim()->GetTypeId() == TYPEID_PLAYER)
                 dmgCount = 0;
-            else if (me->getVictim()->isPet())
+            else if (me->getVictim()->IsPet())
                 dmgCount = 0;
             else
             {
@@ -825,7 +825,7 @@ public:
                 me->AddThreat(who, 1.0f);
                 me->AI()->AttackStart(who);
             }
-            else if (who->isPet())
+            else if (who->IsPet())
             {
                 me->getThreatManager().resetAllAggro();
                 me->AddThreat(who, 1.0f);
@@ -888,7 +888,7 @@ public:
                 me->AddThreat(who, 1.0f);
                 me->AI()->AttackStart(who);
             }
-            else if (who->isPet())
+            else if (who->IsPet())
             {
                 me->getThreatManager().resetAllAggro();
                 me->AddThreat(who, 1.0f);
@@ -2193,7 +2193,7 @@ public:
                 me->AddThreat(who, 1.0f);
                 me->AI()->AttackStart(who);
             }
-            else if (who->isPet())
+            else if (who->IsPet())
             {
                 me->getThreatManager().resetAllAggro();
                 me->AddThreat(who, 1.0f);
@@ -2873,7 +2873,7 @@ public:
             {
                 Miss = false;
             }
-            else if (me->getVictim()->isPet())
+            else if (me->getVictim()->IsPet())
             {
                 Miss = false;
             }

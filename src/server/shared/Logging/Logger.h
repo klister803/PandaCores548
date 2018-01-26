@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,29 +18,31 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "Appender.h"
+#include "Define.h"
+#include "LogCommon.h"
+#include <unordered_map>
+#include <string>
+
+class Appender;
+struct LogMessage;
 
 class Logger
 {
     public:
-        Logger();
-        ~Logger();
+        Logger(std::string const& name, LogLevel level);
 
-        void Create(std::string const& name, LogFilterType type, LogLevel level);
-        void addAppender(uint8 type, Appender *);
+        void addAppender(uint8 type, Appender* appender);
         void delAppender(uint8 type);
 
         std::string const& getName() const;
-        LogFilterType getType() const;
         LogLevel getLogLevel() const;
         void setLogLevel(LogLevel level);
-        void write(LogMessage& message);
+        void write(LogMessage* message) const;
 
     private:
         std::string name;
-        LogFilterType type;
         LogLevel level;
-        AppenderMap appenders;
+        std::unordered_map<uint8, Appender*> appenders;
 };
 
 #endif

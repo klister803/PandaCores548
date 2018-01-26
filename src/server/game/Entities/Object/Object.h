@@ -177,6 +177,7 @@ class Object
         void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }
         ObjectGuid const& GetVignetteGUID() const { return vignetteGuid; }
 
+        float GetObjectScale() const { return GetFloatValue(OBJECT_FIELD_SCALE_X); }
         void SetObjectScale(float scale) { SetFloatValue(OBJECT_FIELD_SCALE_X, scale); }
 
         TypeID GetTypeId() const { return m_objectTypeId; }
@@ -382,27 +383,35 @@ class Object
         // FG: some hacky helpers
         void ForceValuesUpdateAtIndex(uint32);
 
+        bool IsPlayer() const { return GetTypeId() == TYPEID_PLAYER; }
         Player* ToPlayer() { if (GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player*>(this); else return NULL; }
         Player const* ToPlayer() const { if (GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player const*>(this); else return NULL; }
 
+        bool IsCreature() const { return GetTypeId() == TYPEID_UNIT; }
         Creature* ToCreature() { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
         Creature const* ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature const*>(this); else return NULL; }
 
+        bool IsUnit() const { return isType(TYPEMASK_UNIT); }
         Unit* ToUnit() { if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit*>(this); else return NULL; }
         Unit const* ToUnit() const { if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit const*>(this); else return NULL; }
 
+        bool IsGameObject() const { return GetTypeId() == TYPEID_GAMEOBJECT; }
         GameObject* ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject*>(this); else return NULL; }
         GameObject const* ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject const*>(this); else return NULL; }
 
+        bool IsCorpse() const { return GetTypeId() == TYPEID_CORPSE; }
         Corpse* ToCorpse() { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse*>(this); else return NULL; }
         Corpse const* ToCorpse() const { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse const*>(this); else return NULL; }
 
+        bool IsItem() const { return GetTypeId() == TYPEID_ITEM; }
         Item* ToItem() { if (GetTypeId() == TYPEID_ITEM) return reinterpret_cast<Item*>(this); else return NULL; }
         Item const* ToItem() const { if (GetTypeId() == TYPEID_ITEM) return reinterpret_cast<Item const*>(this); else return NULL; }
 
+        bool IsDynObject() const { return GetTypeId() == TYPEID_DYNAMICOBJECT; }
         DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
         DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
 
+        bool IsAreaTrigger() const { return GetTypeId() == TYPEID_AREATRIGGER; }
         AreaTrigger* ToAreaTrigger() { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger*>(this); else return NULL; }
         AreaTrigger const* ToAreaTrigger() const { if (GetTypeId() == TYPEID_AREATRIGGER) return reinterpret_cast<AreaTrigger const*>(this); else return NULL; }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,20 +19,19 @@
 #include "ModelInstance.h"
 #include "WorldModel.h"
 #include "MapTree.h"
-#include "VMapDefinitions.h"
 
 using G3D::Vector3;
 using G3D::Ray;
 
 namespace VMAP
 {
-    ModelInstance::ModelInstance(const ModelSpawn &spawn, WorldModel* model): ModelSpawn(spawn), iModel(model)
+    ModelInstance::ModelInstance(ModelSpawn const& spawn, WorldModel* model): ModelSpawn(spawn), iModel(model)
     {
-        iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iRot.y/180.f, G3D::pi()*iRot.x/180.f, G3D::pi()*iRot.z/180.f).inverse();
+        iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pif()*iRot.y/180.f, G3D::pif()*iRot.x/180.f, G3D::pif()*iRot.z/180.f).inverse();
         iInvScale = 1.f/iScale;
     }
 
-    bool ModelInstance::intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const
+    bool ModelInstance::intersectRay(G3D::Ray const& pRay, float& pMaxDist, bool pStopAtFirstHit) const
     {
         if (!iModel)
         {
@@ -40,12 +39,49 @@ namespace VMAP
             return false;
         }
         float time = pRay.intersectionTime(iBound);
-        if (time == G3D::inf())
+        if (time == G3D::finf())
         {
 //            std::cout << "Ray does not hit '" << name << "'\n";
 
             return false;
         }
+        if (pStopAtFirstHit && flags & MOD_IS_GO)
+            return false;
+//        std::cout << "Ray crosses bound of '" << name << "'\n";
+/*        std::cout << "ray from:" << pRay.origin().x << ", " << pRay.origin().y << ", " << pRay.origin().z
+                  << " dir:" << pRay.direction().x << ", " << pRay.direction().y << ", " << pRay.direction().z
+                  << " t/tmax:" << time << '/' << pMaxDist;
+        std::cout << "\nBound lo:" << iBound.low().x << ", " << iBound.low().y << ", " << iBound.low().z << " hi: "
+                  << iBound.high().x << ", " << iBound.high().y << ", " << iBound.high().z << std::endl; */
+        // child bounds are defined in object space:
+        G3D::Vector3 p = iInvRot * (pRay.origin() - iPos) * iInvScale;
+        Ray modRay(p, iInvRot * pRay.direction());
+        float distance = pMaxDist * iInvScale;
+        bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit);
+        if (hit)
+        {
+            distance *= iScale;
+            pMaxDist = distance;
+        }
+        return hit;
+    }
+
+    bool ModelInstance::intersectLine(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const
+    {
+        if (!iModel)
+        {
+            //std::cout << "<object not loaded>\n";
+            return false;
+        }
+        float time = pRay.intersectionTime(iBound);
+        if (time == G3D::finf())
+        {
+//            std::cout << "Ray does not hit '" << name << "'\n";
+
+            return false;
+        }
+        if (pStopAtFirstHit && flags & MOD_IS_GO)
+            return false;
 //        std::cout << "Ray crosses bound of '" << name << "'\n";
 /*        std::cout << "ray from:" << pRay.origin().x << ", " << pRay.origin().y << ", " << pRay.origin().z
                   << " dir:" << pRay.direction().x << ", " << pRay.direction().y << ", " << pRay.direction().z
@@ -56,7 +92,7 @@ namespace VMAP
         Vector3 p = iInvRot * (pRay.origin() - iPos) * iInvScale;
         Ray modRay(p, iInvRot * pRay.direction());
         float distance = pMaxDist * iInvScale;
-        bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit);
+        bool hit = iModel->intersectLine(modRay, distance, pStopAtFirstHit);
         if (hit)
         {
             distance *= iScale;
@@ -81,12 +117,12 @@ namespace VMAP
         if (!iBound.contains(p))
             return;
         // child bounds are defined in object space:
-        Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
-        Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+        G3D::Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
+        G3D::Vector3 zDirModel = iInvRot * G3D::Vector3(0.f, 0.f, -1.f);
         float zDist;
         if (iModel->IntersectPoint(pModel, zDirModel, zDist, info))
         {
-            Vector3 modelGround = pModel + zDist * zDirModel;
+            G3D::Vector3 modelGround = pModel + zDist * zDirModel;
             // Transform back to world space. Note that:
             // Mat * vec == vec * Mat.transpose()
             // and for rotation matrices: Mat.inverse() == Mat.transpose()
@@ -115,12 +151,12 @@ namespace VMAP
         if (!iBound.contains(p))
             return false;
         // child bounds are defined in object space:
-        Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
-        Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+        G3D::Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
+        G3D::Vector3 zDirModel = iInvRot * G3D::Vector3(0.f, 0.f, -1.f);
         float zDist;
         if (iModel->GetLocationInfo(pModel, zDirModel, zDist, info))
         {
-            Vector3 modelGround = pModel + zDist * zDirModel;
+            G3D::Vector3 modelGround = pModel + zDist * zDirModel;
             // Transform back to world space. Note that:
             // Mat * vec == vec * Mat.transpose()
             // and for rotation matrices: Mat.inverse() == Mat.transpose()
@@ -138,8 +174,8 @@ namespace VMAP
     bool ModelInstance::GetLiquidLevel(const G3D::Vector3& p, LocationInfo &info, float &liqHeight) const
     {
         // child bounds are defined in object space:
-        Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
-        //Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+        G3D::Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
+        //Vector3 zDirModel = iInvRot * G3D::Vector3(0.f, 0.f, -1.f);
         float zDist;
         if (info.hitModel->GetLiquidLevel(pModel, zDist))
         {
@@ -167,10 +203,10 @@ namespace VMAP
         check += fread(&spawn.iPos, sizeof(float), 3, rf);
         check += fread(&spawn.iRot, sizeof(float), 3, rf);
         check += fread(&spawn.iScale, sizeof(float), 1, rf);
-        bool has_bound = (spawn.flags & MOD_HAS_BOUND);
+        bool has_bound = (spawn.flags & MOD_HAS_BOUND) != 0;
         if (has_bound) // only WMOs have bound in MPQ, only available after computation
         {
-            Vector3 bLow, bHigh;
+            G3D::Vector3 bLow, bHigh;
             check += fread(&bLow, sizeof(float), 3, rf);
             check += fread(&bHigh, sizeof(float), 3, rf);
             spawn.iBound = G3D::AABox(bLow, bHigh);
@@ -197,7 +233,7 @@ namespace VMAP
         return true;
     }
 
-    bool ModelSpawn::writeToFile(FILE* wf, const ModelSpawn &spawn)
+    bool ModelSpawn::writeToFile(FILE* wf, ModelSpawn const& spawn)
     {
         uint32 check=0;
         check += fwrite(&spawn.flags, sizeof(uint32), 1, wf);
@@ -206,7 +242,7 @@ namespace VMAP
         check += fwrite(&spawn.iPos, sizeof(float), 3, wf);
         check += fwrite(&spawn.iRot, sizeof(float), 3, wf);
         check += fwrite(&spawn.iScale, sizeof(float), 1, wf);
-        bool has_bound = (spawn.flags & MOD_HAS_BOUND);
+        bool has_bound = (spawn.flags & MOD_HAS_BOUND) != 0;
         if (has_bound) // only WMOs have bound in MPQ, only available after computation
         {
             check += fwrite(&spawn.iBound.low(), sizeof(float), 3, wf);

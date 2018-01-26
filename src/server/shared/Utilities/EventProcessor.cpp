@@ -99,7 +99,6 @@ void EventProcessor::AddEvent(BasicEvent* Event, uint64 e_time, bool set_addtime
 
 void EventProcessor::AddEventsFromQueue()
 {
-    std::lock_guard<std::recursive_mutex> _queue_lock(m_queue_lock);
     EventList::iterator itr = m_events_queue.begin();
     for(; itr != m_events_queue.end(); ++itr)
     {

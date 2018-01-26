@@ -30,7 +30,7 @@
 
 void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_LEADERS");
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_LEADERS");
 
     uint32 mapID, unk, time;
     recvPacket >> mapID >> unk >> time;
@@ -114,7 +114,7 @@ void WorldSession::HandleChallengeModeRequestOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_REWARD_INFO");
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_REWARD_INFO");
 
     ByteBuffer dataBuffer;
 
@@ -150,7 +150,7 @@ void WorldSession::HandleChallengeModeRequestRewardInfoOpcode(WorldPacket& recvP
 
 void WorldSession::HandleChallengeModeRequestCompletionInfoOpcode(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_COMPLETION_INFO");
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_CHALLENGE_MODE_REQUEST_COMPLETION_INFO");
 
     WorldPacket data(SMSG_CHALLENGE_MODE_COMPLETION_INFO, 100);
 

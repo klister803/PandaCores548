@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2017 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,22 +15,18 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef APPENDERDB_H
-#define APPENDERDB_H
+#ifndef AsioHacksImpl_h__
+#define AsioHacksImpl_h__
 
-#include "Appender.h"
+#include <boost/asio/strand.hpp>
 
-class AppenderDB: public Appender
+namespace Trinity
 {
+    class AsioStrand : public boost::asio::io_service::strand
+    {
     public:
-        AppenderDB(uint8 _id, std::string const& _name, LogLevel level, uint8 realmId);
-        ~AppenderDB();
-        void setEnable(bool enable);
+        AsioStrand(boost::asio::io_service& io_service) : boost::asio::io_service::strand(io_service) { }
+    };
+}
 
-    private:
-        uint8 realm;
-        bool enable;
-        void _write(LogMessage& message);
-};
-
-#endif
+#endif // AsioHacksImpl_h__

@@ -18,9 +18,9 @@ file(GLOB_RECURSE sources_Models Models/*.cpp Models/*.h)
 file(GLOB sources_localdir *.cpp *.h)
 
 if (USE_COREPCH)
-  set(collision_STAT_PCH_HDR PrecompiledHeaders/collisionPCH.h)
-  set(collision_STAT_PCH_SRC PrecompiledHeaders/collisionPCH.cpp)
-endif ()
+  set(collision_PCH_HDR PrecompiledHeaders/collisionPCH.h)
+  set(collision_PCH_SRC PrecompiledHeaders/collisionPCH.cpp)
+endif()
 
 set(collision_STAT_SRCS
   ${collision_STAT_SRCS}
@@ -31,10 +31,11 @@ set(collision_STAT_SRCS
 )
 
 include_directories(
-  ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/dep
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
+  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+  ${CMAKE_SOURCE_DIR}/dep/fmt
   ${CMAKE_SOURCE_DIR}/src/server/shared
   ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
@@ -49,7 +50,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/Addons
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
-  ${CMAKE_SOURCE_DIR}/src/server/game/Entities/AreaTrigger
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Item
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/GameObject
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities/Creature
@@ -76,18 +76,21 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Management
   ${CMAKE_CURRENT_SOURCE_DIR}/Maps
   ${CMAKE_CURRENT_SOURCE_DIR}/Models
+  ${CMAKE_BINARY_DIR}
   ${ACE_INCLUDE_DIR}
   ${MYSQL_INCLUDE_DIR}
+  ${OPENSSL_INCLUDE_DIR}
 )
-
-GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(collision STATIC
-  ${collision_STAT_SRCS}
-  ${collision_STAT_PCH_SRC}
-)
+ ${collision_STAT_SRCS}
+ ${collision_PCH_SRC}
+ )
+
 
 # Generate precompiled header
 if (USE_COREPCH)
-  add_cxx_pch(collision ${collision_STAT_PCH_HDR} ${collision_STAT_PCH_SRC})
-endif ()
+  add_cxx_pch(collision ${collision_PCH_HDR} ${collision_PCH_SRC})
+endif()
+
+

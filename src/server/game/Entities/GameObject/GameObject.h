@@ -1068,7 +1068,17 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void EnableOrDisableGo(bool activate, bool alternative = false);
 
         uint32 GetVignetteId() const { return m_goInfo ? m_goInfo->GetVignetteId() : 0; }
+
+        void UpdateModelPosition();
+
+        /// This method transforms supplied transport offsets into global coordinates
+        virtual void CalculatePassengerPosition(float& x, float& y, float& z, float& o);
+
+        /// This method transforms supplied global coordinates into local offsets
+        virtual void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
+
     protected:
+        GameObjectModel* CreateModel();
         bool AIM_Initialize();
         uint32      m_spellId;
         time_t      m_respawnTime;                          // (secs) time of next respawn (or despawn if GO have owner()),

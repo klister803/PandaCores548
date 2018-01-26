@@ -161,7 +161,7 @@ void BattlegroundMgr::Update(uint32 diff)
         if (m_NextRatedArenaUpdate < diff)
         {
             // forced update for rated arenas (scan all, but skipped non rated)
-            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BattlegroundMgr: UPDATING ARENA QUEUES");
+            TC_LOG_DEBUG("bg", "BattlegroundMgr: UPDATING ARENA QUEUES");
             for (int qtype = BATTLEGROUND_QUEUE_2v2; qtype <= BATTLEGROUND_QUEUE_5v5; ++qtype)
                 for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
                 {
@@ -415,7 +415,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         // Check if player finish game. If he leave game he will be true untill _ProcessOfflineQueue
         if (!bg->IsPlayerInBattleground(itr2->first))
         {
-            //sLog->outError(LOG_FILTER_BATTLEGROUND, "Player " UI64FMTD " has scoreboard entry for battleground %u but is not in battleground!", itr->first, bg->GetTypeID(true));
+            //TC_LOG_ERROR("bg", "Player " UI64FMTD " has scoreboard entry for battleground %u but is not in battleground!", itr->first, bg->GetTypeID(true));
             continue;
         }
 
@@ -602,7 +602,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         // hardcap for client pvp log
         if (count >= 80)
             break;
-        //sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::PVP_LOG mmr: %i, last mmr change: %i, rating: %i,  last rating change: %i", bracket->getMMV(), bracket->getLastMMRChange(), bracket->getRating(), bracket->getRatingLastChange());
+        //TC_LOG_ERROR("bg", "Battleground::PVP_LOG mmr: %i, last mmr change: %i, rating: %i,  last rating change: %i", bracket->getMMV(), bracket->getLastMMRChange(), bracket->getRating(), bracket->getRatingLastChange());
     }
 
     data->WriteBit(false);                                          // not used. old isRated
@@ -800,7 +800,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
 
     if (!bg_template)
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR("bg", "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
         return NULL;
     }
 
@@ -813,15 +813,13 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         //    generatedType != BATTLEGROUND_RB &&
         //    generatedType != BATTLEGROUND_RATED_10_VS_10);
         if (generatedType == BATTLEGROUND_TYPE_NONE || generatedType == BATTLEGROUND_RB || generatedType == BATTLEGROUND_RATED_10_VS_10)
-        {
-            sLog->outU(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WTF %u-%u", generatedType, bgTypeId);
             return NULL;
-        }
+
         bgTypeId = generatedType;
         bg_template = GetBattlegroundTemplate(bgTypeId);
         if (!bg_template)
         {
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg generated template not found for %u", bgTypeId);
+            TC_LOG_ERROR("bg", "Battleground: CreateNewBattleground - bg generated template not found for %u", bgTypeId);
             return NULL;
         }
     }
@@ -1013,7 +1011,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
 
     if (!result)
     {
-        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
+        TC_LOG_ERROR("server", ">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
         return;
     }
 
@@ -1031,7 +1029,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         bl = sBattlemasterListStore.LookupEntry(bgTypeID_);
         if (!bl)
         {
-            sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.", bgTypeID_);
+            TC_LOG_ERROR("bg", "Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.", bgTypeID_);
             continue;
         }
 
@@ -1047,14 +1045,14 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         // check values from DB
         if (data.MaxPlayersPerTeam == 0 || data.MinPlayersPerTeam > data.MaxPlayersPerTeam)
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `battleground_template` for id %u has bad values for MinPlayersPerTeam (%u) and MaxPlayersPerTeam(%u)",
+            TC_LOG_ERROR("sql", "Table `battleground_template` for id %u has bad values for MinPlayersPerTeam (%u) and MaxPlayersPerTeam(%u)",
                 data.bgTypeId, data.MinPlayersPerTeam, data.MaxPlayersPerTeam);
             continue;
         }
 
         if (data.LevelMin == 0 || data.LevelMax == 0 || data.LevelMin > data.LevelMax)
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `battleground_template` for id %u has bad values for LevelMin (%u) and LevelMax(%u)",
+            TC_LOG_ERROR("sql", "Table `battleground_template` for id %u has bad values for LevelMin (%u) and LevelMax(%u)",
                 data.bgTypeId, data.LevelMin, data.LevelMax);
             continue;
         }
@@ -1076,7 +1074,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         }
         else
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.", data.bgTypeId, startId);
+            TC_LOG_ERROR("sql", "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.", data.bgTypeId, startId);
             continue;
         }
 
@@ -1097,7 +1095,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         }
         else
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.", data.bgTypeId, startId);
+            TC_LOG_ERROR("sql", "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.", data.bgTypeId, startId);
             continue;
         }
 
@@ -1124,7 +1122,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battlegrounds in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server", ">> Loaded %u battlegrounds in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, Player* player, BattlegroundTypeId bgTypeId)
@@ -1200,7 +1198,7 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
             team = player->GetTeam();
         bg->GetTeamStartLoc(team, x, y, z, O);
 
-        sLog->outInfo(LOG_FILTER_BATTLEGROUND, "BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", player->GetName(), mapid, x, y, z, O);
+        TC_LOG_INFO("bg", "BATTLEGROUND: Sending %s to map %u, X %f, Y %f, Z %f, O %f", player->GetName(), mapid, x, y, z, O);
         if (bg->GetJoinType() == 5 && sWorld->getBoolConfig(CONFIG_CUSTOM_FOOTBALL))
             if (team == ALLIANCE)
                player->TeleportTo(mapid, 941.9f, 244.74f, 0.0f, 0.0f);  //ALLIANCE //gold 
@@ -1211,7 +1209,7 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
     }
     else
     {
-        sLog->outError(LOG_FILTER_BATTLEGROUND, "player %u is trying to port to non-existent bg instance %u", player->GetGUIDLow(), instanceId);
+        TC_LOG_ERROR("bg", "player %u is trying to port to non-existent bg instance %u", player->GetGUIDLow(), instanceId);
     }
 }
 
@@ -1276,7 +1274,7 @@ uint8 BattlegroundMgr::GetJoinTypeByBracketSlot(uint8 slot)
     default:
         break;
     }
-    sLog->outError(LOG_FILTER_ARENAS, "FATAL: Unknown arena slot %u", slot);
+    TC_LOG_ERROR("arena", "FATAL: Unknown arena slot %u", slot);
     return 0xFF;
 }
 
@@ -1493,7 +1491,7 @@ void BattlegroundMgr::LoadBattleMastersEntry()
 
     if (!result)
     {
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 battlemaster entries. DB table `battlemaster_entry` is empty!");
+        TC_LOG_INFO("server", ">> Loaded 0 battlemaster entries. DB table `battlemaster_entry` is empty!");
         return;
     }
 
@@ -1508,7 +1506,7 @@ void BattlegroundMgr::LoadBattleMastersEntry()
         uint32 bgTypeId  = fields[1].GetUInt32();
         if (!sBattlemasterListStore.LookupEntry(bgTypeId))
         {
-            sLog->outError(LOG_FILTER_SQL, "Table `battlemaster_entry` contain entry %u for not existed battleground type %u, ignored.", entry, bgTypeId);
+            TC_LOG_ERROR("sql", "Table `battlemaster_entry` contain entry %u for not existed battleground type %u, ignored.", entry, bgTypeId);
             continue;
         }
 
@@ -1516,7 +1514,7 @@ void BattlegroundMgr::LoadBattleMastersEntry()
     }
     while (result->NextRow());
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battlemaster entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server", ">> Loaded %u battlemaster entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 HolidayIds BattlegroundMgr::BGTypeToWeekendHolidayId(BattlegroundTypeId bgTypeId)

@@ -183,9 +183,9 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
                 pos.m_positionX = temp_x;
                 pos.m_positionY = temp_y;
                 pos.m_positionZ = new_z;
-                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "FleeingMovementGenerator 1 (m_positionX: %f m_positionY: %f m_positionZ: %f, temp_x: %f, temp_y: %f, new_z: %f)", pos.m_positionX, pos.m_positionY, pos.m_positionZ, temp_x, temp_y, new_z);
+                //TC_LOG_DEBUG("spell", "FleeingMovementGenerator 1 (m_positionX: %f m_positionY: %f m_positionZ: %f, temp_x: %f, temp_y: %f, new_z: %f)", pos.m_positionX, pos.m_positionY, pos.m_positionZ, temp_x, temp_y, new_z);
                 owner.GetFirstCollisionPosition(pos, distance, angle);
-                //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "FleeingMovementGenerator 2 (m_positionX: %f m_positionY: %f m_positionZ: %f, temp_x: %f, temp_y: %f, new_z: %f)", pos.m_positionX, pos.m_positionY, pos.m_positionZ, temp_x, temp_y, new_z);
+                //TC_LOG_DEBUG("spell", "FleeingMovementGenerator 2 (m_positionX: %f m_positionY: %f m_positionZ: %f, temp_x: %f, temp_y: %f, new_z: %f)", pos.m_positionX, pos.m_positionY, pos.m_positionZ, temp_x, temp_y, new_z);
                 temp_x = pos.m_positionX;
                 temp_y = pos.m_positionY;
                 new_z = pos.m_positionZ;
@@ -193,7 +193,7 @@ bool FleeingMovementGenerator<T>::_getPoint(T &owner, float &x, float &y, float 
                 float new_z_right = _map->GetHeight(owner.GetPhaseMask(), temp_x + 1.0f*cos(angle-static_cast<float>(M_PI/2)),temp_y + 1.0f*sin(angle-static_cast<float>(M_PI/2)),z,true);
                 if (fabs(new_z_left - new_z) < 1.2f && fabs(new_z_right - new_z) < 1.2f && fabs(new_z - z) < 1.2f)
                 {
-                    //sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "FleeingMovementGenerator 3 (X: %f Y: %f Z: %f, temp_x: %f, temp_y: %f, new_z: %f, new_z_left %f, new_z_right %f, new_z - z = %f)", x, y, z, temp_x, temp_y, new_z, new_z_left, new_z_right, new_z - z);
+                    //TC_LOG_DEBUG("spell", "FleeingMovementGenerator 3 (X: %f Y: %f Z: %f, temp_x: %f, temp_y: %f, new_z: %f, new_z_left %f, new_z_right %f, new_z - z = %f)", x, y, z, temp_x, temp_y, new_z, new_z_left, new_z_right, new_z - z);
                     x = temp_x;
                     y = temp_y;
                     z = new_z;
@@ -339,8 +339,8 @@ void FleeingMovementGenerator<Creature>::_Init(Creature &owner)
         return;
 
     //owner.SetTargetGuid(ObjectGuid());
-    is_water_ok = owner.canSwim();
-    is_land_ok  = owner.canWalk();
+    is_water_ok = owner.CanSwim();
+    is_land_ok  = owner.CanWalk();
 }
 
 template<>

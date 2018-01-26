@@ -103,7 +103,7 @@ void WorldSession::SendGroupInvite(Player* player, bool AlowEnter)
 //! 5.4.1
 void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_INVITE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_INVITE");
 
     ObjectGuid crossRealmGuid; // unused
 
@@ -248,7 +248,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
 //! 5.4.1
 void WorldSession::HandleGroupInviteResponseOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_INVITE_RESPONSE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_INVITE_RESPONSE");
 
     recvData.read_skip<uint8>(); // unk
     bool dword18 = recvData.ReadBit();
@@ -268,7 +268,7 @@ void WorldSession::HandleGroupInviteResponseOpcode(WorldPacket& recvData)
 
         if (group->GetLeaderGUID() == GetPlayer()->GetGUID())
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+            TC_LOG_ERROR("network", "HandleGroupAcceptOpcode: player %s(%d) tried to accept an invite to his own group", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
             return;
         }
 
@@ -327,7 +327,7 @@ void WorldSession::HandleGroupInviteResponseOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_UNINVITE_GUID");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_UNINVITE_GUID");
 
     ObjectGuid guid;
     std::string unkstring;
@@ -344,7 +344,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
     //can't uninvite yourself
     if (guid == GetPlayer()->GetGUID())
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network", "WorldSession::HandleGroupUninviteGuidOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -382,7 +382,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_UNINVITE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_UNINVITE");
 
     std::string membername;
     recvData >> membername;
@@ -394,7 +394,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
     // can't uninvite yourself
     if (GetPlayer()->GetName() == membername)
     {
-        sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::HandleGroupUninviteOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network", "WorldSession::HandleGroupUninviteOpcode: leader %s(%d) tried to uninvite himself from the group.", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         return;
     }
 
@@ -427,7 +427,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 //! 5.4.1
 void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SET_LEADER");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_SET_LEADER");
 
     ObjectGuid guid;
     recvData.read_skip<uint8>();
@@ -458,7 +458,7 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SET_ROLES");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_SET_ROLES");
 
     uint32 newRole = 0;
     uint8 unk = 0;
@@ -516,7 +516,7 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupDisbandOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_DISBAND");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_DISBAND");
     recvData.rfinish();
 
     Group* grp = GetPlayer()->GetGroup();
@@ -578,7 +578,7 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
 
     if (slot >= loot->items.size() + loot->quest_items.size())
     {
-        sLog->outDebug(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), slot, (unsigned long)loot->items.size());
+        TC_LOG_DEBUG("loot", "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), slot, (unsigned long)loot->items.size());
         return;
     }
 
@@ -633,7 +633,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
     if (!target)
         return;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [%s].", target->GetName());
+    TC_LOG_DEBUG("network", "WorldSession::HandleLootMasterGiveOpcode (CMSG_LOOT_MASTER_GIVE, 0x02A3) Target = [%s].", target->GetName());
 
     for (uint32 i = 0; i < count; ++i)
     {
@@ -663,14 +663,14 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
 
         if (slotid >= loot->items.size() + loot->quest_items.size())
         {
-            sLog->outDebug(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), slotid, (unsigned long)loot->items.size());
+            TC_LOG_DEBUG("loot", "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), slotid, (unsigned long)loot->items.size());
             return;
         }
 
         LootItem& item = slotid >= loot->items.size() ? loot->quest_items[slotid - loot->items.size()] : loot->items[slotid];
         if (item.currency)
         {
-            sLog->outDebug(LOG_FILTER_LOOT, "WorldSession::HandleLootMasterGiveOpcode: player %s tried to give currency via master loot! Hack alert! Slot %u, currency id %u", GetPlayer()->GetName(), slotid, item.itemid);
+            TC_LOG_DEBUG("loot", "WorldSession::HandleLootMasterGiveOpcode: player %s tried to give currency via master loot! Hack alert! Slot %u, currency id %u", GetPlayer()->GetName(), slotid, item.itemid);
             return;
         }
 
@@ -713,7 +713,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_LOOT_METHOD");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_LOOT_METHOD");
 
     uint8 lootMethod;
     ObjectGuid lootMaster;
@@ -776,7 +776,7 @@ void WorldSession::HandleLootRoll(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_MINIMAP_PING");
+    TC_LOG_DEBUG("network", "WORLD: Received MSG_MINIMAP_PING");
 
     if (!GetPlayer()->GetGroup())
         return;
@@ -785,7 +785,7 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
     uint8 unk;
     recvData >> x >> y >> unk;
 
-    //sLog->outDebug(LOG_FILTER_GENERAL, "Received opcode MSG_MINIMAP_PING X: %f, Y: %f", x, y);
+    //TC_LOG_DEBUG("server", "Received opcode MSG_MINIMAP_PING X: %f, Y: %f", x, y);
 
     /** error handling **/
     /********************/
@@ -812,7 +812,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
     recvData >> minimum;
     recvData >> unk;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RANDOM_ROLL min: %u max: %u unk: %u",
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_RANDOM_ROLL min: %u max: %u unk: %u",
         minimum, maximum, unk);
 
     /** error handling **/
@@ -823,7 +823,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
     // everything's fine, do it
     roll = urand(minimum, maximum);
 
-    //sLog->outDebug(LOG_FILTER_NETWORKIO, "ROLL: MIN: %u, MAX: %u, ROLL: %u", minimum, maximum, roll);
+    //TC_LOG_DEBUG("network", "ROLL: MIN: %u, MAX: %u, ROLL: %u", minimum, maximum, roll);
 
     WorldPacket data(SMSG_RANDOM_ROLL, 4+4+4+8);
     ObjectGuid guid = GetPlayer()->GetObjectGuid();
@@ -843,7 +843,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_TARGET_UPDATE");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_RAID_TARGET_UPDATE");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -875,7 +875,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupRaidConvertOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_RAID_CONVERT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_RAID_CONVERT");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -905,7 +905,7 @@ void WorldSession::HandleGroupRaidConvertOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_CHANGE_SUB_GROUP");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_CHANGE_SUB_GROUP");
 
     // we will get correct pointer for group here, so we don't have to check if group is BG raid
     Group* group = GetPlayer()->GetGroup();
@@ -935,7 +935,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleGroupSwapSubGroupOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SWAP_SUB_GROUP");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_SWAP_SUB_GROUP");
     uint8 unk1;
     ObjectGuid guid1;
     ObjectGuid guid2;
@@ -985,7 +985,7 @@ void WorldSession::HandleGroupSwapSubGroupOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupEveryoneIsAssistantOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_EVERYONE_IS_ASSISTANT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_SET_EVERYONE_IS_ASSISTANT");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -1002,7 +1002,7 @@ void WorldSession::HandleGroupEveryoneIsAssistantOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_ASSISTANT_LEADER");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GROUP_ASSISTANT_LEADER");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -1029,7 +1029,7 @@ void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket & recvData)
 //! 5.4.1
 void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_PARTY_ASSIGNMENT");
+    TC_LOG_DEBUG("network", "WORLD: Received MSG_PARTY_ASSIGNMENT");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -1070,7 +1070,7 @@ void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleRaidLeaderReadyCheck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_LEADER_READY_CHECK");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_RAID_LEADER_READY_CHECK");
 
     recvData.read_skip<uint8>(); // unk, 0x00
 
@@ -1119,7 +1119,7 @@ void WorldSession::HandleRaidLeaderReadyCheck(WorldPacket& recvData)
 //! 5.4.1
 void WorldSession::HandleRaidConfirmReadyCheck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_CONFIRM_READY_CHECK");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_RAID_CONFIRM_READY_CHECK");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
@@ -1439,7 +1439,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
 /*this procedure handles clients CMSG_REQUEST_PARTY_MEMBER_STATS request*/
 void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_REQUEST_PARTY_MEMBER_STATS");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_REQUEST_PARTY_MEMBER_STATS");
     ObjectGuid Guid;
     recvData.read_skip<uint8>();
 
@@ -1482,13 +1482,13 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
 
 /*void WorldSession::HandleGroupCancelOpcode(WorldPacket & recvData)
 {
-sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: got CMSG_GROUP_CANCEL.");
+TC_LOG_DEBUG("network", "WORLD: got CMSG_GROUP_CANCEL.");
 }*/
 
 //! 5.4.1
 void WorldSession::HandleOptOutOfLootOpcode(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_OPT_OUT_OF_LOOT");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_OPT_OUT_OF_LOOT");
 
     bool passOnLoot;
     recvData >> passOnLoot; // 1 always pass, 0 do not pass
@@ -1497,7 +1497,7 @@ void WorldSession::HandleOptOutOfLootOpcode(WorldPacket & recvData)
     if (!GetPlayer())                                        // needed because STATUS_AUTHED
     {
         if (passOnLoot)
-            sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_OPT_OUT_OF_LOOT value<>0 for not-loaded character!");
+            TC_LOG_ERROR("network", "CMSG_OPT_OUT_OF_LOOT value<>0 for not-loaded character!");
         return;
     }
 
@@ -1506,7 +1506,7 @@ void WorldSession::HandleOptOutOfLootOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleRolePollBegin(WorldPacket & recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_ROLE_POLL_BEGIN");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_ROLE_POLL_BEGIN");
 
     uint8 unk;
     recvData >> unk;
@@ -1541,7 +1541,7 @@ void WorldSession::HandleClearRaidMarkerOpcode(WorldPacket& recv_data)
     int8 id;
     recv_data >> id;
 
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_CLEAR_RAID_MARKER from %s (%u) id: %i",
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_CLEAR_RAID_MARKER from %s (%u) id: %i",
         GetPlayerName().c_str(), GetAccountId(), id);
 
     Group* group = _player->GetGroup();

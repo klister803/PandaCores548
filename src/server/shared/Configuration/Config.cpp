@@ -17,12 +17,19 @@
  */
 
 #include "Config.h"
+#include "Log.h"
+#include "Util.h"
 #include <ace/Auto_Ptr.h>
 #include <ace/Configuration_Import_Export.h>
 #include <ace/Thread_Mutex.h>
+#include <boost/property_tree/ini_parser.hpp>
+#include <algorithm>
+#include <memory>
 
 namespace ConfigMgr
 {
+
+namespace bpt = boost::property_tree;
 
 namespace
 {
@@ -30,31 +37,29 @@ namespace
     typedef ACE_Guard<LockType> GuardType;
 
     std::string _filename;
-    ACE_Auto_Ptr<ACE_Configuration_Heap> _config;
+    bpt::ptree _config;
     LockType m_configLock;
 
     // Defined here as it must not be exposed to end-users.
-    bool GetValueHelper(const char* name, ACE_TString &result)
+    template<class T>
+    T GetValueHelper(const char* name, T def)
     {
         GuardType guard(m_configLock);
 
-        if (_config.get() == 0)
-            return false;
-
-        ACE_TString section_name;
-        ACE_Configuration_Section_Key section_key;
-        const ACE_Configuration_Section_Key &root_key = _config->root_section();
-
-        int i = 0;
-        while (_config->enumerate_sections(root_key, i, section_name) == 0)
+        try
         {
-            _config->open_section(root_key, section_name.c_str(), 0, section_key);
-            if (_config->get_string_value(section_key, name, result) == 0)
-                return true;
-            ++i;
+            return _config.get<T>(bpt::ptree::path_type(name, '/'));
+        }
+        catch (bpt::ptree_bad_path)
+        {
+            printf("Missing name %s in config file %s, add \"%s\" to this file", name, _filename.c_str(), name);
+        }
+        catch (bpt::ptree_bad_data)
+        {
+            printf("Bad value defined for name %s in config file %s", name, _filename.c_str());
         }
 
-        return false;
+        return def;
     }
 }
 
@@ -65,50 +70,75 @@ bool Load(const char* file)
     if (file)
         _filename = file;
 
-    _config.reset(new ACE_Configuration_Heap);
-    if (_config->open() == 0)
+    try
     {
-        ACE_Ini_ImpExp config_importer(*_config.get());
-        if (config_importer.import_config(_filename.c_str()) == 0)
-            return true;
+        bpt::ptree fullTree;
+        bpt::ini_parser::read_ini(_filename, fullTree);
+
+        if (fullTree.empty())
+        {
+            printf("ConfigMgr::Load fullTree.empty() may be dubplicate name in option config");
+            return false;
+        }
+
+        // Since we're using only one section per config file, we skip the section and have direct property access
+        _config = fullTree.begin()->second;
     }
-    _config.reset();
-    return false;
+    catch (std::exception& e)
+    {
+        printf("ConfigMgr::Load exception %s", e.what());
+        return false;
+    }
+
+    return true;
 }
+
+std::string GetStringDefault(std::string const& name, const std::string &def)
+{
+    return GetStringDefault(name.c_str(), def);
+};
 
 std::string GetStringDefault(const char* name, const std::string &def)
 {
-    ACE_TString val;
-    return GetValueHelper(name, val) ? val.c_str() : def;
-}
+    std::string val = GetValueHelper(name, def);
+    val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
+    return val;
+};
 
 bool GetBoolDefault(const char* name, bool def)
 {
-    ACE_TString val;
-
-    if (!GetValueHelper(name, val))
-        return def;
-
-    return (val == "true" || val == "TRUE" || val == "yes" || val == "YES" ||
-        val == "1");
-}
+    std::string val = GetValueHelper(name, std::string(def ? "1" : "0"));
+    val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
+    return StringToBool(val);
+};
 
 int GetIntDefault(const char* name, int def)
 {
-    ACE_TString val;
-    return GetValueHelper(name, val) ? atoi(val.c_str()) : def;
-}
+    return GetValueHelper(name, def);
+};
 
 float GetFloatDefault(const char* name, float def)
 {
-    ACE_TString val;
-    return GetValueHelper(name, val) ? (float)atof(val.c_str()) : def;
-}
+    return GetValueHelper(name, def);
+};
 
 const std::string & GetFilename()
 {
     GuardType guard(m_configLock);
     return _filename;
+}
+
+std::vector<std::string> GetKeysByString(std::string const& name)
+{
+    GuardType guard(m_configLock);
+
+    std::vector<std::string> keys;
+
+    for (bpt::ptree::value_type const& child : _config)
+        if (child.first.compare(0, name.length(), name) == 0)
+            keys.push_back(child.first);
+
+    return keys;
 }
 
 } // namespace
