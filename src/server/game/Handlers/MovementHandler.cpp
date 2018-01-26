@@ -860,9 +860,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         {
             plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
-            AreaTableEntry const* zone = sAreaTableStore.LookupEntry(plrMover->GetAreaId());
-            float depth = zone ? zone->MaxDepth : -500.0f;
-            if (movementInfo.position.GetPositionZ() < depth)
+            if (movementInfo.position.GetPositionZ() < plrMover->GetMap()->GetMinHeight(movementInfo.position.GetPositionX(), movementInfo.position.GetPositionY()))
             {
                 if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
                 {
@@ -873,13 +871,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
                     // NOTE: this is actually called many times while falling
                     // even after the player has been teleported away
                     // TODO: discard movement packets after the player is rooted
-                    if (plrMover->isAlive())
+                    if (plrMover->IsAlive())
                     {
                         plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
                         // player can be alive if GM/etc
                         // change the death state to CORPSE to prevent the death timer from
                         // starting in the next player update
-                        if (!plrMover->isAlive())
+                        if (!plrMover->IsAlive())
                             plrMover->KillPlayer();
                     }
                 }
@@ -1238,7 +1236,7 @@ void WorldSession::HandleMoveSetCollisionHeightAck(WorldPacket& recvData)
 
 void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)
 {
-    if (!_player->isAlive() || _player->isInCombat())
+    if (!_player->IsAlive() || _player->isInCombat())
         return;
 
     ObjectGuid summonerGuid;
@@ -1629,7 +1627,12 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi, Unit* 
                 break;
             case MSEFallTime:
                 if (mi->hasFallData)
+                {
                     data << mi->fallTime;
+                    mi->lastTimeUpdate = getMSTime();
+                }
+                else
+                    mi->lastTimeUpdate = 0;
                 break;
             case MSEJumpVelocity:
                 if (mi->hasFallData)

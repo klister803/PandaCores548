@@ -280,7 +280,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
         {
             uint32 guidLow = (*result)[0].GetUInt32();
 
-            TC_LOG_INFO("network", "Loading char guid %u from account %u.", guidLow, GetAccountId());
+            TC_LOG_DEBUG("network", "Loading char guid %u from account %u.", guidLow, GetAccountId());
 
             Player::BuildEnumData(result, &dataBuffer, &bitBuffer);
 
@@ -854,7 +854,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
 {
-    TC_LOG_INFO("server", "WORLD: Recvd CMSG_LOAD_SCREEN");
+    TC_LOG_DEBUG("server", "WORLD: Recvd CMSG_LOAD_SCREEN");
     uint32 mapID;
 
     recvPacket >> mapID;

@@ -258,7 +258,7 @@ public:
                             {
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                                 {
-                                    if (target && target->isAlive())
+                                    if (target && target->IsAlive())
                                         DoCast(target, SPELL_DEATH_RESPITE);
                                 }
                                 uiDeathRespiteTimer = urand(10000, 12000);
@@ -292,7 +292,7 @@ public:
                             {
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                                 {
-                                    if (target && target->isAlive())
+                                    if (target && target->IsAlive())
                                         DoCast(target, SPELL_DESECRATION);
                                 }
                                 uiDesecration = urand(15000, 16000);
@@ -327,7 +327,7 @@ public:
                     {
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                         {
-                            if (target && target->isAlive())
+                            if (target && target->IsAlive())
                                 DoCast(target, SPELL_MARKED_DEATH);
                         }
                         uiMarkedDeathTimer = 10000;

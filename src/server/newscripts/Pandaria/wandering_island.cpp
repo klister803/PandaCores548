@@ -1131,7 +1131,7 @@ public:
                         bool checkPassed = true;
                         Player* player = ObjectAccessor::FindPlayer(playerGuid);
 
-                        if (!player || !player->isAlive())
+                        if (!player || !player->IsAlive())
                         {
                             me->DespawnOrUnsummon(1000);
                             playerGuid = 0;
@@ -2994,7 +2994,7 @@ public:
             {
                 Player* player = *itr;
                 if (player->GetQuestStatus(QIEST_BATTLE_FOR_SKIES) == QUEST_STATUS_INCOMPLETE)
-                    if (player->isAlive())
+                    if (player->IsAlive())
                         return true;
             }
 
@@ -3053,7 +3053,7 @@ public:
             {
                 Player* player = *itr;
                 if (player->GetQuestStatus(QIEST_BATTLE_FOR_SKIES) == QUEST_STATUS_INCOMPLETE)
-                    if (player->isAlive())
+                    if (player->IsAlive())
                         player->KilledMonsterCredit(me->GetEntry());
             }
         }
@@ -4299,7 +4299,7 @@ public:
             {
                 Player* player = *itr;
                 if (player->GetQuestStatus(QUEST_ANCIEN_MAL) == QUEST_STATUS_INCOMPLETE)
-                    if (player->isAlive())
+                    if (player->IsAlive())
                         player->KilledMonsterCredit(me->GetEntry());
             }
         }
@@ -4399,7 +4399,7 @@ public:
             if (Creature* boss = me->FindNearestCreature(NPC_NIGHMIRE, 100.0f, true))
             {
                 bossGUID = boss->GetGUID();
-                if (!boss->isAlive())
+                if (!boss->IsAlive())
                     boss->Respawn(true);
                 AttackStart(boss);
 
@@ -4766,7 +4766,7 @@ public:
         {
             for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); ++itr)
                 if (Player* player = sObjectAccessor->FindPlayer(*itr))
-                    if (player->isAlive())
+                    if (player->IsAlive())
                         return true;
 
             return false;
@@ -4778,7 +4778,7 @@ public:
             for (std::set<uint64>::iterator itr = m_player_for_event.begin(); itr != m_player_for_event.end(); ++itr)
                 if (Player* player = sObjectAccessor->FindPlayer(*itr))
                 {
-                    if (player->isAlive())
+                    if (player->IsAlive())
                     {
                         if (actualPower < 700) // IN_PROGRESS
                         {

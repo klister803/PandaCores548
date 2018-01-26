@@ -190,7 +190,7 @@ public:
         void switchFactionIfAlive(InstanceScript* instance, uint32 entry)
         {
            if (Creature* crew = instance->instance->GetCreature(instance->GetData64(entry)))
-               if (crew->isAlive())
+               if (crew->IsAlive())
                    crew->setFaction(FACTION_HOSTILE);
         }
     };
@@ -382,7 +382,7 @@ public:
 
         void DestroyDoor()
         {
-            if (me->isAlive())
+            if (me->IsAlive())
             {
                 me->setFaction(FACTION_FRIENDLY);
                 me->GetMotionMaster()->MovePoint(0, 1858.57f, 1146.35f, 14.745f);

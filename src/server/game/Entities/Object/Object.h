@@ -661,6 +661,7 @@ struct MovementInfo
     // falling/jumping
     uint32 fallTime;
     float fallJumpVelocity, fallSinAngle, fallCosAngle, fallSpeed;
+    uint32 lastTimeUpdate;
     // spline
     float stepUpStartElevation;
 
@@ -688,6 +689,7 @@ struct MovementInfo
         transportGUID = 0;
         transportVehicleSeatIndex = -1;
         hasMoveTime = hasFacing = hasPitch = hasTransportData = hasTransportPrevMoveTime = hasTransportVehicleRecID = hasFallData = hasFallDirection = hasSpline = hasStepUpStartElevation = false;
+        lastTimeUpdate = 0;
     }
 
     uint32 GetMovementFlags() const { return flags; }
@@ -700,7 +702,7 @@ struct MovementInfo
     void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
     bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
 
-    void SetFallTime(uint32 time) { fallTime = time; }
+    void SetFallTime(uint32 time) { fallTime = time; lastTimeUpdate = 0; }
 
     void OutDebug();
 };
@@ -893,6 +895,8 @@ class WorldObject : public Object, public WorldLocation
         }
         void UpdateGroundPositionZ(float x, float y, float &z) const;
         void UpdateAllowedPositionZ(float x, float y, float &z) const;
+        virtual bool IsInWater() const { return false; }
+        virtual bool IsUnderWater() const { return false; }
 
         void GetRandomPoint(const Position &srcPos, float distance, float &rand_x, float &rand_y, float &rand_z) const;
         void GetRandomPoint(const Position &srcPos, float distance, Position &pos) const

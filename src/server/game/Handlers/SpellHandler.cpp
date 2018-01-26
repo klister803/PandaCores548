@@ -379,7 +379,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     recvPacket >> bagIndex >> slot;
 
-    TC_LOG_INFO("network", "bagIndex: %u, slot: %u", bagIndex, slot);
+    TC_LOG_DEBUG("network", "bagIndex: %u, slot: %u", bagIndex, slot);
 
     Item* item = pUser->GetItemByPos(bagIndex, slot);
     if (!item)
@@ -1275,7 +1275,7 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (!pet->isAlive())
+    if (!pet->IsAlive())
     {
         pet->SendPetActionFeedback(FEEDBACK_PET_DEAD);
         return;

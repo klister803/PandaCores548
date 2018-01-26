@@ -162,7 +162,7 @@ class boss_alar : public CreatureScript
                     {
                         if (Player* pPlayer = i->getSource())
                         {
-                            if (pPlayer->isAlive() && pPlayer->HasAura(SPELL_ASHTONGUE_RUSE) && pPlayer->GetQuestStatus(QUEST_RUSE_ASHTONGUE) == QUEST_STATUS_INCOMPLETE )
+                            if (pPlayer->IsAlive() && pPlayer->HasAura(SPELL_ASHTONGUE_RUSE) && pPlayer->GetQuestStatus(QUEST_RUSE_ASHTONGUE) == QUEST_STATUS_INCOMPLETE )
                                 pPlayer->CompleteQuest(QUEST_RUSE_ASHTONGUE);
                         }
                     }

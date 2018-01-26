@@ -59,6 +59,7 @@
 #include "GuildMgr.h"
 #include "ScenarioMgr.h"
 #include "ObjectVisitors.hpp"
+#include "PathGenerator.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -2411,7 +2412,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
     targetInfo.timeDelay        = 0LL;
     targetInfo.effectMask       = effectMask;                         // Store all effects not immune
     targetInfo.processed        = false;                              // Effects not apply on target
-    targetInfo.alive            = target->isAlive();
+    targetInfo.alive            = target->IsAlive();
     targetInfo.damage           = 0;
     targetInfo.damageBeforeHit  = 0;
     targetInfo.crit             = false;
@@ -2536,7 +2537,7 @@ void Spell::AddTargetVisualHit(Unit* target)
     targetInfo.targetGUID = target->GetGUID();                         // Store target GUID
     targetInfo.effectMask = 7;                         // Store all effects not immune
     targetInfo.processed  = false;                              // Effects not apply on target
-    targetInfo.alive      = target->isAlive();
+    targetInfo.alive      = target->IsAlive();
     targetInfo.damage     = 0;
     targetInfo.crit       = false;
     targetInfo.scaleAura  = false;
@@ -2684,7 +2685,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         return;
     }
 
-    if (unit->isAlive() != target->alive)
+    if (unit->IsAlive() != target->alive)
         return;
 
     //if (m_spellInfo)
@@ -3791,7 +3792,7 @@ void Spell::cast(bool skipCheck)
         // This prevents spells such as Hunter's Mark from triggering pet attack
         if (this->GetSpellInfo()->DmgClass != SPELL_DAMAGE_CLASS_NONE && !m_spellInfo->HasAura(SPELL_AURA_MOD_CONFUSE))
             if (Pet* playerPet = playerCaster->GetPet())
-                if (playerPet->isAlive() && playerPet->isControlled() && (m_targets.GetTargetMask() & TARGET_FLAG_UNIT))
+                if (playerPet->IsAlive() && playerPet->isControlled() && (m_targets.GetTargetMask() & TARGET_FLAG_UNIT))
                     playerPet->AI()->OwnerAttacked(m_targets.GetObjectTarget()->ToUnit());
     }
     SetExecutedCurrently(true);
@@ -4590,7 +4591,7 @@ void Spell::finish(bool ok)
     {
         case 53351: // Kill Shot
         {
-            if (!unitTarget || !unitTarget->isAlive() || unitTarget->GetHealthPct() >= 20.0f || m_caster->HasAura(90967))
+            if (!unitTarget || !unitTarget->IsAlive() || unitTarget->GetHealthPct() >= 20.0f || m_caster->HasAura(90967))
                 break;
 
             m_caster->CastSpell(m_caster, 90967, true); // Effect cooldown marker
@@ -6689,7 +6690,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         return SPELL_FAILED_DONT_REPORT;
 
     // check death state
-    if (!m_caster->isAlive() && !(AttributesCustom & SPELL_ATTR0_PASSIVE) && !((AttributesCustom & SPELL_ATTR0_CASTABLE_WHILE_DEAD) || (IsTriggered() && !m_triggeredByAuraSpell)))
+    if (!m_caster->IsAlive() && !(AttributesCustom & SPELL_ATTR0_PASSIVE) && !((AttributesCustom & SPELL_ATTR0_CASTABLE_WHILE_DEAD) || (IsTriggered() && !m_triggeredByAuraSpell)))
         return SPELL_FAILED_CASTER_DEAD;
 
     if (m_spellInfo->Effects[EFFECT_0]->Effect == SPELL_EFFECT_UNLEARN_TALENT)
@@ -7251,7 +7252,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                             {
                                 if (Player* targetplr = target->ToPlayer())
                                 {
-                                    if (targetplr->isAlive())
+                                    if (targetplr->IsAlive())
                                         return SPELL_FAILED_BAD_TARGETS;
 
                                     if (targetplr->GetTeam() == HORDE && plr->GetTeam() == HORDE)
@@ -7384,10 +7385,45 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
                 if (m_caster->HasUnitState(UNIT_STATE_ROOT))
                     return SPELL_FAILED_ROOTED;
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    if (Unit* target = m_targets.GetUnitTarget())
-                        if (!target->isAlive())
-                            return SPELL_FAILED_BAD_TARGETS;
+
+                if (Unit* unitTarget = m_targets.GetUnitTarget())
+                {
+                    if (!unitTarget->IsAlive())
+                        return SPELL_FAILED_BAD_TARGETS;
+
+                    float angle = unitTarget->GetRelativeAngle(m_caster);
+                    Position pos;
+                    unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
+
+                    if (!m_caster->IsWithinLOS(pos.m_positionX, pos.m_positionY, pos.m_positionZ))
+                        return SPELL_FAILED_LINE_OF_SIGHT;
+
+                    if (m_caster->IsInWater()) // don`t check in water
+                        break;
+
+                    if (m_caster->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) // don`t check if falling
+                    {
+                        float x, y, z;
+                        m_caster->GetPosition(x, y, z);
+                        float ground = m_caster->GetMap()->GetHeight(m_caster->GetPhaseMask(), x, y, z, true);
+                        if ((z - ground) > 2.0f)
+                            break;
+                    }
+
+                    float limit = m_spellInfo->GetMaxRange(true) + 1.0f;
+                    if (m_caster->HasAura(58097)) // Glyph of Charge
+                        limit += 5.0f;
+
+                    PathGenerator m_path(m_caster);
+                    bool result = m_path.CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ, false);
+
+                    if (m_path.GetPathType() & PATHFIND_SHORT)
+                        return SPELL_FAILED_OUT_OF_RANGE;
+                    else if (!result || m_path.GetPathType() & PATHFIND_NOPATH)
+                        return SPELL_FAILED_NOPATH;
+                    else if (m_path.GetTotalLength() > (limit * 1.5f))
+                        return SPELL_FAILED_OUT_OF_RANGE;
+                }
                 break;
             }
             case SPELL_EFFECT_JUMP_DEST:
@@ -7492,7 +7528,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 Creature* pet = m_caster->GetGuardianPet();
 
-                if (pet && pet->isAlive())
+                if (pet && pet->IsAlive())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 break;
@@ -7806,7 +7842,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 // not allow cast fly spells if not have req. skills  (all spells is self target)
                 // allow always ghost flight spells
-                if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->isAlive())
+                if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER && m_originalCaster->IsAlive())
                 {
                     Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(m_originalCaster->GetZoneId());
                     if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(m_originalCaster->GetAreaId()))
@@ -7886,7 +7922,7 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
 
     // dead owner (pets still alive when owners ressed?)
     if (Unit* owner = m_caster->GetCharmerOrOwner())
-        if (!owner->isAlive())
+        if (!owner->IsAlive())
             return SPELL_FAILED_CASTER_DEAD;
 
     if (!target && m_targets.GetUnitTarget())
@@ -8813,7 +8849,7 @@ void Spell::Delayed() // only called in DealDamage()
     else
         m_timer += delaytime;
 
-    TC_LOG_INFO("spell", "Spell %u partially interrupted for (%d) ms at damage", m_spellInfo->Id, delaytime);
+    TC_LOG_DEBUG("spell", "Spell %u partially interrupted for (%d) ms at damage", m_spellInfo->Id, delaytime);
 
     ObjectGuid guid = m_caster->GetGUID();
 
@@ -9160,7 +9196,7 @@ bool SpellEvent::IsDeletable() const
 
 bool Spell::IsValidDeadOrAliveTarget(Unit const* target) const
 {
-    if (target->isAlive())
+    if (target->IsAlive())
         return !m_spellInfo->IsRequiringDeadTarget();
     if (m_spellInfo->IsAllowingDeadTarget())
         return true;

@@ -528,7 +528,7 @@ public:
             std::list<Player*> temp;
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 if ((me->IsWithinLOSInMap(i->getSource()) || !checkLoS) && me->getVictim() != i->getSource() &&
-                    me->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive())
+                    me->IsWithinDistInMap(i->getSource(), range) && i->getSource()->IsAlive())
                     temp.push_back(i->getSource());
 
             if (!temp.empty())
@@ -587,7 +587,7 @@ public:
                 for (itr = caster->getThreatManager().getThreatList().begin(); itr != caster->getThreatManager().getThreatList().end(); ++itr)
                 {
                     Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                    if (unit && unit->isAlive() && unit != caster)
+                    if (unit && unit->IsAlive() && unit != caster)
                         me->AddThreat(unit, caster->getThreatManager().getThreat(unit));
                 }
             }
@@ -607,7 +607,7 @@ public:
                     headGUID = DoSpawnCreature(HEAD, float(rand()%6), float(rand()%6), 0, 0, TEMPSUMMON_DEAD_DESPAWN, 0)->GetGUID();
 
                 Unit* Head = Unit::GetUnit(*me, headGUID);
-                if (Head && Head->isAlive())
+                if (Head && Head->IsAlive())
                 {
                     Head->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     //Head->CastSpell(Head, SPELL_HEAD_INVIS, false);
@@ -732,7 +732,7 @@ public:
                         else
                             Phase = 1;
                         Creature* Head = Unit::GetCreature((*me), headGUID);
-                        if (Head && Head->isAlive())
+                        if (Head && Head->IsAlive())
                         {
                             CAST_AI(mob_head::mob_headAI, Head->AI())->Phase = Phase;
                             CAST_AI(mob_head::mob_headAI, Head->AI())->Disappear();
@@ -889,7 +889,7 @@ void mob_head::mob_headAI::Disappear()
     if (bodyGUID)
     {
         Creature* body = Unit::GetCreature((*me), bodyGUID);
-        if (body && body->isAlive())
+        if (body && body->IsAlive())
         {
             withbody = true;
             me->RemoveAllAuras();

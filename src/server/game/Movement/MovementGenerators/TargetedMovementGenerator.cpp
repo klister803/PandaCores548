@@ -100,7 +100,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
         i_path = new PathGenerator(&owner);
 
     // allow pets following their master to cheat while generating paths
-    bool forceDest = (owner.GetTypeId() == TYPEID_UNIT && ((Creature*)&owner)->IsPet() && owner.HasUnitState(UNIT_STATE_FOLLOW));
+    bool forceDest = false;
     if (Creature* c = owner.ToCreature())
         forceDest |= c->isWorldBoss() || c->IsDungeonBoss();
 
@@ -109,11 +109,14 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
     //TC_LOG_DEBUG("pets", "_setTargetLocation Pet %u (%f %f %f) forceDest %i PathType %i Length %f size %i type %u",
     //owner.GetEntry(), x, y, z, forceDest, i_path->GetPathType(), i_path->GetTotalLength(), i_path->GetPath().size(), static_cast<D*>(this)->GetMovementGeneratorType());
 
-    if (i_path->GetPathType() & PATHFIND_NOPATH && !forceDest)
+    if (i_path->GetPathType() & PATHFIND_NOPATH && (owner.IsCreature() && ((Creature*)&owner)->IsPet() && owner.HasUnitState(UNIT_STATE_FOLLOW)))
     {
-        // When patch can't run to target?
-        //if (!i_target->IsWithinLOSInMap(&owner))
+        if (!i_target->IsWithinLOSInMap(&owner))
+        {
+            owner.NearTeleportTo(x, y, z, owner.GetOrientation());
             return;
+        }
+        // When patch can't run to target?
     }
 
     //Hack for transport walkline
@@ -182,7 +185,7 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
         }
     }
 
-    if (!owner.isAlive())
+    if (!owner.IsAlive())
         return false;
 
     if (owner.HasUnitState(UNIT_STATE_NOT_MOVE))
@@ -262,7 +265,7 @@ bool TargetedMovementGeneratorMedium<T,D>::DoUpdate(T &owner, const uint32 & tim
 
         if (targetIsVictim && owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet())
         {
-            if ((!owner.getVictim() || !owner.getVictim()->isAlive()) && owner.movespline->Finalized())
+            if ((!owner.getVictim() || !owner.getVictim()->IsAlive()) && owner.movespline->Finalized())
                 return false;
 
             if (!i_offset && owner.movespline->Finalized() && !owner.IsWithinMeleeRange(owner.getVictim())
@@ -350,7 +353,7 @@ template<class T>
 void ChaseMovementGenerator<T>::DoFinalize(T &owner)
 {
     owner.ClearUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
-    if (owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet() && owner.isAlive())
+    if (owner.GetTypeId() == TYPEID_UNIT && !((Creature*)&owner)->IsPet() && owner.IsAlive())
     {
         if (!owner.isInCombat() || ( this->i_target.getTarget() && !this->i_target.getTarget()->isInAccessiblePlaceFor(((Creature*)&owner))))
         {

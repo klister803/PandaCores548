@@ -599,7 +599,7 @@ class boss_kuai_the_brute : public CreatureScript
                         me->GetInstanceScript()->SetData(TYPE_KUAI_RETIRED, 0);
 
                     Creature* mu_shiba = me->GetMap()->GetCreature(pet_guid);
-                    if (mu_shiba && mu_shiba->isAlive())
+                    if (mu_shiba && mu_shiba->IsAlive())
                     {
                         mu_shiba->GetMotionMaster()->MoveFollow(me, 2.0f, M_PI / 4);
                         if (mu_shiba->GetAI())

@@ -98,7 +98,7 @@ bool CheckProtectors(InstanceScript* instance, Creature* caller)
     {
         if (Creature* pr = caller->GetCreature(*caller, instance->GetData64(NPC_PROTECTOR_KAOLAN)))
         {
-            if (pr->isAlive())
+            if (pr->IsAlive())
                 return true;
         }
     }

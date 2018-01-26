@@ -144,7 +144,7 @@ bool IsEncounterComplete(InstanceScript* pInstance, Creature* me)
 
         if (Creature *boss = Unit::GetCreature(*me, guid))
         {
-            if (boss->isAlive())
+            if (boss->IsAlive())
                 return false;
         }
         else
@@ -165,7 +165,7 @@ void RespawnBosses(InstanceScript* pInstance, uint64 caller, Creature* creature)
                     continue;
                 else
                 {
-                    if (!boss->isAlive())
+                    if (!boss->IsAlive())
                         boss->Respawn(true);
                 }
             }
@@ -254,11 +254,11 @@ public:
             else me->SetLootRecipient(NULL);
             
             if (Creature* Brundir = me->GetCreature(*me, pInstance->GetData64(DATA_BRUNDIR)))
-                if (Brundir->isAlive())
+                if (Brundir->IsAlive())
                     Brundir->AI()->DoAction(ACTION_BRUNDIR);
 
             if (Creature* Molgeim = me->GetCreature(*me, pInstance->GetData64(DATA_MOLGEIM)))
-                if (Molgeim->isAlive())
+                if (Molgeim->IsAlive())
                     Molgeim->AI()->DoAction(ACTION_MOLGEIM);
         }
 
@@ -388,11 +388,11 @@ public:
             else me->SetLootRecipient(NULL);
             
             if (Creature* Brundir = me->GetCreature(*me, pInstance->GetData64(DATA_BRUNDIR)))
-                if (Brundir->isAlive())
+                if (Brundir->IsAlive())
                     Brundir->AI()->DoAction(ACTION_BRUNDIR);
 
             if (Creature* Steelbreaker = me->GetCreature(*me, pInstance->GetData64(DATA_STEELBREAKER)))
-                if (Steelbreaker->isAlive())
+                if (Steelbreaker->IsAlive())
                     Steelbreaker->AI()->DoAction(ACTION_STEELBREAKER);
         }
 
@@ -425,18 +425,18 @@ public:
                     
                         bosschoosed = me->GetCreature(*me, pInstance->GetData64(DATA_STEELBREAKER+choice));
 
-                        if (!bosschoosed || !bosschoosed->isAlive())
+                        if (!bosschoosed || !bosschoosed->IsAlive())
                         {
                             choice = ((choice == 2) ? 0 : choice++);
                             bosschoosed = me->GetCreature(*me, pInstance->GetData64(DATA_STEELBREAKER+choice));
-                            if (!bosschoosed || !bosschoosed->isAlive())
+                            if (!bosschoosed || !bosschoosed->IsAlive())
                             {
                                 choice = ((choice == 2) ? 0 : choice++);
                                 bosschoosed = me->GetCreature(*me, pInstance->GetData64(DATA_STEELBREAKER+choice));
                             }
                         }
 
-                        if (!bosschoosed || !bosschoosed->isAlive())
+                        if (!bosschoosed || !bosschoosed->IsAlive())
                             bosschoosed = me->GetCreature(*me, pInstance->GetData64(DATA_MOLGEIM));
                     
                         DoCast(bosschoosed, SPELL_RUNE_OF_POWER);
@@ -680,11 +680,11 @@ public:
             else me->SetLootRecipient(NULL);
 
             if (Creature* Molgeim = me->GetCreature(*me, pInstance->GetData64(DATA_MOLGEIM)))
-                if (Molgeim->isAlive())
+                if (Molgeim->IsAlive())
                     Molgeim->AI()->DoAction(ACTION_MOLGEIM);
 
             if (Creature* Steelbreaker = me->GetCreature(*me, pInstance->GetData64(DATA_STEELBREAKER)))
-                if (Steelbreaker->isAlive())
+                if (Steelbreaker->IsAlive())
                     Steelbreaker->AI()->DoAction(ACTION_STEELBREAKER);
         }
 

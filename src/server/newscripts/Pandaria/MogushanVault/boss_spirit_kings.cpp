@@ -212,7 +212,7 @@ class boss_spirit_kings_controler : public CreatureScript
             {   // Qiang always first
                 if (Creature* qiang = me->GetCreature(*me, pInstance->GetData64(NPC_QIANG)))
                 {
-                    if (!qiang->isAlive())
+                    if (!qiang->IsAlive())
                         qiang->Respawn();
                     
                     qiang->AI()->DoAction(ACTION_START_FIGHT);                   
@@ -222,7 +222,7 @@ class boss_spirit_kings_controler : public CreatureScript
                 {
                     if (Creature* kings = me->GetCreature(*me, pInstance->GetData64(spiritkings[n])))
                     {
-                        if (!kings->isAlive())
+                        if (!kings->IsAlive())
                             kings->Respawn();
                     }
                 }
@@ -272,7 +272,7 @@ class boss_spirit_kings_controler : public CreatureScript
                     {
                         if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritkingsvirtual[i])))
                         {
-                            if (king->isAlive())
+                            if (king->IsAlive())
                             {
                                 me->Kill(king, true);
                                 king->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
@@ -336,7 +336,7 @@ class boss_spirit_kings_controler : public CreatureScript
                         {
                             for (uint8 n = 0; n < 4; n++)
                                 if (Creature* king = me->GetCreature(*me, pInstance->GetData64(spiritKingsEntry[n])))
-                                    if (king->isAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
+                                    if (king->IsAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
                                         king->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
                             EnterEvadeMode();
                         }

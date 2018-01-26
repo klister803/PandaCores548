@@ -109,7 +109,7 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
 
     // used also for charmed creature
     Unit* pet= ObjectAccessor::GetUnit(*_player, guid1);
-    TC_LOG_INFO("network", "HandlePetAction: Pet %u - flag: %u, spellid: %u, target: %u.", uint32(GUID_LOPART(guid1)), uint32(flag), spellid, uint32(GUID_LOPART(guid2)));
+    TC_LOG_DEBUG("network", "HandlePetAction: Pet %u - flag: %u, spellid: %u, target: %u.", uint32(GUID_LOPART(guid1)), uint32(flag), spellid, uint32(GUID_LOPART(guid2)));
 
     if (!pet)
     {
@@ -123,7 +123,7 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
         return;
     }
 
-    if (!pet->isAlive())
+    if (!pet->IsAlive())
     {
         SpellInfo const* spell = (flag == ACT_ENABLED || flag == ACT_PASSIVE) ? sSpellMgr->GetSpellInfo(spellid) : NULL;
         if (!spell)
@@ -143,7 +143,7 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
         //If a pet is dismissed, m_Controlled will change
         std::vector<Unit*> controlled;
         for (Unit::ControlList::iterator itr = GetPlayer()->m_Controlled.begin(); itr != GetPlayer()->m_Controlled.end(); ++itr)
-            if ((*itr)->GetEntry() == pet->GetEntry() && (*itr)->isAlive())
+            if ((*itr)->GetEntry() == pet->GetEntry() && (*itr)->IsAlive())
             {
                 if((*itr)->ToCreature())
                 {
@@ -180,7 +180,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
         return;
     }
 
-    if (!pet->isAlive())
+    if (!pet->IsAlive())
         return;
 
     pet->AttackStop();
@@ -484,7 +484,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
 //! 5.4.1
 void WorldSession::HandlePetNameQuery(WorldPacket & recvData)
 {
-    TC_LOG_INFO("network", "HandlePetNameQuery. CMSG_PET_NAME_QUERY");
+    TC_LOG_DEBUG("network", "HandlePetNameQuery. CMSG_PET_NAME_QUERY");
 
     ObjectGuid petGuid;
     ObjectGuid petNumber;
@@ -592,7 +592,7 @@ bool WorldSession::CheckStableMaster(uint64 guid)
 //! 5.4.1
 void WorldSession::HandlePetSetAction(WorldPacket & recvData)
 {
-    TC_LOG_INFO("network", "HandlePetSetAction. CMSG_PET_SET_ACTION");
+    TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION");
 
     uint32 position;
     uint32 data;
@@ -638,7 +638,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
         //return;
     }
 
-    TC_LOG_INFO("network", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X HasSpell %i", _player->GetName(), position, spell_id, uint32(act_state), pet->HasSpell(spell_id));
+    TC_LOG_DEBUG("network", "Player %s has changed pet spell action. Position: %u, Spell: %u, State: 0x%X HasSpell %i", _player->GetName(), position, spell_id, uint32(act_state), pet->HasSpell(spell_id));
 
     //if it's act for spell (en/disable/cast) and there is a spell given (0 = remove spell) which pet doesn't know, don't add
     if (!((act_state == ACT_ENABLED || act_state == ACT_DISABLED || act_state == ACT_PASSIVE) && spell_id && !pet->HasSpell(spell_id)))
@@ -674,7 +674,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
 //! 5.4.1
 void WorldSession::HandlePetRename(WorldPacket & recvData)
 {
-    TC_LOG_INFO("network", "HandlePetRename. CMSG_PET_RENAME");
+    TC_LOG_DEBUG("network", "HandlePetRename. CMSG_PET_RENAME");
 
     uint32 petnumber;
     uint8 isdeclined;
@@ -691,7 +691,7 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
     if (!pet)
     {
         recvData.rfinish();
-        TC_LOG_INFO("network", "HandlePetRename pet not found");
+        TC_LOG_DEBUG("network", "HandlePetRename pet not found");
         return;
     }
                                                             // check it!
@@ -700,14 +700,14 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
         pet->GetOwnerGUID() != _player->GetGUID() || !pet->GetCharmInfo())
     {
         recvData.rfinish();
-        TC_LOG_INFO("network", "HandlePetRename error pet");
+        TC_LOG_DEBUG("network", "HandlePetRename error pet");
         return;
     }
 
     if (pet->GetCharmInfo()->GetPetNumber() != petnumber)
     {
         recvData.rfinish();
-        TC_LOG_INFO("network", "HandlePetRename petnumber not correct");
+        TC_LOG_DEBUG("network", "HandlePetRename petnumber not correct");
         return;
     }
 
@@ -731,7 +731,7 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
         {
             SendPetNameInvalid(res, name, NULL);
             recvData.rfinish();
-            TC_LOG_INFO("network", "HandlePetRename CheckPetName res %i", res);
+            TC_LOG_DEBUG("network", "HandlePetRename CheckPetName res %i", res);
             return;
         }
 
@@ -798,7 +798,7 @@ void WorldSession::HandlePetAbandon(WorldPacket& recvData)
     recvData.ReadGuidMask<6, 5, 2, 0, 3, 4, 7, 1>(guid);
     recvData.ReadGuidBytes<1, 2, 4, 3, 7, 5, 6, 0>(guid);
 
-    TC_LOG_INFO("network", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid));
+    TC_LOG_DEBUG("network", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid));
 
     if (!_player->IsInWorld())
         return;
@@ -819,7 +819,7 @@ void WorldSession::HandlePetAbandon(WorldPacket& recvData)
 
 void WorldSession::HandlePetSpellAutocastOpcode(WorldPacket& recvPacket)
 {
-    TC_LOG_INFO("network", "CMSG_PET_SPELL_AUTOCAST");
+    TC_LOG_DEBUG("network", "CMSG_PET_SPELL_AUTOCAST");
     uint64 guid;
     uint32 spellid;
     uint32  state;                                           //1 for on, 0 for off
@@ -1295,7 +1295,7 @@ void WorldSession::HandleLearnPetSpecialization(WorldPacket & recvData)
         return;
 
     Pet* pet = _player->GetPet();
-    if (!pet || !pet->isAlive())
+    if (!pet || !pet->IsAlive())
         return;
 
     if(pet->GetSpecializationId())

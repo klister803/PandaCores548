@@ -342,7 +342,7 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
     Map::PlayerList const& PlayerList = map->GetPlayers();
     for (Map::PlayerList::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
         if (Player* player = itr->getSource())
-            if (player->isAlive())
+            if (player->IsAlive())
                 player->TeleportTo(me->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
 }
 
@@ -470,7 +470,7 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff)
                 return false;
             break;
         default: // For most of creatures that certain area is their home area.
-            TC_LOG_INFO("server", "TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition. Using the default one.", me->GetEntry());
+            TC_LOG_DEBUG("server", "TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition. Using the default one.", me->GetEntry());
             uint32 homeAreaId = me->GetMap()->GetAreaId(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ());
             if (me->GetAreaId() == homeAreaId)
                 return false;
@@ -513,7 +513,7 @@ void BossAI::_Reset()
     events.Reset();
     summons.DespawnAll();
 
-    if (instance && me->isAlive())
+    if (instance && me->IsAlive())
     {
         instance->SetBossState(_bossId, NOT_STARTED);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -676,7 +676,7 @@ void BossAI::UpdateAI(uint32 diff)
 
 bool BossAI::_EnterEvadeMode()
 {
-    if (!me->isAlive())
+    if (!me->IsAlive())
         return false;
 
     TC_LOG_DEBUG("network", "BossAI::_EnterEvadeMode %u enters evade mode.", me->GetEntry());
@@ -713,7 +713,7 @@ WorldBossAI::WorldBossAI(Creature* creature) :
 
 void WorldBossAI::_Reset()
 {
-    if (!me->isAlive())
+    if (!me->IsAlive())
         return;
 
     events.Reset();

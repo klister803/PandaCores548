@@ -101,21 +101,21 @@ public:
                             if (!conclavelist.empty())
                                 for (std::vector<uint64>::const_iterator Itr = conclavelist.begin(); Itr != conclavelist.end(); ++Itr)
                                     if (Creature* boss = instance->GetCreature(*Itr))
-                                        if (boss->isAlive() && boss->isInCombat())
+                                        if (boss->IsAlive() && boss->isInCombat())
                                             boss->AI()->EnterEvadeMode();
                             break;
                         case IN_PROGRESS:
                             if (!conclavelist.empty())
                                 for (std::vector<uint64>::const_iterator Itr = conclavelist.begin(); Itr != conclavelist.end(); ++Itr)
                                     if (Creature* boss = instance->GetCreature(*Itr))
-                                        if (boss->isAlive() && !boss->isInCombat())
+                                        if (boss->IsAlive() && !boss->isInCombat())
                                             boss->AI()->DoZoneInCombat(boss, 500.0f);
                             break;
                         case DONE:
                             if (!conclavelist.empty())
                                 for (std::vector<uint64>::const_iterator Itr = conclavelist.begin(); Itr != conclavelist.end(); ++Itr)
                                     if (Creature* boss = instance->GetCreature(*Itr))
-                                        if (boss->isAlive())
+                                        if (boss->IsAlive())
                                             boss->Kill(boss, true);
 
                             if (Creature* Alakir = instance->GetCreature(uiAlakir))

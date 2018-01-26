@@ -238,7 +238,7 @@ public:
                                 if (itr == lStalkers.end())
                                     itr = lStalkers.begin();
 
-                                if ((*itr) && (*itr)->isAlive())
+                                if ((*itr) && (*itr)->IsAlive())
                                     (*itr)->CastSpell((*itr), 84242, false);
 
                                 ++itr;

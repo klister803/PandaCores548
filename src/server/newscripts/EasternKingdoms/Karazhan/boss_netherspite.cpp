@@ -180,7 +180,7 @@ public:
                         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                         {
                             Player* p = i->getSource();
-                            if (p && p->isAlive() // alive
+                            if (p && p->IsAlive() // alive
                                 && (!target || target->GetDistance2d(portal)>p->GetDistance2d(portal)) // closer than current best
                                 && !p->HasAura(PlayerDebuff[j], 0) // not exhausted
                                 && !p->HasAura(PlayerBuff[(j+1)%3], 0) // not on another beam

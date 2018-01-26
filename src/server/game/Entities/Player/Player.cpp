@@ -507,7 +507,7 @@ inline void KillRewarder::_InitGroupData()
         // 2. In case when player is in group, initialize variables necessary for group calculations:
         for (GroupReference* itr = _group->GetFirstMember(); itr != NULL; itr = itr->next())
             if (Player* member = itr->getSource())
-                if (member->isAlive() && member->IsAtGroupRewardDistance(_victim))
+                if (member->IsAlive() && member->IsAtGroupRewardDistance(_victim))
                 {
                     const uint8 lvl = member->getLevel();
                     // 2.1. _count - number of alive group members within reward distance;
@@ -545,7 +545,7 @@ inline void KillRewarder::_InitXP(Player* player)
 inline void KillRewarder::_RewardHonor(Player* player)
 {
     // Rewarded player must be alive.
-    if (player->isAlive())
+    if (player->IsAlive())
         player->RewardHonor(_victim, _count, -1, true);
 }
 
@@ -557,7 +557,7 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
         // 4.2.1. If player is in group, adjust XP:
         //        * set to 0 if player's level is more than maximum level of not gray member;
         //        * cut XP in half if _isFullXP is false.
-        if (_maxNotGrayMember && player->isAlive() &&
+        if (_maxNotGrayMember && player->IsAlive() &&
             _maxNotGrayMember->getLevel() >= player->getLevel())
             xp = _isFullXP ?
                 uint32(xp * rate) :             // Reward FULL XP if all group members are not gray.
@@ -594,7 +594,7 @@ inline void KillRewarder::_RewardReputation(Player* player, float rate)
 inline void KillRewarder::_RewardKillCredit(Player* player)
 {
     // 4.4. Give kill credit (player must not be in group, or he must be alive or without corpse).
-    if (!_group || player->isAlive() || !player->GetCorpse())
+    if (!_group || player->IsAlive() || !player->GetCorpse())
         if (_victim->GetTypeId() == TYPEID_UNIT)
             player->KilledMonster(_victim->ToCreature()->GetCreatureTemplate(), _victim->GetGUID());
 }
@@ -1541,7 +1541,7 @@ uint32 Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
 
     uint32 final_damage = DealDamage(this, damage, NULL, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
-    if (!isAlive())
+    if (!IsAlive())
     {
         if (type == DAMAGE_FALL)                               // DealDamage not apply item durability loss at self damage
         {
@@ -1565,7 +1565,7 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
             return MINUTE * IN_MILLISECONDS;
         case BREATH_TIMER:
         {
-            if (!isAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= AccountTypes(sWorld->getIntConfig(CONFIG_DISABLE_BREATHING)))
+            if (!IsAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= AccountTypes(sWorld->getIntConfig(CONFIG_DISABLE_BREATHING)))
                 return DISABLED_MIRROR_TIMER;
             int32 UnderWaterTime = 3 * MINUTE * IN_MILLISECONDS;
             AuraEffectList const& mModWaterBreathing = GetAuraEffectsByType(SPELL_AURA_MOD_WATER_BREATHING);
@@ -1575,7 +1575,7 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
         }
         case FIRE_TIMER:
         {
-            if (!isAlive())
+            if (!IsAlive())
                 return DISABLED_MIRROR_TIMER;
             return 1 * IN_MILLISECONDS;
         }
@@ -1630,7 +1630,7 @@ void Player::HandleDrowning(uint32 time_diff)
         int32 UnderWaterTime = getMaxTimer(BREATH_TIMER);
         // Need breath regen
         m_MirrorTimer[BREATH_TIMER]+=10*time_diff;
-        if (m_MirrorTimer[BREATH_TIMER] >= UnderWaterTime || !isAlive())
+        if (m_MirrorTimer[BREATH_TIMER] >= UnderWaterTime || !IsAlive())
             StopMirrorTimer(BREATH_TIMER);
         else if (m_MirrorTimerFlagsLast & UNDERWATER_INWATER)
             SendMirrorTimer(BREATH_TIMER, UnderWaterTime, m_MirrorTimer[BREATH_TIMER], 10);
@@ -1655,7 +1655,7 @@ void Player::HandleDrowning(uint32 time_diff)
             if (m_MirrorTimer[FATIGUE_TIMER] < 0)
             {
                 m_MirrorTimer[FATIGUE_TIMER]+= 1*IN_MILLISECONDS;
-                if (isAlive())                                              // Calculate and deal damage
+                if (IsAlive())                                              // Calculate and deal damage
                 {
                     uint32 damage = GetMaxHealth() / 5 + urand(0, getLevel()-1);
                     EnvironmentalDamage(DAMAGE_EXHAUSTED, damage);
@@ -1671,7 +1671,7 @@ void Player::HandleDrowning(uint32 time_diff)
     {
         int32 DarkWaterTime = getMaxTimer(FATIGUE_TIMER);
         m_MirrorTimer[FATIGUE_TIMER]+=10*time_diff;
-        if (m_MirrorTimer[FATIGUE_TIMER] >= DarkWaterTime || !isAlive())
+        if (m_MirrorTimer[FATIGUE_TIMER] >= DarkWaterTime || !IsAlive())
             StopMirrorTimer(FATIGUE_TIMER);
         else if (m_MirrorTimerFlagsLast & UNDERWARER_INDARKWATER)
             SendMirrorTimer(FATIGUE_TIMER, DarkWaterTime, m_MirrorTimer[FATIGUE_TIMER], 10);
@@ -1860,7 +1860,7 @@ void Player::Update(uint32 p_time)
 
     if (isCharmed())
         if (Unit* charmer = GetCharmer())
-            if (charmer->GetTypeId() == TYPEID_UNIT && charmer->isAlive())
+            if (charmer->GetTypeId() == TYPEID_UNIT && charmer->IsAlive())
                 UpdateCharmedAI();
 
     // Update items that have just a limited lifetime
@@ -2066,7 +2066,7 @@ void Player::Update(uint32 p_time)
             m_syncTimer -= p_time;
     }
 
-    if (isAlive())
+    if (IsAlive())
     {
         m_regenTimer += p_time;
         RegenerateAll();
@@ -2238,7 +2238,7 @@ void Player::Update(uint32 p_time)
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
-    if (IsHasDelayedTeleport() && isAlive())
+    if (IsHasDelayedTeleport() && IsAlive())
         TeleportTo(m_teleport_dest, m_teleport_options);
     plrUpdate = false; 
 }
@@ -2247,7 +2247,7 @@ void Player::setDeathState(DeathState s)
 {
     uint32 ressSpellId = 0;
 
-    bool cur = isAlive();
+    bool cur = IsAlive();
 
     if (s == JUST_DIED)
     {
@@ -2304,7 +2304,7 @@ void Player::setDeathState(DeathState s)
         }
     }
 
-    if (isAlive() && !cur)
+    if (IsAlive() && !cur)
         //clear aura case after resurrection by another way (spells will be applied before next death)
         SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
 
@@ -3430,9 +3430,9 @@ bool Player::CanInteractWithQuestGiver(Object* questGiver)
         case TYPEID_GAMEOBJECT:
             return GetGameObjectIfCanInteractWith(questGiver->GetGUID(), GAMEOBJECT_TYPE_QUESTGIVER) != NULL;
         case TYPEID_PLAYER:
-            return isAlive() && questGiver->ToPlayer()->isAlive();
+            return IsAlive() && questGiver->ToPlayer()->IsAlive();
         case TYPEID_ITEM:
-            return isAlive();
+            return IsAlive();
         default:
             break;
     }
@@ -3457,11 +3457,11 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask, uint3
         return NULL;
 
     // Deathstate checks
-    if (!isAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_GHOST))
+    if (!IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_GHOST))
         return NULL;
 
     // alive or spirit healer
-    if (!creature->isAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
+    if (!creature->IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT))
         return NULL;
 
     // appropriate npc type
@@ -3702,7 +3702,7 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     if (xp < 1)
         return;
 
-    if (!isAlive() && !GetBattlegroundId())
+    if (!IsAlive() && !GetBattlegroundId())
         return;
 
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
@@ -6795,7 +6795,7 @@ void Player::RepopAtGraveyard()
     AreaTableEntry const* zone = sAreaTableStore.LookupEntry(GetAreaId());
     if (!zone)
     {
-        TC_LOG_INFO("player", "Joueur %u dans une zone nulle; area id : %u", GetGUIDLow(), GetAreaId());
+        TC_LOG_DEBUG("player", "Joueur %u dans une zone nulle; area id : %u", GetGUIDLow(), GetAreaId());
         return;
     }
 
@@ -6845,13 +6845,13 @@ void Player::RepopAtGraveyard()
     }
     // Do it only if where is no grave or transport!
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    else if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < (zone ? zone->MaxDepth : -500.0f))
+    else if ((!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport())
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
     }
-    //else if (GetPositionZ() < zone->MaxDepth)
-        //TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
+    else if (GetPositionZ() < GetMap()->GetMinHeight(GetPositionX(), GetPositionY()))
+        TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
 }
 
 bool Player::CanJoinConstantChannelInZone(ChatChannelsEntry const* channel, AreaTableEntry const* zone)
@@ -7799,7 +7799,7 @@ void Player::SendActionButtons(uint32 state) const
     data << uint8(state);
     GetSession()->SendPacket(&data);
 
-    TC_LOG_INFO("network", "Action Buttons for '%u' spec '%u' Sent", GetGUIDLow(), GetActiveSpec());
+    TC_LOG_DEBUG("network", "Action Buttons for '%u' spec '%u' Sent", GetGUIDLow(), GetActiveSpec());
 }
 
 bool Player::IsActionButtonDataValid(uint8 button, uint32 action, uint8 type)
@@ -7856,7 +7856,7 @@ ActionButton* Player::addActionButton(uint8 button, uint32 action, uint8 type)
     // set data and update to CHANGED if not NEW
     ab.SetActionAndType(action, ActionButtonType(type));
 
-    TC_LOG_INFO("player.loading", "Player '%u' Added Action '%u' (type %u) to Button '%u'", GetGUIDLow(), action, type, button);
+    TC_LOG_DEBUG("player.loading", "Player '%u' Added Action '%u' (type %u) to Button '%u'", GetGUIDLow(), action, type, button);
     return &ab;
 }
 
@@ -7871,7 +7871,7 @@ void Player::removeActionButton(uint8 button)
     else
         buttonItr->second.uState = ACTIONBUTTON_DELETED;    // saved, will deleted at next save
 
-    TC_LOG_INFO("player.loading", "Action Button '%u' Removed from Player '%u'", button, GetGUIDLow());
+    TC_LOG_DEBUG("player.loading", "Action Button '%u' Removed from Player '%u'", button, GetGUIDLow());
 }
 
 ActionButton const* Player::GetActionButton(uint8 button)
@@ -8035,7 +8035,7 @@ void Player::SendMovieStart(uint32 MovieId)
 
 void Player::CheckAreaExploreAndOutdoor()
 {
-    if (!isAlive())
+    if (!IsAlive())
         return;
 
     if (isInFlight())
@@ -8116,7 +8116,7 @@ void Player::CheckAreaExploreAndOutdoor()
                 GiveXP(XP, NULL);
                 SendExplorationExperience(area, XP);
             }
-            TC_LOG_INFO("player", "Player %u discovered a new area: %u", GetGUIDLow(), area);
+            TC_LOG_DEBUG("player", "Player %u discovered a new area: %u", GetGUIDLow(), area);
         }
     }
 }
@@ -9272,7 +9272,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // remove items with area/map limitations (delete only for alive player to allow back in ghost mode)
     // if player resurrected at teleport this will be applied in resurrect code
-    if (isAlive())
+    if (IsAlive())
         DestroyZoneLimitedItem(true, newZone);
 
     // check some item equip limitations (in result lost CanTitanGrip at talent reset, for example)
@@ -9323,7 +9323,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return isAlive() && !HasInvisibilityAura() && !HasStealthAura() && IsPvP() && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING) && !isInFlight();
+    return IsAlive() && !HasInvisibilityAura() && !HasStealthAura() && IsPvP() && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING) && !isInFlight();
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -9478,7 +9478,7 @@ void Player::_ApplyItemMods(Item* item, uint8 slot, bool apply, bool addItemSpel
     if (apply)
         item->SetLevelCap(GetMap()->ItemLevelCap(), GetMap()->IsBattlegroundOrArena());
 
-    TC_LOG_INFO("player.items", "applying mods for item %u ", item->GetGUIDLow());
+    TC_LOG_DEBUG("player.items", "applying mods for item %u ", item->GetGUIDLow());
 
     if (proto->Socket[0].Color)                              //only (un)equipping of items with sockets can influence metagems, so no need to waste time with normal items
         CorrectMetaGemEnchants(slot, apply);
@@ -9819,7 +9819,7 @@ void Player::_ApplyOrRemoveItemEquipDependentAuras(uint64 itemGUID, bool apply)
 {
     if (apply)
     {
-        if (!isAlive())
+        if (!IsAlive())
             return;
 
         PlayerSpellMap _spells = m_spells;
@@ -10100,7 +10100,7 @@ void Player::UpdateEquipSpellsAtFormChange()
 }
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx)
 {
-    if (!target || !target->isAlive() || target == this)
+    if (!target || !target->IsAlive() || target == this)
         return;
 
     for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
@@ -10735,7 +10735,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type, bool AoeLoot, uint8 pool)
         Creature* creature = GetMap()->GetCreature(guid);
 
         // must be in range and creature must be alive for pickpocket and must be dead for another loot
-        if (!creature || creature->isAlive() != (loot_type == LOOT_PICKPOCKETING))
+        if (!creature || creature->IsAlive() != (loot_type == LOOT_PICKPOCKETING))
         {
             SendLootRelease(guid);
             return;
@@ -11669,7 +11669,7 @@ uint32 Player::GetXPRestBonus(uint32 xp)
 
     SetRestBonus(GetRestBonus() - rested_bonus);
 
-    TC_LOG_INFO("player", "Player gain %u xp (+ %u Rested Bonus). Rested points=%f", xp+rested_bonus, rested_bonus, GetRestBonus());
+    TC_LOG_DEBUG("player", "Player gain %u xp (+ %u Rested Bonus). Rested points=%f", xp+rested_bonus, rested_bonus, GetRestBonus());
     return rested_bonus;
 }
 
@@ -13545,7 +13545,7 @@ InventoryResult Player::CanUseItem(Item* pItem, bool not_loading) const
     {
         TC_LOG_DEBUG("player.items", "STORAGE: CanUseItem item = %u", pItem->GetEntry());
 
-        if (!isAlive() && not_loading)
+        if (!IsAlive() && not_loading)
             return EQUIP_ERR_PLAYER_DEAD;
 
         //if (isStunned())
@@ -13995,7 +13995,7 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     {
         VisualizeItem(slot, pItem);
 
-        if (isAlive())
+        if (IsAlive())
         {
             ItemTemplate const* pProto = pItem->GetTemplate();
 
@@ -14859,7 +14859,7 @@ void Player::SwapItem(uint16 src, uint16 dst)
 
     TC_LOG_DEBUG("player.items", "STORAGE: SwapItem bag = %u, slot = %u, item = %u", dstbag, dstslot, pSrcItem->GetEntry());
 
-    if (!isAlive())
+    if (!IsAlive())
     {
         SendEquipError(EQUIP_ERR_PLAYER_DEAD, pSrcItem, pDstItem);
         return;
@@ -19641,7 +19641,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // Spell code allow apply any auras to dead character in load time in aura/spell/item loading
     // Do now before stats re-calculation cleanup for ghost state unexpected auras
-    if (!isAlive())
+    if (!IsAlive())
         RemoveAllAurasOnDeath();
     else
         RemoveAllAurasRequiringDeadTarget();
@@ -20029,7 +20029,7 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
 
                 aura->SetLoadedState(maxduration, remaintime, remaincharges, stackcount, recalculatemask, &damage[0]);
                 aura->ApplyForTargets();
-                TC_LOG_INFO("player", "Added aura spellid %u, effectmask %u", spellInfo->Id, effmask);
+                TC_LOG_DEBUG("player", "Added aura spellid %u, effectmask %u", spellInfo->Id, effmask);
             }
         }
         while (result->NextRow());
@@ -20068,7 +20068,7 @@ void Player::_LoadGlyphAuras()
 
 void Player::LoadCorpse()
 {
-    if (isAlive())
+    if (IsAlive())
         sObjectAccessor->ConvertCorpseForPlayer(GetGUID());
     else
     {
@@ -20230,7 +20230,7 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
         }
         CharacterDatabase.CommitTransaction(trans);
     }
-    //if (isAlive())
+    //if (IsAlive())
     _ApplyAllItemMods();
 }
 
@@ -20294,7 +20294,7 @@ Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, F
             PreparedStatement* stmt = NULL;
 
             // Do not allow to have item limited to another map/zone in alive state
-            if (isAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(), zoneId))
+            if (IsAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(), zoneId))
             {
                 TC_LOG_DEBUG("player.loading", "Player::_LoadInventory: player (GUID: %u, name: '%s', map: %u) has item (GUID: %u, entry: %u) limited to another map (%u). Deleting item.",
                     GetGUIDLow(), GetName(), GetMapId(), item->GetGUIDLow(), item->GetEntry(), zoneId);
@@ -24739,7 +24739,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
     // cheating attempt
     if (count < 1 || count > 1) count = 1;
 
-    if (!isAlive())
+    if (!IsAlive())
         return false;
 
     CurrencyTypesEntry const* proto = sCurrencyTypesStore.LookupEntry(currency);
@@ -24871,7 +24871,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     if (slot > MAX_BAG_SIZE && slot != NULL_SLOT)
         return false;
 
-    if (!isAlive())
+    if (!IsAlive())
         return false;
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
@@ -25905,7 +25905,7 @@ void Player::UpdateTriggerVisibility()
 void Player::SendInitialVisiblePackets(Unit* target)
 {
     SendAurasForTarget(target);
-    if (target->isAlive())
+    if (target->IsAlive())
     {
         if (target->HasUnitState(UNIT_STATE_MELEE_ATTACKING) && target->getVictim())
             target->SendMeleeAttackStart(target->getVictim());
@@ -27378,7 +27378,7 @@ void Player::RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewar
                 continue;                               // member (alive or dead) or his corpse at req. distance
 
             // quest objectives updated only for alive group member or dead but with not released body
-            if (player->isAlive()|| !player->GetCorpse())
+            if (player->IsAlive()|| !player->GetCorpse())
                 player->KilledMonsterCredit(creature_id, creature_guid);
         }
     }
@@ -27391,7 +27391,7 @@ bool Player::IsAtGroupRewardDistance(WorldObject const* pRewardSource) const
     if (!pRewardSource)
         return false;
     const WorldObject* player = GetCorpse();
-    if (!player || isAlive())
+    if (!player || IsAlive())
         player = this;
 
     if (player->GetMapId() != pRewardSource->GetMapId() || player->GetInstanceId() != pRewardSource->GetInstanceId())
@@ -27405,7 +27405,7 @@ bool Player::IsAtRecruitAFriendDistance(WorldObject const* pOther) const
     if (!pOther)
         return false;
     const WorldObject* player = GetCorpse();
-    if (!player || isAlive())
+    if (!player || IsAlive())
         player = this;
 
     if (player->GetMapId() != pOther->GetMapId() || player->GetInstanceId() != pOther->GetInstanceId())
@@ -27917,7 +27917,7 @@ bool Player::CanUseBattlegroundObject()
              !HasStealthAura() &&                           // not stealthed
              !HasInvisibilityAura() &&                      // not invisible
              !HasAura(SPELL_RECENTLY_DROPPED_FLAG) &&    // can't pickup
-             isAlive()                                      // live player
+             IsAlive()                                      // live player
 );
 }
 
@@ -27925,7 +27925,7 @@ bool Player::CanCaptureTowerPoint()
 {
     return (!HasStealthAura() &&                           // not stealthed
              !HasInvisibilityAura() &&                      // not invisible
-             isAlive()                                      // live player
+             IsAlive()                                      // live player
 );
 }
 
@@ -28751,7 +28751,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
                 uint32 final_damage = EnvironmentalDamage(DAMAGE_FALL, damage);
 
                 // recheck alive, might have died of EnvironmentalDamage, avoid cases when player die in fact like Spirit of Redemption case
-                if (isAlive() && final_damage < original_health)
+                if (IsAlive() && final_damage < original_health)
                     UpdateAchievementCriteria(CRITERIA_TYPE_FALL_WITHOUT_DYING, uint32(z_diff*100));
             }
 
@@ -28846,7 +28846,7 @@ bool Player::LearnTalent(uint32 talentId)
     learnSpell(spellid, false);
     CastPassiveTalentSpell(spellid);
 
-    TC_LOG_INFO("server", "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
+    TC_LOG_DEBUG("server", "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;
 }
 
@@ -30959,7 +30959,7 @@ void Player::CheckItemCapLevel(bool hasCap)
             if (!hasCap && m_items[i]->GetLevel() >= proto->ItemLevel)
                 continue;
 
-            if (m_items[i]->IsEquipped() && isAlive())
+            if (m_items[i]->IsEquipped() && IsAlive())
             {
                 _ApplyItemMods(m_items[i], m_items[i]->GetSlot(), false);
                 // on apply perfome all changes
@@ -31295,7 +31295,7 @@ void Player::RemoveListner(WorldObject* o, bool update)
 
 bool Player::CanSeeVignette(WorldObject *o)
 {
-    if(!o->GetVignetteId() || (o->ToUnit() && (!o->ToUnit()->isAlive() || o->ToUnit()->IsPet())))
+    if(!o->GetVignetteId() || (o->ToUnit() && (!o->ToUnit()->IsAlive() || o->ToUnit()->IsPet())))
         return false;
 
     /*if (Creature const* creature = o->ToCreature())

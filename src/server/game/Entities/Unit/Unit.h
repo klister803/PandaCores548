@@ -1769,8 +1769,8 @@ class Unit : public WorldObject
         bool IsValidAssistTarget(Unit const* target) const;
         bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
 
-        virtual bool IsInWater() const;
-        virtual bool IsUnderWater() const;
+        bool IsInWater() const override;
+        bool IsUnderWater() const override;
         virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
         bool isInAccessiblePlaceFor(Creature const* c) const;
 
@@ -1858,7 +1858,7 @@ class Unit : public WorldObject
 
         void SendClearTarget();
 
-        bool isAlive() const { return (m_deathState == ALIVE); };
+        bool IsAlive() const { return (m_deathState == ALIVE); };
         bool isDying() const { return (m_deathState == JUST_DIED); };
         bool isDead() const { return (m_deathState == DEAD || m_deathState == CORPSE); };
         DeathState getDeathState() { return m_deathState; };

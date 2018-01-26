@@ -1845,7 +1845,7 @@ class npc_terenas_menethil : public CreatureScript
             void EnterEvadeMode()
             {
                 // no running back home
-                if (!me->isAlive())
+                if (!me->IsAlive())
                     return;
 
                 me->DeleteThreatList();

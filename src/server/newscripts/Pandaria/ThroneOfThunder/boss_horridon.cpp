@@ -259,7 +259,7 @@ public:
         {
             if (Creature* jalak = me->GetCreature(*me, instance->GetData64(NPC_JALAK)))
             {
-                if (!jalak->isAlive())
+                if (!jalak->IsAlive())
                 {
                     jalak->Respawn();
                     jalak->GetMotionMaster()->MoveTargetedHome();
@@ -364,7 +364,7 @@ public:
         {
             if (Creature* jalak = me->GetCreature(*me, instance->GetData64(NPC_JALAK)))
             {
-                if (jalak->isAlive())
+                if (jalak->IsAlive())
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 else
                 {
@@ -448,7 +448,7 @@ public:
         {
             if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
             {
-                if (!horridon->isAlive())
+                if (!horridon->IsAlive())
                 {
                     horridon->Respawn();
                     horridon->GetMotionMaster()->MoveTargetedHome();
@@ -484,7 +484,7 @@ public:
         {
             if (Creature* horridon = me->GetCreature(*me, instance->GetData64(NPC_HORRIDON)))
             {
-                if (horridon->isAlive())
+                if (horridon->IsAlive())
                     horridon->AddAura(SPELL_RAMPAGE, horridon);
                 else
                 {
@@ -1481,7 +1481,7 @@ public:
             if (GetCaster() && GetCaster()->ToCreature())
             {
                 if (Unit* _target = GetCaster()->GetUnit(*GetCaster(), targetGuid))
-                    if (_target->isAlive())
+                    if (_target->IsAlive())
                         GetCaster()->CastSpell(_target, SPELL_RENDING_CHARGE_DMG, true);
                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
             }

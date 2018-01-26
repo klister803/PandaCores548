@@ -388,7 +388,7 @@ class npc_buff_controller : public CreatureScript
                         {
                             if (Player* pl = i->getSource())
                             {
-                                if (pl->isAlive() && pl->GetDistance(me) <= 38.9f)
+                                if (pl->IsAlive() && pl->GetDistance(me) <= 38.9f)
                                 {
                                     if (!pl->HasAura(SPELL_TOUCH_OF_THE_TITANS))
                                         pl->AddAura(SPELL_TOUCH_OF_THE_TITANS, pl);
@@ -396,7 +396,7 @@ class npc_buff_controller : public CreatureScript
                                     if (!pl->HasAura(SPELL_OVERCHARGED))
                                         pl->AddAura(SPELL_OVERCHARGED, pl);
                                 }
-                                else if (pl->isAlive() && pl->GetDistance(me) >= 38.9f)
+                                else if (pl->IsAlive() && pl->GetDistance(me) >= 38.9f)
                                 {
                                     pl->RemoveAurasDueToSpell(SPELL_TOUCH_OF_THE_TITANS);
                                     pl->RemoveAurasDueToSpell(SPELL_OVERCHARGED);

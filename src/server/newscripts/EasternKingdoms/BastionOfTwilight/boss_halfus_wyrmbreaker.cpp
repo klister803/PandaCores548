@@ -345,7 +345,7 @@ class boss_halfus_wyrmbreaker : public CreatureScript
                 if (!summonlist.empty())
                     for (uint8 n = 1; n < 5; n++)
                         if (Creature* summon = me->GetCreature(*me, summonlist[n]))
-                            if (summon->isAlive() && !summon->HasAura(SPELL_UNRESPONSIVE_DRAKE))
+                            if (summon->IsAlive() && !summon->HasAura(SPELL_UNRESPONSIVE_DRAKE))
                                 summon->AI()->DoAction(ACTION_ACTIVE_GOSSIP);
                 if (bWhelps)
                     if (GameObject* pGo = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_WHELP_CAGE)))

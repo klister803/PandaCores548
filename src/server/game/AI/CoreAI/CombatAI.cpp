@@ -397,7 +397,7 @@ void AnyPetAI::InitializeAI()
 
 void AnyPetAI::UpdateAI(uint32 diff)
 {
-    if (!me->isAlive())
+    if (!me->IsAlive())
         return;
 
     if (m_updateAlliesTimer <= diff)

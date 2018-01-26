@@ -3430,7 +3430,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
                     check = false;
                 break;
             case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_DEAD: // 6
-                if (!unit || unit->isAlive())
+                if (!unit || unit->IsAlive())
                     check = false;
                 break;
             case CRITERIA_ADDITIONAL_CONDITION_TARGET_MUST_BE_ENEMY: // 7
@@ -3912,7 +3912,7 @@ bool AchievementMgr<T>::AdditionalRequirementsSatisfied(ModifierTreeNode const* 
             }
             case CRITERIA_ADDITIONAL_CONDITION_DEATH_COUNTER:   // 122
             {
-                if (!referencePlayer || !referencePlayer->GetInstanceId() || referencePlayer->isAlive())
+                if (!referencePlayer || !referencePlayer->GetInstanceId() || referencePlayer->IsAlive())
                     check = false;
                 break;
             }

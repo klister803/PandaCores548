@@ -2242,6 +2242,8 @@ void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
 {
     float _offset = GetPositionH() < 2.0f ? 2.0f : 0.0f; // For find correct position Z
+    bool isFalling = m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+
     switch (GetTypeId())
     {
         case TYPEID_UNIT:
@@ -2262,11 +2264,16 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
                 float max_z = canSwim
                     ? GetBaseMap()->GetWaterOrGroundLevel(x, y, z + _offset, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK))
                     : ((ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z + _offset, true)));
+
+                if (isFalling) // Allowed point in air if we falling
+                    if ((z - max_z) > 2.0f)
+                        return;
+
                 max_z += GetPositionH();
                 ground_z += GetPositionH();
                 if (max_z > INVALID_HEIGHT)
                 {
-                    if (z > max_z)
+                    if (z > max_z && !IsInWater())
                         z = max_z;
                     else if (z < ground_z)
                         z = ground_z;
@@ -2290,9 +2297,14 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
                 float max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z + _offset, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
                 max_z += GetPositionH();
                 ground_z += GetPositionH();
+
+                if (isFalling) // Allowed point in air if we falling
+                    if ((z - max_z) > 2.0f)
+                        return;
+
                 if (max_z > INVALID_HEIGHT)
                 {
-                    if (z > max_z)
+                    if (z > max_z && !IsInWater())
                         z = max_z;
                     else if (z < ground_z)
                         z = ground_z;
@@ -2311,6 +2323,11 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
         {
             float ground_z = GetBaseMap()->GetHeight(GetPhaseMask(), x, y, z + _offset, true);
             ground_z += GetPositionH();
+
+            if (isFalling) // Allowed point in air if we falling
+                if ((z - ground_z) > 2.0f)
+                    return;
+
             if (ground_z > INVALID_HEIGHT)
                 z = ground_z;
             break;
@@ -3504,7 +3521,8 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
 {
     angle += GetOrientation();
     float destx, desty, destz, ground, floor;
-    pos.m_positionZ += 2.0f;
+    if (!IsInWater())
+        pos.m_positionZ += 2.0f;
     destx = pos.m_positionX + dist * std::cos(angle);
     desty = pos.m_positionY + dist * std::sin(angle);
 
@@ -3515,9 +3533,27 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         return;
     }
 
+    bool isFalling = m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
     ground = GetMap()->GetHeight(GetPhaseMask(), destx, desty, MAX_HEIGHT, true);
     floor = GetMap()->GetHeight(GetPhaseMask(), destx, desty, pos.m_positionZ, true);
     destz = fabs(ground - pos.m_positionZ) <= fabs(floor - pos.m_positionZ) ? ground : floor;
+
+    if (IsInWater()) // In water not allow change Z to ground
+    {
+        if (pos.m_positionZ > destz)
+            destz = pos.m_positionZ;
+    }
+
+    bool _checkZ = true;
+    if (isFalling) // Allowed point in air if we falling
+    {
+        float z_now = m_movementInfo.lastTimeUpdate ? (pos.m_positionZ - Movement::computeFallElevation(Movement::MSToSec(getMSTime() - m_movementInfo.lastTimeUpdate), false) - 5.0f) : pos.m_positionZ;
+        if ((z_now - ground) > 10.0f)
+        {
+            destz = z_now;
+            _checkZ = false;
+        }
+    }
 
     bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
 
@@ -3529,6 +3565,8 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         desty -= CONTACT_DISTANCE * std::sin(angle);
         dist = sqrt((pos.m_positionX - destx)*(pos.m_positionX - destx) + (pos.m_positionY - desty)*(pos.m_positionY - desty));
     }
+    else
+        destz -= 0.5f;
 
     // check dynamic collision
     col = GetMap()->getObjectHitPos(GetPhaseMask(), pos.m_positionX, pos.m_positionY, pos.m_positionZ+0.5f, destx, desty, destz+0.5f, destx, desty, destz, -0.5f);
@@ -3540,13 +3578,15 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         desty -= CONTACT_DISTANCE * std::sin(angle);
         dist = sqrt((pos.m_positionX - destx)*(pos.m_positionX - destx) + (pos.m_positionY - desty)*(pos.m_positionY - desty));
     }
+    else
+        destz -= 0.5f;
 
     float step = dist/10.0f;
 
     for (uint8 j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
-        if (fabs(pos.m_positionZ - destz) > 6)
+        if (fabs(pos.m_positionZ - destz) > 6 && _checkZ)
         {
             destx -= step * std::cos(angle);
             desty -= step * std::sin(angle);

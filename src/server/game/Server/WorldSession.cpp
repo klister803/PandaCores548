@@ -254,8 +254,8 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     {
         uint64 minTime = uint64(cur_time - lastTime);
         uint64 fullTime = uint64(lastTime - firstTime);
-        TC_LOG_INFO("server", "Send all time packets count: " UI64FMTD " bytes: " UI64FMTD " avr.count/sec: %f avr.bytes/sec: %f time: %u", sendPacketCount, sendPacketBytes, float(sendPacketCount)/fullTime, float(sendPacketBytes)/fullTime, uint32(fullTime));
-        TC_LOG_INFO("server", "Send last min packets count: " UI64FMTD " bytes: " UI64FMTD " avr.count/sec: %f avr.bytes/sec: %f", sendLastPacketCount, sendLastPacketBytes, float(sendLastPacketCount)/minTime, float(sendLastPacketBytes)/minTime);
+        TC_LOG_DEBUG("server", "Send all time packets count: " UI64FMTD " bytes: " UI64FMTD " avr.count/sec: %f avr.bytes/sec: %f time: %u", sendPacketCount, sendPacketBytes, float(sendPacketCount)/fullTime, float(sendPacketBytes)/fullTime, uint32(fullTime));
+        TC_LOG_DEBUG("server", "Send last min packets count: " UI64FMTD " bytes: " UI64FMTD " avr.count/sec: %f avr.bytes/sec: %f", sendLastPacketCount, sendLastPacketBytes, float(sendLastPacketCount)/minTime, float(sendLastPacketBytes)/minTime);
 
         lastTime = cur_time;
         sendLastPacketCount = 1;
@@ -980,7 +980,7 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
             addonInfo >> addonName;
             addonInfo >> hasPubKey >> CRC >> urlCRC;
 
-            TC_LOG_INFO("server", "ADDON: Name: %s, hasPubKey: 0x%x, CRC: 0x%x, urlCRC: 0x%x", addonName.c_str(), hasPubKey, CRC, urlCRC);
+            TC_LOG_DEBUG("server", "ADDON: Name: %s, hasPubKey: 0x%x, CRC: 0x%x, urlCRC: 0x%x", addonName.c_str(), hasPubKey, CRC, urlCRC);
 
             AddonInfo addon(addonName, hasPubKey, CRC, 2, true);
 
@@ -993,14 +993,14 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
                     match = false;
 
                 if (!match)
-                    TC_LOG_INFO("server", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+                    TC_LOG_DEBUG("server", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
                 else
-                    TC_LOG_INFO("server", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
+                    TC_LOG_DEBUG("server", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
             }
             else
             {
                 AddonMgr::SaveAddon(addon);
-                TC_LOG_INFO("server", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
+                TC_LOG_DEBUG("server", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
             }
 
             // TODO: Find out when to not use CRC/pubkey, and other possible states.
@@ -1063,7 +1063,7 @@ void WorldSession::SendAddonsInfo()
         }
         if (bit1)
         {
-            TC_LOG_INFO("server", "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
+            TC_LOG_DEBUG("server", "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%x), sending pubkey",
                 itr->CRC, itr->Name.c_str(), STANDARD_ADDON_CRC);
 
 #pragma region crcOrder

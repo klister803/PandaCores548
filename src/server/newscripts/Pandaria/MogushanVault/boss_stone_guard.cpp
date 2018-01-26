@@ -92,7 +92,7 @@ class boss_stone_guard_controler : public CreatureScript
             boss_stone_guard_controlerAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
-                if (me->isAlive() && pInstance)
+                if (me->IsAlive() && pInstance)
                     ResetStoneGuards();
             }
 
@@ -129,7 +129,7 @@ class boss_stone_guard_controler : public CreatureScript
                 {
                     if (Creature* guardian = me->GetCreature(*me, pInstance->GetData64(guardiansEntry[n])))
                     {
-                        if (!guardian->isAlive())
+                        if (!guardian->IsAlive())
                             guardian->Respawn(true);
                     }
                 }
@@ -162,7 +162,7 @@ class boss_stone_guard_controler : public CreatureScript
                             if (Creature* gardian = me->GetMap()->GetCreature(pInstance->GetData64(guardiansEntry[i])))
                             {
                                 pInstance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, gardian);
-                                if (gardian->isAlive() && !gardian->isInCombat())
+                                if (gardian->IsAlive() && !gardian->isInCombat())
                                     DoZoneInCombat(gardian, 150.0f);
                             }
                         }
@@ -269,7 +269,7 @@ class boss_stone_guard_controler : public CreatureScript
                             {
                                 if (Creature* stoneGuard = pInstance->instance->GetCreature(stoneGuardGuid))
                                 {
-                                    if (stoneGuard->isAlive())
+                                    if (stoneGuard->IsAlive())
                                     {
                                         stoneGuard->AI()->DoAction(ACTION_PETRIFICATION);
                                         lastPetrifierEntry = nextPetrifierEntry;
@@ -306,7 +306,7 @@ struct boss_stone_guardianAI : ScriptedAI
         {
             for (uint8 n = 0; n < 4; n++)
                 if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
-                    if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                    if (guardian->IsAlive() && guardian->GetEntry() != callerEntry)
                         guardian->SetHealth(guardian->GetHealth() - damage);
         }
     }
@@ -319,7 +319,7 @@ struct boss_stone_guardianAI : ScriptedAI
             {
                 if (Creature* guardian = caller->GetCreature(*caller, pInstance->GetData64(guardiansEntry[n])))
                 {
-                    if (guardian->isAlive() && guardian->GetEntry() != callerEntry)
+                    if (guardian->IsAlive() && guardian->GetEntry() != callerEntry)
                     {
                         guardian->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         guardian->Kill(guardian, true);
@@ -566,7 +566,7 @@ class boss_generic_guardian : public CreatureScript
                                         GetPlayerListInGrid(playerList, me, 100.0f);
 
 										for (std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-                                            if ((*itr)->isAlive() && !(*itr)->HasAura(SPELL_JASPER_CHAINS))
+                                            if ((*itr)->IsAlive() && !(*itr)->HasAura(SPELL_JASPER_CHAINS))
                                                 tempPlayerList.push_back((*itr));
 
                                         if (tempPlayerList.size() < 2)
@@ -764,7 +764,7 @@ class spell_jasper_chains : public SpellScriptLoader
                 const SpellInfo* spell = GetSpellInfo();
                 Player* linkedPlayer = sObjectAccessor->GetPlayer(*target, playerLinkedGuid);
 
-                if (!caster || !target || !spell || !linkedPlayer || !linkedPlayer->isAlive() || !linkedPlayer->HasAura(spell->Id))
+                if (!caster || !target || !spell || !linkedPlayer || !linkedPlayer->IsAlive() || !linkedPlayer->HasAura(spell->Id))
                 {
                     if (Aura* myaura = GetAura())
                     {

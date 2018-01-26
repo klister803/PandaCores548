@@ -144,13 +144,13 @@ void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
     switch (state)
     {
         case NOT_STARTED:
-            if (!minion->isAlive())
+            if (!minion->IsAlive())
                 minion->Respawn();
             else if (minion->isInCombat())
                 minion->AI()->EnterEvadeMode();
             break;
         case IN_PROGRESS:
-            if (!minion->isAlive())
+            if (!minion->IsAlive())
                 minion->Respawn();
             else if (!minion->getVictim())
                 minion->AI()->DoZoneInCombat();
@@ -268,7 +268,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
 
             if (state == DONE)
                 for (MinionSet::iterator i = bossInfo->minion.begin(); i != bossInfo->minion.end(); ++i)
-                    if ((*i)->isWorldBoss() && (*i)->isAlive())
+                    if ((*i)->isWorldBoss() && (*i)->IsAlive())
                         return false;
 
             ResurectCount = 0;
@@ -592,7 +592,7 @@ bool InstanceScript::IsWipe()
         if (!player)
             continue;
 
-        if (player->isAlive() && !player->isGameMaster())
+        if (player->IsAlive() && !player->isGameMaster())
             return false;
     }
 
@@ -605,7 +605,7 @@ void InstanceScript::RemoveCombatFromPlayers()
     if (!PlayerList.isEmpty())
         for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
             if (Player* player = Itr->getSource())
-                if (player->isAlive() && player->isInCombat())
+                if (player->IsAlive() && player->isInCombat())
                     player->CombatStop(false);
 }
 
@@ -621,7 +621,7 @@ void InstanceScript::RemoveSelfResFieldFromPlayers()
     if (!PlayerList.isEmpty())
         for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
             if (Player* player = Itr->getSource())
-                if (!player->isAlive() && player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
+                if (!player->IsAlive() && player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
                     player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
 }
 

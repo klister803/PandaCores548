@@ -623,7 +623,7 @@ public:
                     std::list<Creature*> _drudges;
                     GetCreatureListWithEntryInGrid(_drudges, me, NPC_GOLEM_SENTRY, 200.0f);
                     for (std::list<Creature*>::iterator itr = _drudges.begin(); itr != _drudges.end(); ++itr)
-                        if ((*itr)->GetGUID() != me->GetGUID() && (*itr)->isAlive())
+                        if ((*itr)->GetGUID() != me->GetGUID() && (*itr)->IsAlive())
                             if (Unit* target = (*itr)->AI()->SelectTarget(SELECT_TARGET_TOPAGGRO))
                                 DoCast(target, SPELL_DRAKONID_RUSH);                    
                     events.ScheduleEvent(EVENT_DRAKONID_RUSH, 20000);

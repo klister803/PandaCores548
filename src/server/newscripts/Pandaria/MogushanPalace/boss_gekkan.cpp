@@ -70,7 +70,7 @@ class boss_gekkan : public CreatureScript
                     Creature* c = me->GetMap()->GetCreature(*itr);
                     if (!c)
                         continue;
-                    if (c->isAlive())
+                    if (c->IsAlive())
                         me->CastSpell(c, SPELL_RECKLESS_INSPIRATION, false);
                 }
                 instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, SPELL_SAUROK_ACHIEV_AURA, 0, 0, me);

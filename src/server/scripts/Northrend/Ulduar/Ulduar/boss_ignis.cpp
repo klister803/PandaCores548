@@ -471,7 +471,7 @@ class spell_ignis_slag_pot : public SpellScriptLoader
 
                 Unit * target = GetTarget();
                 aurEffCaster->CastSpell(target, SPELL_SLAG_POT_DAMAGE, true);
-                if (target->isAlive() && !GetDuration())
+                if (target->IsAlive() && !GetDuration())
                 {
                     if (aurEffCaster->GetMap()->GetDifficulty() == MAN10_DIFFICULTY)
                         target->CastSpell(target, SPELL_SLAG_IMBUED_10, true);

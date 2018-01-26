@@ -191,7 +191,7 @@ public:
                 uint32 uiPositionCounter = 0;
                 for (std::list<Creature*>::const_iterator itr = lKaddrakGUIDList.begin(); itr != lKaddrakGUIDList.end(); ++itr)
                 {
-                    if ((*itr)->isAlive())
+                    if ((*itr)->IsAlive())
                     {
                         if (uiPositionCounter == 0)
                         {
@@ -221,7 +221,7 @@ public:
                             {
                                 if (Creature* pKaddrak = Unit::GetCreature(*me, *itr))
                                 {
-                                    if (pKaddrak->isAlive())
+                                    if (pKaddrak->IsAlive())
                                         pKaddrak->CastSpell(target, DUNGEON_MODE(SPELL_GLARE_OF_THE_TRIBUNAL, H_SPELL_GLARE_OF_THE_TRIBUNAL), true);
                                 }
                             }
@@ -342,7 +342,7 @@ public:
             for (std::list<uint64>::const_iterator itr = lDwarfGUIDList.begin(); itr != lDwarfGUIDList.end(); ++itr)
             {
                 Creature* temp = Unit::GetCreature(*me, instance ? (*itr) : 0);
-                if (temp && temp->isAlive())
+                if (temp && temp->IsAlive())
                     temp->DespawnOrUnsummon();
             }
             lDwarfGUIDList.clear();
@@ -355,7 +355,7 @@ public:
                 case 7:
                     if (Creature* creature = GetClosestCreatureWithEntry(me, CREATURE_TRIBUNAL_OF_THE_AGES, 100.0f))
                     {
-                        if (!creature->isAlive())
+                        if (!creature->IsAlive())
                             creature->Respawn();
                         CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, creature->AI())->UpdateFacesList();
                         uiControllerGUID = creature->GetGUID();

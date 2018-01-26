@@ -121,7 +121,7 @@ public:
                 for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 {
                     Player* player = i->getSource();
-                    if (!player || !player->isAlive())
+                    if (!player || !player->IsAlive())
                         continue;
                     // Summon clone
                     if (Unit* summon = me->SummonCreature(MOB_TWISTED_VISAGE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))

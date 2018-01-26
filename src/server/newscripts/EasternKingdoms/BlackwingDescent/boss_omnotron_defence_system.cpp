@@ -394,7 +394,7 @@ class boss_arcanotron : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
                 if (attacker->GetGUID() == me->GetGUID())
                     return;
@@ -608,7 +608,7 @@ class boss_electron : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
                 if (attacker->GetGUID() == me->GetGUID())
                     return;
@@ -791,7 +791,7 @@ class boss_magmatron : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
                 if (attacker->GetGUID() == me->GetGUID())
                     return;
@@ -999,7 +999,7 @@ class boss_toxitron : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32 &damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
                 if (attacker->GetGUID() == me->GetGUID())
                     return;
@@ -1299,7 +1299,7 @@ class spell_omnotron_active_trigger : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (!(GetHitUnit() && GetHitUnit()->isAlive()))
+                if (!(GetHitUnit() && GetHitUnit()->IsAlive()))
                     return;
 
                 if(Unit* caster = GetCaster())

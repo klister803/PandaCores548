@@ -87,7 +87,7 @@ public:
                 {
                     if (Creature* leishi = instance->GetCreature(leishiGuid))
                     {
-                        if (leishi->isAlive())
+                        if (leishi->IsAlive())
                             leishi->AI()->DoAction(ACTION_REMOVE_PROTECT);
                     }
                 }
@@ -128,7 +128,7 @@ public:
             {
                 if (Creature* boss = instance->GetCreature(GetData64(n)))
                 {
-                    if (!boss->isAlive())
+                    if (!boss->IsAlive())
                         SetDoorState(n);
                 }
             }
@@ -262,7 +262,7 @@ public:
                 if (!player)
                     continue;
 
-                if (player->isAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
+                if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
                     return false;
             }
 

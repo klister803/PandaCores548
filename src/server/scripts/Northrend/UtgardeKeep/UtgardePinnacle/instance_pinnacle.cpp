@@ -177,7 +177,7 @@ public:
                     if (!ritualchannelerlist.empty())
                         for (std::vector<uint64>::const_iterator Itr = ritualchannelerlist.begin(); Itr != ritualchannelerlist.end(); ++Itr)
                             if (Creature* rc = instance->GetCreature(*Itr))
-                                if (rc->isAlive())
+                                if (rc->IsAlive())
                                     rc->Kill(rc, false);
                     break;
             }

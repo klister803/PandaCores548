@@ -75,7 +75,7 @@ namespace Movement
     typedef counter<uint32, 0xFFFFFFFF> UInt32Counter;
 
     extern double gravity;
-    extern float computeFallElevation(float t_passed, bool isSafeFall, float start_velocity);
+    extern float computeFallElevation(float t_passed, bool isSafeFall, float start_velocity = 0.0f);
     extern UInt32Counter splineIdGen;
 }
 

@@ -673,7 +673,7 @@ public:
                 if (player->isGameMaster())
                     continue;
 
-                if (player->isAlive())
+                if (player->IsAlive())
                     return false;
             }
 
@@ -701,7 +701,7 @@ public:
                 ++next;
 
                 if (Creature* creature = instance->GetCreature(*itr))
-                    if (creature && creature->isAlive())
+                    if (creature && creature->IsAlive())
                         creature->DespawnOrUnsummon();
             }
             trashMobs.clear();
@@ -818,7 +818,7 @@ public:
                 ++next;
 
                 Creature* creature = instance->GetCreature(*itr);
-                if (creature && creature->isAlive())
+                if (creature && creature->IsAlive())
                     trigger->Kill(creature);
             }
         }

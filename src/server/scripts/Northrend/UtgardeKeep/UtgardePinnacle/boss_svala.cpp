@@ -307,7 +307,7 @@ public:
                     {
                         for (std::list<Creature*>::iterator itr = lspectatorList.begin(); itr != lspectatorList.end(); ++itr)
                         {
-                            if ((*itr)->isAlive())
+                            if ((*itr)->IsAlive())
                             {
                                 (*itr)->SetStandState(UNIT_STAND_STATE_STAND);
                                 (*itr)->SetWalk(false);

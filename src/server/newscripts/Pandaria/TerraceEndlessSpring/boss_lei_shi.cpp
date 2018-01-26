@@ -71,7 +71,7 @@ bool CheckTsulong(InstanceScript* instance, Creature* caller)
     {
         if (Creature* ts = caller->GetCreature(*caller, instance->GetData64(NPC_TSULONG)))
         {
-            if (ts->isAlive())
+            if (ts->IsAlive())
                 return true;
         }
     }

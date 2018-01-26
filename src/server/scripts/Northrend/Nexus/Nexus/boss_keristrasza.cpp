@@ -213,7 +213,7 @@ public:
         InstanceScript* instance = go->GetInstanceScript();
 
         Creature* pKeristrasza = Unit::GetCreature(*go, instance ? instance->GetData64(DATA_KERISTRASZA) : 0);
-        if (pKeristrasza && pKeristrasza->isAlive())
+        if (pKeristrasza && pKeristrasza->IsAlive())
         {
             // maybe these are hacks :(
             go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);

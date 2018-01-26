@@ -69,7 +69,7 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
     if (me->ToTotem()->GetTotemType() != TOTEM_ACTIVE)
         return;
 
-    if (!me->isAlive())
+    if (!me->IsAlive())
         return;
 
     if (me->HasUnitState(UNIT_STATE_CASTING))

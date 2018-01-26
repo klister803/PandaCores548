@@ -105,6 +105,7 @@ struct map_areaHeader
 #define MAP_HEIGHT_NO_HEIGHT  0x0001
 #define MAP_HEIGHT_AS_INT16   0x0002
 #define MAP_HEIGHT_AS_INT8    0x0004
+#define MAP_HEIGHT_HAS_FLIGHT_BOUNDS    0x0008
 
 struct map_heightHeader
 {
@@ -184,6 +185,8 @@ class GridMap
         uint16* m_uint16_V8;
         uint8* m_uint8_V8;
     };
+    int16* _maxHeight;
+    int16* _minHeight;
     // Height level data
     float _gridHeight;
     float _gridIntHeightMultiplier;
@@ -205,7 +208,7 @@ class GridMap
 
 
     bool loadAreaData(FILE* in, uint32 offset, uint32 size);
-    bool loadHeihgtData(FILE* in, uint32 offset, uint32 size);
+    bool loadHeightData(FILE* in, uint32 offset, uint32 size);
     bool loadLiquidData(FILE* in, uint32 offset, uint32 size);
 
     // Get height functions and pointers
@@ -224,6 +227,7 @@ public:
 
     uint16 getArea(float x, float y) const;
     inline float getHeight(float x, float y) const {return (this->*_gridGetHeight)(x, y);}
+    float getMinHeight(float x, float y) const;
     float getLiquidLevel(float x, float y) const;
     uint8 getTerrainType(float x, float y) const;
     ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = 0);
@@ -514,6 +518,7 @@ class Map
         InstanceMap* ToInstanceMap(){ if (IsDungeon())  return reinterpret_cast<InstanceMap*>(this); else return NULL;  }
         const InstanceMap* ToInstanceMap() const { if (IsDungeon())  return (const InstanceMap*)((InstanceMap*)this); else return NULL;  }
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
+        float GetMinHeight(float x, float y) const;
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, DynamicTreeCallback* dCallback = nullptr) const;
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask, DynamicTreeCallback* dCallback = nullptr) const;
         void Balance() { _dynamicTree.balance(); }

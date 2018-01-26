@@ -190,7 +190,7 @@ public:
         {
             if (tSeek <= diff)
             {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
+                if ((me->IsAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
                     if (Creature* enemy = me->FindNearestCreature(NPC_RAMPAGING_WORGEN_1, 16.0f, true))
                         me->AI()->AttackStart(enemy);
                 tSeek = urand(1000, 2000); //optimize cpu load, seeking only sometime between 1 and 2 seconds
@@ -275,7 +275,7 @@ public:
                 if (tSeek <= diff)
                 {
                     //Find worgen nearby
-                    if (me->isAlive() && !me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f))
+                    if (me->IsAlive() && !me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f))
                         if (Creature* enemy = me->FindNearestCreature(NPC_RAMPAGING_WORGEN_1, 16.0f, true))
                             me->AI()->AttackStart(enemy);
                     tSeek = urand(1000, 2000);//optimize cpu load
@@ -839,7 +839,7 @@ public:
         {
             if (tSeek <= diff)
             {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
+                if ((me->IsAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
                     if (Creature* enemy = me->FindNearestCreature(NPC_BLOODFANG_WORGEN, 10.0f, true))
                         me->AI()->AttackStart(enemy);
                 tSeek = urand(1000, 2000); //optimize cpu load, seeking only sometime between 1 and 2 seconds
@@ -902,7 +902,7 @@ public:
         {
             if (tSeek <= diff)
             {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
+                if ((me->IsAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
                     if (Creature* enemy = me->FindNearestCreature(NPC_BLOODFANG_WORGEN, 16.0f, true))
                         me->AI()->AttackStart(enemy);
                 tSeek = urand(1000, 2000); //optimize cpu load, seeking only sometime between 1 and 2 seconds
@@ -952,7 +952,7 @@ public:
         {
             if (tSeek <= diff)
             {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
+                if ((me->IsAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
                     if (Creature* enemy = me->FindNearestCreature(NPC_BLOODFANG_WORGEN, 5.0f, true))
                         me->AI()->AttackStart(enemy); //She should really only grab agro when npc Cleese is not there, so we will keep this range small
                 tSeek = urand(1000, 2000); //optimize cpu load, seeking only sometime between 1 and 2 seconds
@@ -1995,7 +1995,7 @@ public:
         {
             if (tSeek <= diff)
             {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 2.0f)))
+                if ((me->IsAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 2.0f)))
                     if (Player* player = me->SelectNearestPlayer(2.0f))
                     {
                         if (!player->isInCombat())
@@ -2213,7 +2213,7 @@ public:
         {
             if (tSeek <= diff)
             {
-                if ((me->isAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
+                if ((me->IsAlive()) && (!me->isInCombat() && (me->GetDistance2d(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY()) <= 1.0f)))
                     if (Creature* enemy = me->FindNearestCreature(NPC_GILNEAS_CITY_GUARD_P8, 5.0f, true))
                         me->AI()->AttackStart(enemy);
                 tSeek = urand(1000, 2000);

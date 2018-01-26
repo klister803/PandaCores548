@@ -202,7 +202,7 @@ public:
 
         void SummonedCreatureDespawn(Creature* summon)
         {
-            if (summon->isAlive())
+            if (summon->IsAlive())
                 return;
 
             if (summon->GetGUID() == uiFireMagusGUID)

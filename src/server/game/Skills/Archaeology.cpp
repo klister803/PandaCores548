@@ -434,7 +434,7 @@ void Player::GenerateResearchSites()
 
     _archaeologyChanged = true;
 
-    TC_LOG_INFO("spell", "Player::GenerateResearchSites(): %u", _researchSites.size());
+    TC_LOG_DEBUG("spell", "Player::GenerateResearchSites(): %u", _researchSites.size());
 
     ShowResearchSites();
 }

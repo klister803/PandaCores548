@@ -874,7 +874,7 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
     player->PlayDirectSound(OutdoorPvP_WG_SOUND_START_BATTLE); // START Battle
 
     // resurect dead plr
-    if(!player->isAlive())
+    if(!player->IsAlive())
         player->ResurrectPlayer(1.0f);
 
     if (player->GetTeamId() == GetDefenderTeam())

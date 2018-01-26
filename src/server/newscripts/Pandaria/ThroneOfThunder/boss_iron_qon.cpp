@@ -75,7 +75,7 @@ class boss_iron_qon : public CreatureScript
                     {
                         if (Creature* maunt = me->GetCreature(*me, instance->GetData64(mauntEntry[n])))
                         {
-                            if (!maunt->isAlive())
+                            if (!maunt->IsAlive())
                             {
                                 maunt->Respawn();
                                 maunt->GetMotionMaster()->MoveTargetedHome();
@@ -193,7 +193,7 @@ class npc_iron_qon_maunt : public CreatureScript
                     {
                         if (Creature* maunt = me->GetCreature(*me, instance->GetData64(mauntEntry[n])))
                         {
-                            if (me->GetEntry() != mauntEntry[n] && !maunt->isAlive())
+                            if (me->GetEntry() != mauntEntry[n] && !maunt->IsAlive())
                             {
                                 maunt->Respawn();
                                 maunt->GetMotionMaster()->MoveTargetedHome();
@@ -218,7 +218,7 @@ class npc_iron_qon_maunt : public CreatureScript
             {
                  if (Creature* iq = me->GetCreature(*me, instance->GetData64(NPC_IRON_QON)))
                  {
-                     if (iq->isAlive())
+                     if (iq->IsAlive())
                          iq->RemoveAurasDueToSpell(SPELL_RIDE_VEHICLE);
                  }
             }
@@ -281,7 +281,7 @@ class npc_iron_qon_maunt : public CreatureScript
                         case NPC_ROSHAK:
                             if (Creature* q = me->GetCreature(*me, instance->GetData64(NPC_QUETZAL)))
                             {
-                                if (q->isAlive())
+                                if (q->IsAlive())
                                 {
                                     q->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
                                     FlyControl(q, true);
@@ -292,7 +292,7 @@ class npc_iron_qon_maunt : public CreatureScript
                         case NPC_QUETZAL:
                             if (Creature* d = me->GetCreature(*me, instance->GetData64(NPC_DAMREN)))
                             {
-                                if (d->isAlive())
+                                if (d->IsAlive())
                                 {
                                     d->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
                                     FlyControl(d, true);

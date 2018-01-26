@@ -300,7 +300,7 @@ void World::AddSession_(WorldSession* s)
     {
         AddQueuedPlayer (s);
         UpdateMaxSessionCounters();
-        TC_LOG_INFO("server", "PlayerQueue: Account id %u is in Queue Position (%u).", s->GetAccountId(), ++QueueSize);
+        TC_LOG_DEBUG("server", "PlayerQueue: Account id %u is in Queue Position (%u).", s->GetAccountId(), ++QueueSize);
         return;
     }
 
@@ -319,7 +319,7 @@ void World::AddSession_(WorldSession* s)
         float popu = (float)GetActiveSessionCount();              // updated number of users on the server
         popu /= pLimit;
         popu *= 2;
-        TC_LOG_INFO("server", "Server Population (%f).", popu);
+        TC_LOG_DEBUG("server", "Server Population (%f).", popu);
     }
 }
 

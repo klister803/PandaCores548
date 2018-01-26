@@ -192,7 +192,7 @@ public:
                     DoScriptText(EMOTE_WOLF_HOWL, me);
                     break;
                 case 50:
-                    if (pRyga && pRyga->isAlive() && !pRyga->isInCombat())
+                    if (pRyga && pRyga->IsAlive() && !pRyga->isInCombat())
                         DoScriptText(SAY_WOLF_WELCOME, pRyga);
                     break;
             }

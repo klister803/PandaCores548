@@ -1521,7 +1521,7 @@ public:
                     {
                         bool hasCD = caster->HasAura(95652);
 
-                        if (target->isAlive())
+                        if (target->IsAlive())
                         {
                             caster->AddAura(32409, caster);
 
@@ -1576,7 +1576,7 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                                 {
                                     caster->CastSpell(caster, 125927, true);
 
-                                    if (target->isAlive())
+                                    if (target->IsAlive())
                                     {
                                         caster->AddAura(95652, caster);
                                         plr->RemoveSpellCooldown(GetSpellInfo()->Id, true);
@@ -1741,7 +1741,7 @@ class spell_pri_penance : public SpellScriptLoader
                 {
                     if (Unit* unitTarget = GetHitUnit())
                     {
-                        if (!unitTarget->isAlive())
+                        if (!unitTarget->IsAlive())
                             return;
 
                         uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);

@@ -678,7 +678,7 @@ public:
                 case NPC_HUNGRY_PENGUIN:
                     if (Unit* pAffected = Unit::GetUnit(*me, AffectedGUID))
                     {
-                        if (pAffected->isAlive())
+                        if (pAffected->IsAlive())
                             summon->AI()->AttackStart(pAffected);
                     }
                     break;
@@ -986,7 +986,7 @@ public:
             {
                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
-                    if (target && target->isAlive())
+                    if (target && target->IsAlive())
                         DoCast(target, SPELL_KNOCK_AWAY);
                 }
                 uiKnockAwayTimer = 10000;
@@ -996,7 +996,7 @@ public:
             {
                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
-                    if (target && target->isAlive())
+                    if (target && target->IsAlive())
                         DoCast(target, SPELL_STINKY_BEARD);
                 }
                 uiStinkyBeardTimer = 15000;

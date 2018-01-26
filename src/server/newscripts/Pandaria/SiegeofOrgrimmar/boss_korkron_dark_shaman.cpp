@@ -200,7 +200,7 @@ public:
         {
             if (instance)
                 if (Creature* oshaman = me->GetCreature(*me, instance->GetData64(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
-                    if (oshaman->isAlive())
+                    if (oshaman->IsAlive())
                         return oshaman;
             return NULL;
         }

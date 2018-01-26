@@ -270,7 +270,7 @@ class boss_sha_of_pride : public CreatureScript
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                         if (Player* player = Itr->getSource())
-                            if (player->isAlive())
+                            if (player->IsAlive())
                                 DoCast(player, SPELL_PRIDE, true);
             }
 

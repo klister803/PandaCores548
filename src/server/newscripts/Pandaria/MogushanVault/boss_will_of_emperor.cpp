@@ -313,7 +313,7 @@ void SendDied(InstanceScript* pInstance, Creature* caller, uint32 callerentry)
         {
             if (Creature* imperator = caller->GetCreature(*caller, pInstance->GetData64(imperators[n])))
             {
-                if (imperator->isAlive() && imperator->GetEntry() != callerentry)
+                if (imperator->IsAlive() && imperator->GetEntry() != callerentry)
                 {
                     imperator->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     imperator->Kill(imperator, true);
@@ -334,7 +334,7 @@ void SendDamage(InstanceScript* pInstance, Creature* caller, uint32 callerentry,
         {
             if (Creature* imperator = caller->GetCreature(*caller, pInstance->GetData64(imperators[n])))
             {
-                if (imperator->isAlive() && imperator->GetEntry() != callerentry)
+                if (imperator->IsAlive() && imperator->GetEntry() != callerentry)
                     imperator->SetHealth(imperator->GetHealth() - damage);
             }
         }
@@ -557,7 +557,7 @@ class mob_woi_add_generic : public CreatureScript
                    {
                        if (Unit* target = me->GetUnit(*me, targetguid))
                        {
-                           if (target->isAlive())
+                           if (target->IsAlive())
                                target->RemoveAurasDueToSpell(focusspell);
                        }
                    }
@@ -585,7 +585,7 @@ class mob_woi_add_generic : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_CHECK_TARGET: //All adds, check pursuit target
-                            if (!me->getVictim() || !me->getVictim()->isAlive())
+                            if (!me->getVictim() || !me->getVictim()->IsAlive())
                             {
                                 switch (me->GetEntry())
                                 {

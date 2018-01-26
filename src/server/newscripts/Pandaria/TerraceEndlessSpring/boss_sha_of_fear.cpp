@@ -115,7 +115,7 @@ bool CheckLeiShi(InstanceScript* instance, Creature* caller)
     {
         if (Creature* ls = caller->GetCreature(*caller, instance->GetData64(NPC_LEI_SHI)))
         {
-            if (ls->isAlive())
+            if (ls->IsAlive())
                 return true;
         }
     }
@@ -819,7 +819,7 @@ class spell_sha_of_fear_ominous_cackle : public SpellScriptLoader
                 return; // crashed http://pastebin.com/ZpyUb4WG
 
                 Unit* target = GetHitUnit();
-                if (!target || !target->isAlive() || !target->IsInWorld())
+                if (!target || !target->IsAlive() || !target->IsInWorld())
                     return;
 
                 target->CastSpell(target, 129147, true);

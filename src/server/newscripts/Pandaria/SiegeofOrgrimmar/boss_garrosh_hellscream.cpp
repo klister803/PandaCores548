@@ -687,7 +687,7 @@ class boss_garrosh_hellscream : public CreatureScript
                             if (!PlayerList.isEmpty())
                                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                     if (Player* player = Itr->getSource())
-                                        if (player->isAlive())
+                                        if (player->IsAlive())
                                             if (player->HasAura(SPELL_GARROSH_ENERGY))
                                                 player->SetPower(POWER_ALTERNATE_POWER, power);
                             updatepower = 1500;
@@ -905,7 +905,7 @@ class boss_garrosh_hellscream : public CreatureScript
                         if (!PlayerList.isEmpty())
                             for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                 if (Player* player = Itr->getSource())
-                                    if (player->isAlive())
+                                    if (player->IsAlive())
                                         if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
                                             player->RemoveAura(SPELL_REALM_OF_YSHAARJ, AURA_REMOVE_BY_EXPIRE);
                         events.ScheduleEvent(EVENT_PHASE_TWO, 3000);
@@ -1098,7 +1098,7 @@ public:
                 {
                     if (Unit* summoner = me->ToTempSummon()->GetSummoner())
                     {
-                        if (!summoner->isAlive() || !summoner->isInCombat())
+                        if (!summoner->IsAlive() || !summoner->isInCombat())
                         {
                             me->DespawnOrUnsummon();
                             return;
@@ -1737,7 +1737,7 @@ public:
                 case EVENT_CAST:
                     if (Player* pl = me->GetPlayer(*me, charmedplGuid))
                     {
-                        if (pl->isAlive() && IsPlayerInMindControl(pl))
+                        if (pl->IsAlive() && IsPlayerInMindControl(pl))
                         {
                             pl->GetMotionMaster()->MoveIdle();
                             pl->CastSpell(pl, SPELL_PL_TOUCH_OF_YSHAARJ);
@@ -1750,7 +1750,7 @@ public:
                 case EVENT_RE_ATTACK:
                     if (Player* pl = me->GetPlayer(*me, charmedplGuid))
                     {
-                        if (pl->isAlive() && IsPlayerInMindControl(pl))
+                        if (pl->IsAlive() && IsPlayerInMindControl(pl))
                         {
                             if (pl->getVictim())
                                 pl->GetMotionMaster()->MoveChase(pl->getVictim());
@@ -2645,7 +2645,7 @@ public:
         void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH || GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE) //end time pursuit or target died
-                if (GetCaster() && GetCaster()->isAlive() && GetCaster()->ToCreature())
+                if (GetCaster() && GetCaster()->IsAlive() && GetCaster()->ToCreature())
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_CHANGE_TARGET);
         }
 

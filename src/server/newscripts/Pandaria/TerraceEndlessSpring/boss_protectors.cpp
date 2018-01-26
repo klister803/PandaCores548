@@ -86,12 +86,12 @@ struct generic_boss_protectorsAI : ScriptedAI
                 {
                     if (protector->GetEntry() != callerEntry)
                     {
-                        if (!protector->isAlive())
+                        if (!protector->IsAlive())
                         {
                             protector->Respawn();
                             protector->GetMotionMaster()->MoveTargetedHome();
                         }
-                        else if (protector->isAlive() && protector->isInCombat())
+                        else if (protector->IsAlive() && protector->isInCombat())
                             protector->AI()->EnterEvadeMode();
                     }
                 }
@@ -109,7 +109,7 @@ struct generic_boss_protectorsAI : ScriptedAI
                 {
                     if (protector->GetEntry() != callerEntry)
                     {
-                        if (protector->isAlive() && !protector->isInCombat())
+                        if (protector->IsAlive() && !protector->isInCombat())
                             protector->AI()->DoZoneInCombat(protector, 150.0f);
                     }
                 }
@@ -127,7 +127,7 @@ struct generic_boss_protectorsAI : ScriptedAI
                 {
                     if (protector->GetEntry() != callerEntry)
                     {
-                        if (protector->isAlive())
+                        if (protector->IsAlive())
                         {
                             protector->SetFullHealth();
                             protector->CastSpell(protector, SPELL_SHA_CORRUPTION);
@@ -150,7 +150,7 @@ struct generic_boss_protectorsAI : ScriptedAI
             {
                 if (Creature* protector = caller->GetCreature(*caller, instance->GetData64(protectorsEntry[n])))
                 {
-                    if (protector->isAlive())
+                    if (protector->IsAlive())
                         abossval++;
                 }
             }
@@ -340,13 +340,13 @@ class boss_protectors : public CreatureScript
                     return;
 
                 Unit* target = NULL;
-                if (targetA->isAlive() && targetB->isAlive())
+                if (targetA->IsAlive() && targetB->IsAlive())
                     target = targetA->GetHealthPct() < targetB->GetHealthPct() ? targetA : targetB;
 
-                else if (!targetA->isAlive() && !targetB->isAlive())
+                else if (!targetA->IsAlive() && !targetB->IsAlive())
                     target = me;
-                else if (!targetA->isAlive() || !targetB->isAlive())
-                    target = targetA->isAlive() ? targetA : targetB;
+                else if (!targetA->IsAlive() || !targetB->IsAlive())
+                    target = targetA->IsAlive() ? targetA : targetB;
 
                 if (target)
                     DoCast(target, SPELL_CLEANSING_WATERS);
@@ -376,7 +376,7 @@ class boss_protectors : public CreatureScript
                                     {
                                         if (Player* pPlayer = i->getSource())
                                         {
-                                            if (pPlayer->isAlive() && !pPlayer->HasAura(SPELL_TOUCH_OF_SHA))
+                                            if (pPlayer->IsAlive() && !pPlayer->HasAura(SPELL_TOUCH_OF_SHA))
                                             {
                                                 DoCast(pPlayer, SPELL_TOUCH_OF_SHA);
                                                 break;

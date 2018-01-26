@@ -452,7 +452,7 @@ void SmartAI::RemoveAuras()
 
 void SmartAI::EnterEvadeMode()
 {
-    if (!me->isAlive() || me->IsInEvadeMode())
+    if (!me->IsAlive() || me->IsInEvadeMode())
         return;
 
     RemoveAuras();
@@ -977,7 +977,7 @@ class SmartTrigger : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool apply)
         {
-            if (!player->isAlive())
+            if (!player->IsAlive())
                 return false;
 
             TC_LOG_DEBUG("smartai", "AreaTrigger %u is using SmartTrigger script", trigger->id);

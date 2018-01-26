@@ -325,7 +325,7 @@ class boss_murozond : public CreatureScript
                 for (std::list<Creature*>::const_iterator itr = mirrorList.begin(); itr != mirrorList.end(); ++itr)
                 {
                     if (Creature* pMirror = (*itr)->ToCreature())
-                        if (pMirror->isAlive() && pMirror->IsInWorld())
+                        if (pMirror->IsAlive() && pMirror->IsInWorld())
                             pMirror->AI()->DoAction(ACTION_HOURGLASS);
                 }
             }
@@ -374,7 +374,7 @@ class npc_murozond_mirror_image : public CreatureScript
                         if(!m_owner)
                             return;
 
-                        if (!m_owner->isAlive())
+                        if (!m_owner->IsAlive())
                             m_owner->ResurrectPlayer(1.0f, false);
 
                         std::list<uint32> spell_list;

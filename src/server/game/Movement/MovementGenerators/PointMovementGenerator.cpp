@@ -112,7 +112,7 @@ void AssistanceMovementGenerator::DoFinalize(Unit &unit)
 {
     unit.ToCreature()->SetNoCallAssistance(false);
     unit.ToCreature()->CallAssistance();
-    if (unit.isAlive())
+    if (unit.IsAlive())
         unit.GetMotionMaster()->MoveSeekAssistanceDistract(sWorld->getIntConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY));
 }
 
@@ -154,7 +154,24 @@ void ChargeMovementGenerator::_setTargetLocation(Unit &unit)
     if(!i_path)
         i_path = new PathGenerator(&unit);
 
-    i_path->CalculatePath(i_x, i_y, i_z, false);
+    bool forceDest = unit.m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+    if (forceDest)
+    {
+        float x, y, z;
+        unit.GetPosition(x, y, z);
+        float ground = unit.GetMap()->GetHeight(unit.GetPhaseMask(), x, y, z, true);
+        if ((z - ground) < 2.0f)
+            forceDest = false;
+    }
+    if (unit.IsInWater())
+        forceDest = true;
+
+    i_path->_charges = true;
+
+    if (forceDest)
+        i_path->CalculateShortcutPath(i_x, i_y, i_z);
+    else
+        i_path->CalculatePath(i_x, i_y, i_z, false);
 
     if (i_path->GetPathType() & PATHFIND_NOPATH)
         return;

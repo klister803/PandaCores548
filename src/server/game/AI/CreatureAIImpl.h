@@ -730,7 +730,7 @@ inline bool CreatureAI::IsInControl()
 
 inline bool CreatureAI::_EnterEvadeMode()
 {
-    if (!me->isAlive())
+    if (!me->IsAlive())
         return false;
 
     // dont remove vehicle auras, passengers arent supposed to drop off the vehicle

@@ -541,7 +541,7 @@ void Transport::TeleportTransport(uint32 newMapid, float x, float y, float z)
 bool Transport::AddPassenger(Player* passenger)
 {
     if (m_passengers.insert(passenger).second)
-        TC_LOG_INFO("transport", "Player %s boarded transport %s.", passenger->GetName(), GetName());
+        TC_LOG_DEBUG("transport", "Player %s boarded transport %s.", passenger->GetName(), GetName());
 
     sScriptMgr->OnAddPassenger(this, passenger);
     return true;
@@ -550,7 +550,7 @@ bool Transport::AddPassenger(Player* passenger)
 bool Transport::RemovePassenger(Player* passenger)
 {
     if (m_passengers.erase(passenger))
-        TC_LOG_INFO("transport", "Player %s removed from transport %s.", passenger->GetName(), GetName());
+        TC_LOG_DEBUG("transport", "Player %s removed from transport %s.", passenger->GetName(), GetName());
 
     sScriptMgr->OnRemovePassenger(this, passenger);
     return true;

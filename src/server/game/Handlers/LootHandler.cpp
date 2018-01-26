@@ -111,7 +111,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
         {
             Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
 
-            bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+            bool lootAllowed = creature && creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
 
             Unit *looter = creature ? creature->GetOtherRecipient() : NULL;
             if (!looter)
@@ -199,11 +199,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             case HIGHGUID_VEHICLE:
             {
                 Creature* creature = player->GetMap()->GetCreature(lootguid);
-                bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+                bool lootAllowed = creature && creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
                 if (lootAllowed && creature->IsWithinDistInMap(player, LOOT_DISTANCE))
                 {
                     loot = &creature->loot;
-                    if (creature->isAlive())
+                    if (creature->IsAlive())
                         shareMoney = false;
                 }
                 break;
@@ -289,7 +289,7 @@ void WorldSession::HandleLootOpcode(WorldPacket & recvData)
 void WorldSession::LootCorps(uint64 corpsGUID, WorldObject* lootedBy)
 {
     // Check possible cheat
-    if (!_player->isAlive())
+    if (!_player->IsAlive())
         return;
 
     WorldObject* _looted = lootedBy ? lootedBy : _player;
@@ -509,7 +509,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
     {
         Creature* creature = player->GetMap()->GetCreature(lguid);
 
-        bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+        bool lootAllowed = creature && creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
 
         Unit *looter = creature ? creature->GetOtherRecipient() : NULL;
         if (!looter)
@@ -540,7 +540,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
         if (loot->isLooted())
         {
             // skip pickpocketing loot for speed, skinning timer reduction is no-op in fact
-            if (!creature->isAlive())
+            if (!creature->IsAlive())
                 creature->AllLootRemovedFromCorpse();
 
             creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);

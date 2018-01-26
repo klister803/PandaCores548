@@ -447,7 +447,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                     {
                         checkfixatetarget = 0;
                         Player* pl = me->GetPlayer(*me, fplGuid);
-                        if (!pl || !pl->isAlive() || !pl->HasAura(SPELL_FIXATE_PL))
+                        if (!pl || !pl->IsAlive() || !pl->HasAura(SPELL_FIXATE_PL))
                             DoAction(ACTION_FIXATE);
                     }
                     else
@@ -612,7 +612,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             uint64 GetJailerVictimGuid()
             {
                 if (Creature* kj = me->GetCreature(*me, jGuid))
-                    if (kj->isAlive() && kj->isInCombat())
+                    if (kj->IsAlive() && kj->isInCombat())
                         return kj->getVictim() ? kj->getVictim()->GetGUID() : 0;
                 return 0;
             }
@@ -847,7 +847,7 @@ public:
                 {
                     if (Player* pl = me->GetPlayer(*me, sGuid))
                     {
-                        if (!pl->isAlive())
+                        if (!pl->IsAlive())
                         {
                             if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 10.0f))
                                 it->Delete();
@@ -1188,7 +1188,7 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
+                if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->IsAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
         }
 
@@ -1345,7 +1345,7 @@ public:
                             if (!PlayerList.isEmpty())
                                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                     if (Player* player = Itr->getSource())
-                                        if (player->isAlive())
+                                        if (player->IsAlive())
                                             player->Kill(player, true);
                         }
                         break;

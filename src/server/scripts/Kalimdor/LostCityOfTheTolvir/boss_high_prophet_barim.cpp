@@ -875,7 +875,7 @@ public:
             if (instance)
                 target = Unit::GetCreature(*me, instance->GetData64(DATA_HARBINGER));
 
-            if (!target || !target->isAlive())
+            if (!target || !target->IsAlive())
                 return false;
 
             if (me->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))

@@ -317,7 +317,7 @@ class npc_custom_starter : public CreatureScript  //250025
             std::list<Player*> temp;
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 if ((me->IsWithinLOSInMap(i->getSource()) || !checkLoS) && me->getVictim() != i->getSource() &&
-                    me->IsWithinDistInMap(i->getSource(), range) && i->getSource()->isAlive())
+                    me->IsWithinDistInMap(i->getSource(), range) && i->getSource()->IsAlive())
                     temp.push_back(i->getSource());
 
             if (!temp.empty())

@@ -282,7 +282,7 @@ public:
                 if (!player)
                     continue;
 
-                if (player->isAlive() && !player->isGameMaster())
+                if (player->IsAlive() && !player->isGameMaster())
                     return false;
             }
             return true;

@@ -106,7 +106,7 @@ class boss_gu_cloudstrike : public CreatureScript
                     events.ScheduleEvent(EVENT_OVERCHARGED_SOUL, 2500, PHASE_TWO);
                     me->CastSpell(me, SPELL_CHARGING_SOUL, false);
                     if (Creature* azureSerpent = GetAzureSerpent())
-                        if (azureSerpent && azureSerpent->isAlive())
+                        if (azureSerpent && azureSerpent->IsAlive())
                             azureSerpent->AI()->DoAction(ACTION_AZURE_SERPENT_P_2);
                 }
             }

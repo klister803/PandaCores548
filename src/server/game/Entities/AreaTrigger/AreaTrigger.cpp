@@ -76,7 +76,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
     if (!caster->IsInWorld())
         return false;
 
-    if (!caster->isAlive())
+    if (!caster->IsAlive())
     {
         TC_LOG_ERROR("server", "AreaTrigger (spell %u) caster %s is dead ", info->Id, caster->GetString().c_str());
         return false;
@@ -561,7 +561,7 @@ void AreaTrigger::DoAction(Unit* unit, ActionInfo& action)
             if (_on_remove)
                 return;
 
-            if (!unit->isAlive() || !unit->IsInWorld())
+            if (!unit->IsAlive() || !unit->IsInWorld())
                 return;
 
             if (caster)

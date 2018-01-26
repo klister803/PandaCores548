@@ -616,14 +616,14 @@ void WorldSession::HandleReadItem(WorldPacket& recvData)
         {
             data.Initialize(SMSG_READ_ITEM_OK, 8);
             data << pItem->GetGUID();
-            TC_LOG_INFO("network", "STORAGE: Item page sent");
+            TC_LOG_DEBUG("network", "STORAGE: Item page sent");
         }
         else
         {
             data.Initialize(SMSG_READ_ITEM_FAILED, 8 + 1);
             data << pItem->GetGUID();
             data << uint8(2);
-            TC_LOG_INFO("network", "STORAGE: Unable to read item");
+            TC_LOG_DEBUG("network", "STORAGE: Unable to read item");
             _player->SendEquipError(msg, pItem, NULL);
         }
 
@@ -839,7 +839,7 @@ void WorldSession::HandleListInventoryOpcode(WorldPacket & recvData)
     recvData.ReadGuidMask<1, 3, 7, 6, 5, 2, 0, 4>(guid);
     recvData.ReadGuidBytes<5, 6, 4, 1, 7, 3, 2, 0>(guid);
 
-    if (!GetPlayer()->isAlive())
+    if (!GetPlayer()->IsAlive())
         return;
 
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LIST_INVENTORY");
@@ -1168,7 +1168,7 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& recvPacket)
     // next slot
     ++slot;
 
-    TC_LOG_INFO("network", "PLAYER: Buy bank bag slot, slot number = %u", slot);
+    TC_LOG_DEBUG("network", "PLAYER: Buy bank bag slot, slot number = %u", slot);
 
     BankBagSlotPricesEntry const* slotEntry = sBankBagSlotPricesStore.LookupEntry(slot);
 

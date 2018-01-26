@@ -254,35 +254,35 @@ class boss_lord_rhyolith : public CreatureScript
                     case ACTION_ADD_MOLTEN_ARMOR:
                         me->CastSpell(me, SPELL_MOLTEN_ARMOR, true);
                         if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
-                            if (leftfoot->isAlive())
+                            if (leftfoot->IsAlive())
                                 leftfoot->CastSpell(leftfoot, SPELL_MOLTEN_ARMOR, true);
                         if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
-                            if (rightfoot->isAlive())
+                            if (rightfoot->IsAlive())
                                 rightfoot->CastSpell(rightfoot, SPELL_MOLTEN_ARMOR, true);
                         break;
                     case ACTION_REMOVE_MOLTEN_ARMOR:
                         me->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
                         if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
-                            if (leftfoot->isAlive())
+                            if (leftfoot->IsAlive())
                                 leftfoot->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
                         if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
-                            if (rightfoot->isAlive())
+                            if (rightfoot->IsAlive())
                                 rightfoot->RemoveAuraFromStack(SPELL_MOLTEN_ARMOR);
                         break;
                     case ACTION_ADD_OBSIDIAN_ARMOR:
                         if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
-                            if (leftfoot->isAlive())
+                            if (leftfoot->IsAlive())
                                 leftfoot->CastSpell(leftfoot, SPELL_OBSIDIAN_ARMOR, true);
                         if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
-                            if (rightfoot->isAlive())
+                            if (rightfoot->IsAlive())
                                 rightfoot->CastSpell(rightfoot, SPELL_OBSIDIAN_ARMOR, true);
                         break;
                     case ACTION_REMOVE_OBSIDIAN_ARMOR:
                         if (Creature* leftfoot = me->GetCreature(*me, LeftFootGUID))
-                            if (leftfoot->isAlive())
+                            if (leftfoot->IsAlive())
                                 leftfoot->RemoveAuraFromStack(SPELL_OBSIDIAN_ARMOR, 0, AURA_REMOVE_BY_DEFAULT, 10);
                         if (Creature* rightfoot = me->GetCreature(*me, RightFootGUID))
-                            if (rightfoot->isAlive())
+                            if (rightfoot->IsAlive())
                                 rightfoot->RemoveAuraFromStack(SPELL_OBSIDIAN_ARMOR, 0, AURA_REMOVE_BY_DEFAULT, 10);
                         break;
                 }
@@ -314,7 +314,7 @@ class boss_lord_rhyolith : public CreatureScript
                         case EVENT_CHECK_MOVE:
                             if (Creature* controller = me->GetCreature(*me, ControllerGUID))
                             {
-                                if (controller->isAlive() && me->GetDistance2d(controller) <= 0.5f)
+                                if (controller->IsAlive() && me->GetDistance2d(controller) <= 0.5f)
                                 {
                                     events.Reset();
                                     me->StopMoving();
@@ -331,9 +331,9 @@ class boss_lord_rhyolith : public CreatureScript
                                         if (ldmg && !rdmg)
                                         {
                                             //me->RemoveAura(SPELL_BURNING_FEET);
-                                            if (leftfoot->isAlive())
+                                            if (leftfoot->IsAlive())
                                                 leftfoot->RemoveAura(SPELL_BURNING_FEET);
-                                            if (rightfoot->isAlive())
+                                            if (rightfoot->IsAlive())
                                                 rightfoot->RemoveAura(SPELL_BURNING_FEET);
                                             instance->DoSetAlternatePowerOnPlayers(25);
                                             events.ScheduleEvent(EVENT_CHECK_MOVE, 1000);
@@ -345,9 +345,9 @@ class boss_lord_rhyolith : public CreatureScript
                                         if (i != curMove)
                                         {
                                             //me->RemoveAura(SPELL_BURNING_FEET);
-                                            if (leftfoot->isAlive())
+                                            if (leftfoot->IsAlive())
                                                 leftfoot->RemoveAura(SPELL_BURNING_FEET);
-                                            if (rightfoot->isAlive())
+                                            if (rightfoot->IsAlive())
                                                 rightfoot->RemoveAura(SPELL_BURNING_FEET);
                                             curMove = i;
                                             controller->NearTeleportTo(movePos[curMove].GetPositionX(), movePos[curMove].GetPositionY(), movePos[curMove].GetPositionZ(), 0.0f);
@@ -355,9 +355,9 @@ class boss_lord_rhyolith : public CreatureScript
                                         else
                                         {
                                             //DoCast(me, SPELL_BURNING_FEET, true);
-                                            if (leftfoot->isAlive())
+                                            if (leftfoot->IsAlive())
                                                 leftfoot->CastSpell(leftfoot, SPELL_BURNING_FEET, true);
-                                            if (rightfoot->isAlive())
+                                            if (rightfoot->IsAlive())
                                                 rightfoot->CastSpell(rightfoot, SPELL_BURNING_FEET, true);
                                         }
                                     }
@@ -650,7 +650,7 @@ class npc_lord_rhyolith_right_foot : public CreatureScript
 
             void DamageTaken(Unit* who, uint32 &damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
 
                 if (who->GetGUID() == me->GetGUID())
@@ -751,7 +751,7 @@ class npc_lord_rhyolith_left_foot : public CreatureScript
 
             void DamageTaken(Unit* who, uint32 &damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
 
                 if (who->GetGUID() == me->GetGUID())

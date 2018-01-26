@@ -449,7 +449,7 @@ class npc_roling_friends_guard : public CreatureScript
         void EnterEvadeMode()
         {
             //should send when our group kill someone. so do it on evade.
-            if(me->isInCombat() && me->isAlive())
+            if(me->isInCombat() && me->IsAlive())
                 sCreatureTextMgr->SendChat(me, TEXT_KILL);
             ScriptedAI::EnterEvadeMode();
         }

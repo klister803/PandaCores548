@@ -2259,7 +2259,7 @@ public:
                 uint32 healcount = dmg * 0.25f; //25% from dmg
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                     if (Creature* durumu = GetCaster()->GetCreature(*GetCaster(), instance->GetData64(NPC_DURUMU)))
-                        if (durumu->isAlive())
+                        if (durumu->IsAlive())
                             GetCaster()->CastCustomSpell(SPELL_LIFE_DRAIN_HEAL, SPELLVALUE_BASE_POINT0, healcount, durumu, true);
             }
         }

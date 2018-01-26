@@ -155,7 +155,7 @@ class boss_sha_of_doubt : public CreatureScript
                                 {
                                     if (Player* plr = i->getSource())
                                     {
-                                        if (plr->isAlive())
+                                        if (plr->IsAlive())
                                         {
                                             plr->CastSpell(plr, SPELL_FIGMENT_OF_DOUBT_3, false);
                                             plr->CastSpell(plr, SPELL_DRAW_DOUBT, false);

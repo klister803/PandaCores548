@@ -483,7 +483,7 @@ bool DoWipeCheck(Transport* t)
         Player* plr = *itr;
         ++itr;
 
-        if (plr && plr->isAlive())
+        if (plr && plr->IsAlive())
             return true;
     }
     return false;

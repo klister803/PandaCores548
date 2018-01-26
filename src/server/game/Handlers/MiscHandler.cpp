@@ -64,7 +64,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket& recvData)
 
     recvData.ReadBit();
 
-    if (GetPlayer()->isAlive() || GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->IsAlive() || GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     if (GetPlayer()->HasAuraType(SPELL_AURA_PREVENT_RESURRECTION))
@@ -656,7 +656,7 @@ void WorldSession::HandleZoneUpdateOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleReturnToGraveyard(WorldPacket& /*recvPacket*/)
 {
-    if (GetPlayer()->isAlive() || !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->IsAlive() || !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     GetPlayer()->RepopAtGraveyard();
@@ -899,7 +899,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket& recvData)
     recvData.ReadGuidMask<7, 2, 6, 0, 3, 1, 4, 5>(corpseGuid);
     recvData.ReadGuidBytes<6, 3, 7, 0, 4, 1, 2, 5>(corpseGuid);
 
-    if (GetPlayer()->isAlive())
+    if (GetPlayer()->IsAlive())
         return;
 
     // do not allow corpse reclaim in arena
@@ -941,7 +941,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket& recvData)
     recvData.ReadGuidMask<7, 5, 3, 2, 6, 1, 4, 0>(guid);
     recvData.ReadGuidBytes<5, 4, 3, 6, 1, 0, 2, 7>(guid);
 
-    if (GetPlayer()->isAlive())
+    if (GetPlayer()->IsAlive())
         return;
 
     if (status != 0)
@@ -1060,7 +1060,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
     if (sScriptMgr->OnAreaTrigger(player, atEntry, enter))
         return;
 
-    if (player->isAlive())
+    if (player->IsAlive())
         if (uint32 questId = sObjectMgr->GetQuestForAreaTrigger(triggerId))
             if (player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
                 player->AreaExploredOrEventHappens(questId);
@@ -1240,10 +1240,10 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
     uint32 action = uint32(packedData & 0xFFFFFFFF);
     uint8  type = uint8(packedData >> 56);
 
-    TC_LOG_INFO("network", "BUTTON: %u ACTION: %u TYPE: %u", button, action, type);
+    TC_LOG_DEBUG("network", "BUTTON: %u ACTION: %u TYPE: %u", button, action, type);
     if (!packedData)
     {
-        TC_LOG_INFO("network", "MISC: Remove action from button %u", button);
+        TC_LOG_DEBUG("network", "MISC: Remove action from button %u", button);
         GetPlayer()->removeActionButton(button);
     }
     else
@@ -1252,22 +1252,22 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
         {
         case ACTION_BUTTON_MACRO:
         case ACTION_BUTTON_CMACRO:
-            TC_LOG_INFO("network", "MISC: Added Macro %u into button %u", action, button);
+            TC_LOG_DEBUG("network", "MISC: Added Macro %u into button %u", action, button);
             break;
         case ACTION_BUTTON_EQSET:
-            TC_LOG_INFO("network", "MISC: Added EquipmentSet %u into button %u", action, button);
+            TC_LOG_DEBUG("network", "MISC: Added EquipmentSet %u into button %u", action, button);
             break;
         case ACTION_BUTTON_SPELL:
-            TC_LOG_INFO("network", "MISC: Added Spell %u into button %u", action, button);
+            TC_LOG_DEBUG("network", "MISC: Added Spell %u into button %u", action, button);
             break;
         case ACTION_BUTTON_SUB_BUTTON:
-            TC_LOG_INFO("network", "MISC: Added sub buttons %u into button %u", action, button);
+            TC_LOG_DEBUG("network", "MISC: Added sub buttons %u into button %u", action, button);
             break;
         case ACTION_BUTTON_ITEM:
-            TC_LOG_INFO("network", "MISC: Added Item %u into button %u", action, button);
+            TC_LOG_DEBUG("network", "MISC: Added Item %u into button %u", action, button);
             break;
         case ACTION_BUTTON_PET:
-            TC_LOG_INFO("network", "MISC: Added Pet Spell %u into button %u", action, button);
+            TC_LOG_DEBUG("network", "MISC: Added Pet Spell %u into button %u", action, button);
             break;
         default:
             TC_LOG_ERROR("network", "MISC: Unknown action button type %u for action %u into button %u for player %s (GUID: %u)", type, action, button, _player->GetName(), _player->GetGUIDLow());
@@ -2210,7 +2210,7 @@ void WorldSession::HandleInstanceLockResponse(WorldPacket& recvPacket)
 
     if (!_player->HasPendingBind())
     {
-        TC_LOG_INFO("network", "InstanceLockResponse: Player %s (guid %u) tried to bind himself/teleport to graveyard without a pending bind!", _player->GetName(), _player->GetGUIDLow());
+        TC_LOG_DEBUG("network", "InstanceLockResponse: Player %s (guid %u) tried to bind himself/teleport to graveyard without a pending bind!", _player->GetName(), _player->GetGUIDLow());
         return;
     }
 
@@ -2261,13 +2261,17 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
             case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
             case DB2_REPLY_SCENE_SCRIPT:
             {
+                #ifdef WIN32
                 TC_LOG_ERROR("network", "CMSG_REQUEST_HOTFIX: Received unhandled hotfix type: %u, entry %u", type, entry);
+                #endif
                 needBreak = true;
                 break;
             }
             default:
             {
+                #ifdef WIN32
                 TC_LOG_ERROR("network", "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u, entry %u", type, entry);
+                #endif
                 needBreak = true;
                 break;
             }

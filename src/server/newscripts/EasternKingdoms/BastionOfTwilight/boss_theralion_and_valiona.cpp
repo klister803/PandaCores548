@@ -384,7 +384,7 @@ class boss_theralion : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
                 if (attacker->GetGUID() == me->GetGUID())
                     return;
@@ -690,7 +690,7 @@ class boss_valiona : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if (!me || !me->isAlive())
+                if (!me || !me->IsAlive())
                     return;
                 if (attacker->GetGUID() == me->GetGUID())
                     return;

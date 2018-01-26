@@ -99,7 +99,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToN
             if (player->isGameMaster())
                 continue;
 
-            if (player->isAlive())
+            if (player->IsAlive())
             {
                 creature->SetInCombatWith(player);
                 player->SetInCombatWith(creature);
@@ -137,7 +137,7 @@ void CreatureAI::DoAttackerAreaInCombat(Unit* attacker, float range, Unit* pUnit
     for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
     {
         if (Player* i_pl = i->getSource())
-            if (i_pl->isAlive() && attacker->GetDistance(i_pl) <= range )
+            if (i_pl->IsAlive() && attacker->GetDistance(i_pl) <= range )
             {
                 pUnit->SetInCombatWith(i_pl);
                 i_pl->SetInCombatWith(pUnit);
@@ -156,7 +156,7 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
             {
                 Player* player = itr->getSource();
 
-                if (player && player->isAlive() && player->GetMapId() == me->GetMapId() && !player->isInCombat())
+                if (player && player->IsAlive() && player->GetMapId() == me->GetMapId() && !player->isInCombat())
                 {
                     me->SetInCombatWith(player);
                     player->SetInCombatWith(me);

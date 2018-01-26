@@ -151,7 +151,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 
     char const* mapName = entry->name;
 
-    if (!player->isAlive())
+    if (!player->IsAlive())
     {
         if (Corpse* corpse = player->GetCorpse())
         {

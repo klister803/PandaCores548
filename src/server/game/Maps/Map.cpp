@@ -1104,8 +1104,11 @@ GridMap::GridMap()
     // Height level data
     _gridHeight = INVALID_HEIGHT;
     _gridGetHeight = &GridMap::getHeightFromFlat;
+    _gridIntHeightMultiplier = 0;
     m_V9 = NULL;
     m_V8 = NULL;
+    _maxHeight = nullptr;
+    _minHeight = nullptr;
     // Liquid data
     _liquidType    = 0;
     _liquidOffX   = 0;
@@ -1150,7 +1153,7 @@ bool GridMap::loadData(char *filename)
             return false;
         }
         // loadup height data
-        if (header.heightMapOffset && !loadHeihgtData(in, header.heightMapOffset, header.heightMapSize))
+        if (header.heightMapOffset && !loadHeightData(in, header.heightMapOffset, header.heightMapSize))
         {
             TC_LOG_ERROR("maps", "Error loading map height data\n");
             fclose(in);
@@ -1176,12 +1179,16 @@ void GridMap::unloadData()
     delete[] _areaMap;
     delete[] m_V9;
     delete[] m_V8;
+    delete[] _maxHeight;
+    delete[] _minHeight;
     delete[] _liquidEntry;
     delete[] _liquidFlags;
     delete[] _liquidMap;
     _areaMap = NULL;
     m_V9 = NULL;
     m_V8 = NULL;
+    _maxHeight = nullptr;
+    _minHeight = nullptr;
     _liquidEntry = NULL;
     _liquidFlags = NULL;
     _liquidMap  = NULL;
@@ -1206,7 +1213,7 @@ bool GridMap::loadAreaData(FILE* in, uint32 offset, uint32 /*size*/)
     return true;
 }
 
-bool GridMap::loadHeihgtData(FILE* in, uint32 offset, uint32 /*size*/)
+bool GridMap::loadHeightData(FILE* in, uint32 offset, uint32 /*size*/)
 {
     map_heightHeader header;
     fseek(in, offset, SEEK_SET);
@@ -1249,6 +1256,16 @@ bool GridMap::loadHeihgtData(FILE* in, uint32 offset, uint32 /*size*/)
     }
     else
         _gridGetHeight = &GridMap::getHeightFromFlat;
+
+    if (header.flags & MAP_HEIGHT_HAS_FLIGHT_BOUNDS)
+    {
+        _maxHeight = new int16[3 * 3];
+        _minHeight = new int16[3 * 3];
+        if (fread(_maxHeight, sizeof(int16), 3 * 3, in) != 3 * 3 ||
+            fread(_minHeight, sizeof(int16), 3 * 3, in) != 3 * 3)
+            return false;
+    }
+
     return true;
 }
 
@@ -1519,6 +1536,66 @@ float GridMap::getHeightFromUint16(float x, float y) const
     return (float)((a * x) + (b * y) + c)*_gridIntHeightMultiplier + _gridHeight;
 }
 
+float GridMap::getMinHeight(float x, float y) const
+{
+    if (!_minHeight)
+        return -500.0f;
+
+    static uint32 const indices[] =
+    {
+        3, 0, 4,
+        0, 1, 4,
+        1, 2, 4,
+        2, 5, 4,
+        5, 8, 4,
+        8, 7, 4,
+        7, 6, 4,
+        6, 3, 4
+    };
+
+    static float const boundGridCoords[] =
+    {
+        0.0f, 0.0f,
+        0.0f, -266.66666f,
+        0.0f, -533.33331f,
+        -266.66666f, 0.0f,
+        -266.66666f, -266.66666f,
+        -266.66666f, -533.33331f,
+        -533.33331f, 0.0f,
+        -533.33331f, -266.66666f,
+        -533.33331f, -533.33331f
+    };
+
+    Cell cell(x, y);
+    float gx = x - (int32(cell.GridX()) - CENTER_GRID_ID + 1) * SIZE_OF_GRIDS;
+    float gy = y - (int32(cell.GridY()) - CENTER_GRID_ID + 1) * SIZE_OF_GRIDS;
+
+    uint32 quarterIndex = 0;
+    if (cell.CellY() < MAX_NUMBER_OF_CELLS / 2)
+    {
+        if (cell.CellX() < MAX_NUMBER_OF_CELLS / 2)
+        {
+            quarterIndex = 4 + (gy > gx);
+        }
+        else
+            quarterIndex = 2 + ((-SIZE_OF_GRIDS - gx) > gy);
+    }
+    else if (cell.CellX() < MAX_NUMBER_OF_CELLS / 2)
+    {
+        quarterIndex = 6 + ((-SIZE_OF_GRIDS - gx) <= gy);
+    }
+    else
+        quarterIndex = gx > gy;
+
+    quarterIndex *= 3;
+
+    return G3D::Plane(
+        G3D::Vector3(boundGridCoords[indices[quarterIndex + 0] * 2 + 0], boundGridCoords[indices[quarterIndex + 0] * 2 + 1], _minHeight[indices[quarterIndex + 0]]),
+        G3D::Vector3(boundGridCoords[indices[quarterIndex + 1] * 2 + 0], boundGridCoords[indices[quarterIndex + 1] * 2 + 1], _minHeight[indices[quarterIndex + 1]]),
+        G3D::Vector3(boundGridCoords[indices[quarterIndex + 2] * 2 + 0], boundGridCoords[indices[quarterIndex + 2] * 2 + 1], _minHeight[indices[quarterIndex + 2]])
+    ).distance(G3D::Vector3(gx, gy, 0.0f));
+}
+
 float GridMap::getLiquidLevel(float x, float y) const
 {
     if (!_liquidMap)
@@ -1712,16 +1789,24 @@ float Map::GetHeight(float x, float y, float z, bool checkVMap /*= true*/, float
 
             // we are already under the surface or vmap height above map heigt
             // or if the distance of the vmap height is less the land height distance
-            if (z < mapHeight || vmapHeight > mapHeight || fabs(mapHeight-z) > fabs(vmapHeight-z))
+            if (vmapHeight > mapHeight || std::fabs(mapHeight - z) > std::fabs(vmapHeight - z))
                 return vmapHeight;
-            else
-                return mapHeight;                           // better use .map surface height
+            return mapHeight;
+            // better use .map surface height
         }
-        else
-            return vmapHeight;                              // we have only vmapHeight (if have)
+        return vmapHeight;
+        // we have only vmapHeight (if have)
     }
 
     return mapHeight;                               // explicitly use map data
+}
+
+float Map::GetMinHeight(float x, float y) const
+{
+    if (GridMap const* grid = const_cast<Map*>(this)->GetGrid(x, y))
+        return grid->getMinHeight(x, y);
+
+    return -500.0f;
 }
 
 inline bool IsOutdoorWMO(uint32 mogpFlags, int32 /*adtId*/, int32 /*rootId*/, int32 /*groupId*/, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry)

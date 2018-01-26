@@ -4262,7 +4262,7 @@ public:
             float x, y, z;
             GetCaster()->GetClosePoint(x, y, z, GetCaster()->GetObjectSize(), 50.0f);
 
-            if (GetTarget()->isAlive() && GetTarget()->GetPositionZ() > 12.0f)
+            if (GetTarget()->IsAlive() && GetTarget()->GetPositionZ() > 12.0f)
                 GetTarget()->GetMotionMaster()->MoveJump(x, y, z, 30.0f, 10.0f);
         }
 

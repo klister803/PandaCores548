@@ -697,7 +697,7 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
         {
             Player* leader = ObjectAccessor::FindPlayer(GetLeaderGUID());
             uint32 mapId = sLFGMgr->GetDungeonMapId(GetGUID());
-            if (!mapId || !leader || (leader->isAlive() && leader->GetMapId() != mapId))
+            if (!mapId || !leader || (leader->IsAlive() && leader->GetMapId() != mapId))
             {
                 Disband();
                 return false;
@@ -3140,7 +3140,7 @@ void Group::UpdateGuildAchievementCriteria(CriteriaTypes type, uint32 miscValue1
                 if (!pPlayer->IsAtGroupRewardDistance(pRewardSource))
                     continue;
 
-                if (!pPlayer->isAlive())
+                if (!pPlayer->IsAlive())
                     continue;
             }
 
