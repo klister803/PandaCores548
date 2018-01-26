@@ -492,10 +492,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 // get zone and area info
                 MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
-                AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plrMover->GetZoneId());
-                AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plrMover->GetAreaId());
-                AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
-                AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
+                AreaTableEntry const* srcZoneEntry = sAreaTableStore.LookupEntry(plrMover->GetZoneId());
+                AreaTableEntry const* srcAreaEntry = sAreaTableStore.LookupEntry(plrMover->GetAreaId());
+                AreaTableEntry const* destZoneEntry = sAreaTableStore.LookupEntry(destZoneId);
+                AreaTableEntry const* destAreaEntry = sAreaTableStore.LookupEntry(destAreaId);
 
                 //plrMover->SetBlocked(true, "Anticheat System : teleport/XYZ hack detected. You are disabled and kicked in 10 seconds");
                 // TC_LOG_DEBUG("warden","CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, teleport distance - %f), player - %s",
@@ -529,10 +529,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 // get zone and area info
                 MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
-                AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plrMover->GetZoneId());
-                AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plrMover->GetAreaId());
-                AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
-                AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
+                AreaTableEntry const* srcZoneEntry = sAreaTableStore.LookupEntry(plrMover->GetZoneId());
+                AreaTableEntry const* srcAreaEntry = sAreaTableStore.LookupEntry(plrMover->GetAreaId());
+                AreaTableEntry const* destZoneEntry = sAreaTableStore.LookupEntry(destZoneId);
+                AreaTableEntry const* destAreaEntry = sAreaTableStore.LookupEntry(destAreaId);
 
                 // TC_LOG_DEBUG("warden","CLIENT WARDEN: Teleport hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
                     // plrMover->GetMapId(), mapEntry ? mapEntry->name : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name : "<unknown>",
@@ -552,10 +552,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                     // get zone and area info
                     MapEntry const* mapEntry = sMapStore.LookupEntry(plrMover->GetMapId());
-                    AreaTableEntry const* srcZoneEntry = GetAreaEntryByAreaID(plrMover->GetZoneId());
-                    AreaTableEntry const* srcAreaEntry = GetAreaEntryByAreaID(plrMover->GetAreaId());
-                    AreaTableEntry const* destZoneEntry = GetAreaEntryByAreaID(destZoneId);
-                    AreaTableEntry const* destAreaEntry = GetAreaEntryByAreaID(destAreaId);
+                    AreaTableEntry const* srcZoneEntry = sAreaTableStore.LookupEntry(plrMover->GetZoneId());
+                    AreaTableEntry const* srcAreaEntry = sAreaTableStore.LookupEntry(plrMover->GetAreaId());
+                    AreaTableEntry const* destZoneEntry = sAreaTableStore.LookupEntry(destZoneId);
+                    AreaTableEntry const* destAreaEntry = sAreaTableStore.LookupEntry(destAreaId);
 
                     TC_LOG_DEBUG("warden","CLIENT WARDEN: XYZ hack detected (map - %u (%s), source zone - %u (%s), source area - %u (%s), source X - %f, source Y - %f, source Z - %f, dest zone - %u (%s), dest area - %u (%s), dest X - %f, dest Y - %f, dest Z - %f, opcode - %s, on_vehicle - %s, on_transport - %s, on_taxi - %s, falling - %s, moving - %s, teleport distance - %f), player - %s",
                         plrMover->GetMapId(), mapEntry ? mapEntry->name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetZoneId(), srcZoneEntry ? srcZoneEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>", plrMover->GetAreaId(), srcAreaEntry ? srcAreaEntry->area_name[sWorld->GetDefaultDbcLocale()] : "<unknown>",
@@ -860,7 +860,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         {
             plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
-            AreaTableEntry const* zone = GetAreaEntryByAreaID(plrMover->GetAreaId());
+            AreaTableEntry const* zone = sAreaTableStore.LookupEntry(plrMover->GetAreaId());
             float depth = zone ? zone->MaxDepth : -500.0f;
             if (movementInfo.position.GetPositionZ() < depth)
             {

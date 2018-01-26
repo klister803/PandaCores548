@@ -58,6 +58,7 @@ class Battleground;
 class MapInstanced;
 class InstanceMap;
 class BattlegroundMap;
+struct Position;
 
 struct ScriptAction
 {
@@ -67,14 +68,21 @@ struct ScriptAction
     ScriptInfo const* script;                               // pointer to static script data
 };
 
+/// Represents a map magic value of 4 bytes (used in versions)
+union u_map_magic
+{
+    char asChar[4]; ///> Non-null terminated string
+    uint32 asUInt;  ///> uint32 representation
+};
+
 // ******************************************
 // Map file format defines
 // ******************************************
 struct map_fileheader
 {
-    uint32 mapMagic;
-    uint32 versionMagic;
-    uint32 buildMagic;
+    u_map_magic mapMagic;
+    u_map_magic versionMagic;
+    u_map_magic buildMagic;
     uint32 areaMapOffset;
     uint32 areaMapSize;
     uint32 heightMapOffset;
@@ -211,7 +219,7 @@ class GridMap
 public:
     GridMap();
     ~GridMap();
-    bool loadData(char* filaname);
+    bool loadData(char* filename);
     void unloadData();
 
     uint16 getArea(float x, float y) const;
@@ -361,8 +369,13 @@ class Map
 
         ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = 0) const;
 
-        uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors=0) const;
+        uint32 GetAreaId(float x, float y, float z, bool *isOutdoors=0) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
+        uint32 GetAreaId(Position const& pos) const;
+        uint32 GetZoneId(float x, float y, float z) const;
+        uint32 GetZoneId(Position const& pos) const;
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const;
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, Position const& pos) const;
 
         bool IsOutdoors(float x, float y, float z) const;
 
@@ -370,25 +383,6 @@ class Map
         float GetWaterLevel(float x, float y) const;
         bool IsInWater(float x, float y, float z, LiquidData* data = 0) const;
         bool IsUnderWater(float x, float y, float z) const;
-
-        static uint32 GetAreaIdByAreaFlag(uint16 areaflag, uint32 map_id);
-        static uint32 GetZoneIdByAreaFlag(uint16 areaflag, uint32 map_id);
-        static void GetZoneAndAreaIdByAreaFlag(uint32& zoneid, uint32& areaid, uint16 areaflag, uint32 map_id);
-
-        uint32 GetAreaId(float x, float y, float z) const
-        {
-            return GetAreaIdByAreaFlag(GetAreaFlag(x, y, z), GetId());
-        }
-
-        uint32 GetZoneId(float x, float y, float z) const
-        {
-            return GetZoneIdByAreaFlag(GetAreaFlag(x, y, z), GetId());
-        }
-
-        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const
-        {
-            GetZoneAndAreaIdByAreaFlag(zoneid, areaid, GetAreaFlag(x, y, z), GetId());
-        }
 
         void MoveAllCreaturesInMoveList();
         void RemoveAllObjectsInRemoveList();

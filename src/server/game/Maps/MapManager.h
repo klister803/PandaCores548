@@ -56,23 +56,27 @@ class MapManager
         Map* CreateMap(uint32 mapId, Player* player);
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
 
-        uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
-        {
-            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            return m->GetAreaFlag(x, y, z);
-        }
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) const
         {
-            return Map::GetAreaIdByAreaFlag(GetAreaFlag(mapid, x, y, z), mapid);
+            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            return m->GetAreaId(x, y, z);
         }
+        uint32 GetAreaId(uint32 mapid, Position const& pos) const { return GetAreaId(mapid, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()); }
+        uint32 GetAreaId(WorldLocation const& loc) const { return GetAreaId(loc.GetMapId(), loc); }
         uint32 GetZoneId(uint32 mapid, float x, float y, float z) const
         {
-            return Map::GetZoneIdByAreaFlag(GetAreaFlag(mapid, x, y, z), mapid);
+            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            return m->GetZoneId(x, y, z);
         }
-        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
+        uint32 GetZoneId(uint32 mapid, Position const& pos) const { return GetZoneId(mapid, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()); }
+        uint32 GetZoneId(WorldLocation const& loc) const { return GetZoneId(loc.GetMapId(), loc); }
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z) const
         {
-            Map::GetZoneAndAreaIdByAreaFlag(zoneid, areaid, GetAreaFlag(mapid, x, y, z), mapid);
+            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            m->GetZoneAndAreaId(zoneid, areaid, x, y, z);
         }
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, Position const& pos) const { GetZoneAndAreaId(zoneid, areaid, mapid, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()); }
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, WorldLocation const& loc) const { GetZoneAndAreaId(zoneid, areaid, loc.GetMapId(), loc); }
 
         void Initialize(void);
         void Update(uint32);

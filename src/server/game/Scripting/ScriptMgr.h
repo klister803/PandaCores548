@@ -42,7 +42,6 @@ class DynamicObject;
 class GameObject;
 class GameObjectAI;
 class Guild;
-class GridMap;
 class Group;
 class InstanceMap;
 class InstanceScript;

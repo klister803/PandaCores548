@@ -1307,7 +1307,7 @@ void Creature::SelectLevel(const CreatureTemplate* cinfo)
     if (cinfo->type == CREATURE_TYPE_WILD_PET)
     {
         // random level depends on zone data
-        if (AreaTableEntry const * aEntry = GetAreaEntryByAreaID(GetCurrentZoneId()))
+        if (AreaTableEntry const * aEntry = sAreaTableStore.LookupEntry(GetCurrentZoneId()))
         {
             uint8 level_ = urand(aEntry->m_wildBattlePetLevelMin, aEntry->m_wildBattlePetLevelMax);
             if (!level_)

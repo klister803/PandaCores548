@@ -14724,9 +14724,9 @@ void Unit::UpdateMount()
             else
             {
                 AreaTableEntry const* entry;
-                entry = GetAreaEntryByAreaID(areaId);
+                entry = sAreaTableStore.LookupEntry(areaId);
                 if (!entry)
-                    entry = GetAreaEntryByAreaID(zoneId);
+                    entry = sAreaTableStore.LookupEntry(zoneId);
 
                 if (entry)
                     currentMountFlags = entry->mountFlags;

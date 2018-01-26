@@ -177,7 +177,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             return true;
         }
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AREA:
-            if (!GetAreaEntryByAreaID(area.id))
+            if (!sAreaTableStore.LookupEntry(area.id))
             {
                 TC_LOG_ERROR("sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AREA (%u) has wrong area id in value1 (%u), ignored.",
                     criteria->ID, criteria->Type, dataType, area.id);
@@ -3310,16 +3310,15 @@ bool AchievementMgr<T>::RequirementsSatisfied(CriteriaTree const* tree, uint64 m
                 bool matchFound = false;
                 for (int j = 0; j < MAX_WORLD_MAP_OVERLAY_AREA_IDX; ++j)
                 {
-                    uint32 area_id = worldOverlayEntry->areatableID[j];
-                    if (!area_id)                            // array have 0 only in empty tail
+                    AreaTableEntry const* area = sAreaTableStore.LookupEntry(worldOverlayEntry->areatableID[j]);
+                    if (!area)
                         break;
 
-                    int32 exploreFlag = GetAreaFlagByAreaID(area_id);
-                    if (exploreFlag < 0)
+                    uint32 playerIndexOffset = uint32(area->exploreFlag) / 32;
+                    if (playerIndexOffset >= PLAYER_EXPLORED_ZONES_SIZE)
                         continue;
 
-                    uint32 playerIndexOffset = uint32(exploreFlag) / 32;
-                    uint32 mask = 1 << (uint32(exploreFlag) % 32);
+                    uint32 mask = 1 << (uint32(area->exploreFlag) % 32);
 
                     if (referencePlayer->GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + playerIndexOffset) & mask)
                     {

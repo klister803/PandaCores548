@@ -3727,7 +3727,7 @@ void ObjectMgr::LoadQuests()
         // client quest log visual (area case)
         if (qinfo->ZoneOrSort > 0)
         {
-            if (!GetAreaEntryByAreaID(qinfo->ZoneOrSort))
+            if (!sAreaTableStore.LookupEntry(qinfo->ZoneOrSort))
             {
                 TC_LOG_ERROR("sql", "Quest %u has `ZoneOrSort` = %u (zone case) but zone with this id does not exist.",
                     qinfo->GetQuestId(), qinfo->ZoneOrSort);
@@ -5791,7 +5791,7 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(zoneId);
+        AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(zoneId);
         if (!areaEntry)
         {
             TC_LOG_ERROR("sql", "Table `game_graveyard_zone` has a record for not existing zone id (%u), skipped.", zoneId);
@@ -7684,7 +7684,7 @@ void ObjectMgr::LoadAreaQuestRelations()
 
     for (QuestRelations::iterator itr = _areaQuestRelations.begin(); itr != _areaQuestRelations.end(); ++itr)
     {
-        AreaTableEntry const* fArea = GetAreaEntryByAreaID(itr->first);
+        AreaTableEntry const* fArea = sAreaTableStore.LookupEntry(itr->first);
         if (!fArea)
         {
             TC_LOG_ERROR("sql", "Table `area_questrelation` have data for not existed area entry (%u) and existed quest %u", itr->first, itr->second);
@@ -8100,7 +8100,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
         uint32 entry  = fields[0].GetUInt32();
         int32 skill   = fields[1].GetInt16();
 
-        AreaTableEntry const* fArea = GetAreaEntryByAreaID(entry);
+        AreaTableEntry const* fArea = sAreaTableStore.LookupEntry(entry);
         if (!fArea)
         {
             TC_LOG_ERROR("sql", "AreaId %u defined in `skill_fishing_base_level` does not exist", entry);
@@ -9605,9 +9605,9 @@ void ObjectMgr::LoadResearchSiteToZoneData()
         data.zone = zone_id;
         data.branch_id = branch_id;
 
-        for (uint32 i = 0; i < sAreaStore.GetNumRows(); ++i)
+        for (uint32 i = 0; i < sAreaTableStore.GetNumRows(); ++i)
         {
-            AreaTableEntry const* area = sAreaStore.LookupEntry(i);
+            AreaTableEntry const* area = sAreaTableStore.LookupEntry(i);
             if (!area)
                 continue;
 

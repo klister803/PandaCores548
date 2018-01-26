@@ -44,11 +44,6 @@ SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId);
 SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem);
 SpellTargetRestrictionsEntry const *GetSpellTargetRestrioctions(uint32 spellid, uint16 difficulty);
 
-int32 GetAreaFlagByAreaID(uint32 area_id);                  // -1 if not found
-AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id);
-AreaTableEntry const* GetAreaEntryByAreaFlagAndMap(uint32 area_flag, uint32 map_id);
-uint32 GetAreaFlagByMapId(uint32 mapid);
-
 WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid, int32 groupid);
 
 uint32 GetVirtualMapForMapAndZone(uint32 mapid, uint32 zoneId);
@@ -88,7 +83,7 @@ extern DBCStorage <AchievementEntry>             sAchievementStore;
 extern DBCStorage <CriteriaEntry>                sCriteriaStore;
 extern DBCStorage <CriteriaTreeEntry>            sCriteriaTreeStore;
 extern DBCStorage <ModifierTreeEntry>            sModifierTreeStore;
-extern DBCStorage <AreaTableEntry>               sAreaStore;// recommend access using functions
+extern DBCStorage <AreaTableEntry>               sAreaTableStore;// recommend access using functions
 extern DBCStorage <AreaGroupEntry>               sAreaGroupStore;
 extern DBCStorage <AreaPOIEntry>                 sAreaPOIStore;
 extern DBCStorage <AreaTriggerEntry>             sAreaTriggerStore;
