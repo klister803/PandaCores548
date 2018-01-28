@@ -1736,11 +1736,16 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
     if (targetType.GetTarget() == TARGET_DEST_DEST_RANDOM)
         dist *= (float)rand_norm();
 
-    Position pos = *m_targets.GetDstPos();
-    if (canHitTargetInLOS && m_caster->ToCreature() && dist < 200.0f)
-        m_caster->GetNearPoint2D(pos, dist, angle);
+    Position pos = static_cast<Position>(*m_targets.GetDstPos());
+    if (canHitTargetInLOS && m_caster->GetTypeId() == TYPEID_UNIT && dist < 200.0f) //Возможно стоит добавить проверку на лос
+    {
+        Position tempPos;
+        pos.SimplePosXYRelocationByAngle(tempPos, dist, angle);
+        pos = tempPos;
+    }
     else
         m_caster->MovePosition(pos, dist, angle);
+
     m_targets.ModDst(pos);
 }
 
