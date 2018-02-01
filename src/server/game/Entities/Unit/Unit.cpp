@@ -413,22 +413,42 @@ void Unit::Update(uint32 p_time)
     // update combat timer only for players and pets (only pets with PetAI)
     if (isInCombat() && (GetTypeId() == TYPEID_PLAYER || (ToCreature()->IsPet() && IsControlledByPlayer()) || isMonkClones()))
     {
-        //Don`t claer combat state if instance in progress
-        Map* map = GetMap();
-        InstanceScript* instance = GetInstanceScript();
-        bool leaveCombat = true;
-        if (map && map->IsRaid() && instance && instance->IsEncounterInProgress())
-            leaveCombat = false;
-
         // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
         // targets without stopping half way there and running off.
         // These flags are reset after target dies or another command is given.
         if (m_CombatTimer <= p_time) // m_CombatTimer set at aura start and it will be freeze until aura removing
         {
-            if (m_attackers.empty() && leaveCombat)
+            if (m_HostileRefManager.isEmpty())
                 ClearInCombat();
+            else if (!GetMap()->IsDungeon())
+            {
+                SetCombatTimer(5000);
+
+                HostileRefManager& refManager = getHostileRefManager();
+                HostileReference* ref = refManager.getFirst();
+                float dist{};
+
+                while (ref)
+                {
+                    auto unit = ref->getSource()->getOwner();
+                    ref = ref->next();
+                    if (unit)
+                    {
+                        if (auto creature = unit->ToCreature())
+                        {
+                            dist = std::max(creature->GetAttackDistance(this), sWorld->getFloatConfig(CONFIG_THREAT_RADIUS)) + creature->m_CombatDistance;
+                            if (GetDistance(creature) > dist)
+                                refManager.deleteReference(creature);
+                        }
+                    }
+                }
+                if (m_HostileRefManager.isEmpty())
+                    ClearInCombat();
+            }
             else
-                m_CombatTimer = 0;
+            {
+                SetCombatTimer(100);
+            }
         }
         else
             m_CombatTimer -= p_time;
