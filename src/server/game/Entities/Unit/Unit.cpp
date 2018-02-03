@@ -422,7 +422,7 @@ void Unit::Update(uint32 p_time)
                 ClearInCombat();
             else if (!GetMap()->IsDungeon())
             {
-                SetCombatTimer(5000);
+                m_CombatTimer = 5000;
 
                 HostileRefManager& refManager = getHostileRefManager();
                 HostileReference* ref = refManager.getFirst();
@@ -437,17 +437,20 @@ void Unit::Update(uint32 p_time)
                         if (auto creature = unit->ToCreature())
                         {
                             dist = std::max(creature->GetAttackDistance(this), sWorld->getFloatConfig(CONFIG_THREAT_RADIUS)) + creature->m_CombatDistance;
-                            if (GetDistance(creature) > dist)
+                            if (GetDistance(creature) > dist || creature->isTrainingDummy())
                                 refManager.deleteReference(creature);
                         }
                     }
                 }
                 if (m_HostileRefManager.isEmpty())
+                {
                     ClearInCombat();
+                    m_CombatTimer = 0;
+                }
             }
             else
             {
-                SetCombatTimer(100);
+                m_CombatTimer = 100;
             }
         }
         else

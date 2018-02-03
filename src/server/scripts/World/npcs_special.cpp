@@ -2769,7 +2769,7 @@ public:
 
         void UpdateAI(uint32 diff)
         {
-            std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
+            /* std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
             if (!threatlist.empty())
             {
                 for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); itr++)
@@ -2790,7 +2790,7 @@ public:
                         (*itr)->removeReference();
                     }
                 }
-            }
+            } */
         }
     };
 
