@@ -2891,6 +2891,37 @@ class spell_warl_void_shield_damage : public SpellScriptLoader
         }
 };
 
+// 18223, 104223 - Curse of Exhaustion
+class spell_warl_curse_of_exhaustion : public SpellScriptLoader
+{
+    public:
+        spell_warl_curse_of_exhaustion() : SpellScriptLoader("spell_warl_curse_of_exhaustion") { }
+
+        class spell_warl_curse_of_exhaustion_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_curse_of_exhaustion_AuraScript);
+
+            void CalculateMaxDuration(int32& duration)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetUnitOwner())
+                        if (caster->HasAura(58080)) // Glyph Curse of Exhaustion (Affliction)
+                            if (target->ToPlayer())
+                                duration /= 2;
+            }
+
+            void Register()
+            {
+                DoCalcMaxDuration += AuraCalcMaxDurationFn(spell_warl_curse_of_exhaustion_AuraScript::CalculateMaxDuration);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_curse_of_exhaustion_AuraScript();
+        }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2953,4 +2984,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_burning_embers2();
     new spell_warl_dark_apotheosis();
     new spell_warl_soulburn_summ_cooldown();
+    new spell_warl_curse_of_exhaustion();
 }
