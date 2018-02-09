@@ -5629,7 +5629,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 //Spoils of Pandaria
                 case 145458: //Mogu Rune of Power
-                    spellInfo->AreaGroupId = 6738;
+                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CHANGE_MAP;
                     break;
                 case 148582: //Jade Tempest Dummy
                 case 148583: //Jade Tempest Dmg
@@ -6526,6 +6526,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 129185: // Sha Energy Low Visual PH
                     spellInfo->Attributes |= SPELL_ATTR0_HIDDEN_CLIENTSIDE;
+                    spellInfo->AttributesEx |= SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR;
                     break;
                 case 148022: // Icicle
                     spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
