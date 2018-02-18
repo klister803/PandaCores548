@@ -3114,7 +3114,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
         unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET, m_spellInfo->Id);
         unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(CRITERIA_TIMED_TYPE_SPELL_TARGET2, m_spellInfo->Id);
         unit->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, m_spellInfo->Id, 0, 0, m_caster);
-        unit->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, m_spellInfo->Id);
+        unit->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, m_spellInfo->Id, 0, 0, m_caster);
 
         Map* map = unit->GetMap();
 
