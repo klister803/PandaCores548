@@ -43,12 +43,12 @@ struct Challenge
     ChallengeMemberList member;
 };
 
-typedef UNORDERED_MAP<uint16/*map*/, Challenge *> ChallengeByMap;
-typedef UNORDERED_MAP<uint32/*id*/, Challenge *> ChallengeMap;
-typedef UNORDERED_MAP<uint64/*MemberGUID*/, ChallengeByMap> ChallengesOfMember;
-typedef UNORDERED_MAP<uint32/*guild*/, ChallengeByMap> GuildBestRecord;
-typedef UNORDERED_MAP<uint16/*map*/, uint32/*QuestCredit*/> QuestCreditForMap;
-typedef UNORDERED_MAP<uint8/*medal*/, uint32/*curency count*/> CurencyRewardMap;
+typedef std::unordered_map<uint16/*map*/, Challenge *> ChallengeByMap;
+typedef std::unordered_map<uint32/*id*/, Challenge *> ChallengeMap;
+typedef std::unordered_map<uint64/*MemberGUID*/, ChallengeByMap> ChallengesOfMember;
+typedef std::unordered_map<uint32/*guild*/, ChallengeByMap> GuildBestRecord;
+typedef std::unordered_map<uint16/*map*/, uint32/*QuestCredit*/> QuestCreditForMap;
+typedef std::unordered_map<uint8/*medal*/, uint32/*curency count*/> CurencyRewardMap;
 class ChallengeMgr
 {
         friend class ACE_Singleton<ChallengeMgr, ACE_Null_Mutex>;

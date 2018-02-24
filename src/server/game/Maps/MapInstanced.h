@@ -31,7 +31,7 @@ class MapInstanced : public Map
     typedef std::lock_guard<LockType> GuardType;
 
     public:
-        typedef UNORDERED_MAP< uint32, Map*> InstancedMaps;
+        typedef std::unordered_map< uint32, Map*> InstancedMaps;
 
         MapInstanced(uint32 id, time_t expiry);
         ~MapInstanced() {}

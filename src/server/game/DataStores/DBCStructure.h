@@ -1713,10 +1713,10 @@ struct SpellCategoryEntry
 };
 
 typedef std::set<uint32> SpellCategorySet;
-typedef UNORDERED_MAP<uint32, SpellCategorySet > SpellCategoryStore;
+typedef std::unordered_map<uint32, SpellCategorySet > SpellCategoryStore;
 typedef std::list<const SpellEntry*> SpellSkillingList;
 typedef std::set<uint32> PetFamilySpellsSet;
-typedef UNORDERED_MAP<uint32, PetFamilySpellsSet > PetFamilySpellsStore;
+typedef std::unordered_map<uint32, PetFamilySpellsSet > PetFamilySpellsStore;
 
 struct SpellCastTimesEntry
 {
@@ -2297,7 +2297,7 @@ struct VectorArray
     std::vector<std::string> stringVectorArray[2];
 };
 
-typedef UNORDERED_MAP<uint32, VectorArray> NameGenVectorArraysMap;
+typedef std::unordered_map<uint32, VectorArray> NameGenVectorArraysMap;
 
 // Structures not used for casting to loaded DBC data and not required then packing
 struct BannedAddon
@@ -2328,7 +2328,7 @@ struct TalentSpellPos
     uint8  rank;
 };
 
-typedef UNORDERED_MAP<uint32, TalentSpellPos> TalentSpellPosMap;
+typedef std::unordered_map<uint32, TalentSpellPos> TalentSpellPosMap;
 
 struct SpellEffect
 {
@@ -2342,15 +2342,15 @@ struct SpellEffect
     SpellEffectEntry const* effects[MAX_SPELL_EFFECTS];
 };
 
-typedef UNORDERED_MAP<uint16, SpellEffectEntry const*> SpellEffectsMap;
+typedef std::unordered_map<uint16, SpellEffectEntry const*> SpellEffectsMap;
 
 struct SpellEffectDiff
 {
     SpellEffectsMap effects;
 };
 
-typedef UNORDERED_MAP<uint32, SpellEffectDiff> SpellEffectDiffMap;
-typedef UNORDERED_MAP<uint32, SpellEffect> SpellEffectMap;
+typedef std::unordered_map<uint32, SpellEffectDiff> SpellEffectDiffMap;
+typedef std::unordered_map<uint32, SpellEffect> SpellEffectMap;
 
 typedef std::set<SpellTargetRestrictionsEntry const*> SpellRestrictionMap;
 
@@ -2359,7 +2359,7 @@ struct SpellRestrictionDiff
     SpellRestrictionMap restrictions;
 };
 
-typedef UNORDERED_MAP<uint32, SpellRestrictionDiff> SpellRestrictionDiffMap;
+typedef std::unordered_map<uint32, SpellRestrictionDiff> SpellRestrictionDiffMap;
 
 struct TaxiPathBySourceAndDestination
 {
@@ -2369,8 +2369,8 @@ struct TaxiPathBySourceAndDestination
     uint32    ID;
     uint32    price;
 };
-typedef UNORDERED_MAP<uint32, TaxiPathBySourceAndDestination> TaxiPathSetForSource;
-typedef UNORDERED_MAP<uint32, TaxiPathSetForSource> TaxiPathSetBySource;
+typedef std::unordered_map<uint32, TaxiPathBySourceAndDestination> TaxiPathSetForSource;
+typedef std::unordered_map<uint32, TaxiPathSetForSource> TaxiPathSetBySource;
 
 struct TaxiPathNodePtr
 {
@@ -2383,8 +2383,8 @@ struct TaxiPathNodePtr
 typedef Path<TaxiPathNodePtr, TaxiPathNodeEntry const> TaxiPathNodeList;
 typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 
-typedef UNORDERED_MAP<uint32 /*frame*/, TransportAnimationEntry const*> TransportAnimationEntryMap;
-typedef UNORDERED_MAP<uint32, TransportAnimationEntryMap> TransportAnimationsByEntry;
+typedef std::unordered_map<uint32 /*frame*/, TransportAnimationEntry const*> TransportAnimationEntryMap;
+typedef std::unordered_map<uint32, TransportAnimationEntryMap> TransportAnimationsByEntry;
 
 #define TaxiMaskSize 162
 typedef uint8 TaxiMask[TaxiMaskSize];

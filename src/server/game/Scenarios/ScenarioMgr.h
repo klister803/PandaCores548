@@ -82,8 +82,8 @@ protected:
     bool bonusRewarded;
 };
 
-typedef UNORDERED_MAP<uint32 /*instance_id*/, ScenarioProgress*> ScenarioProgressMap;
-typedef UNORDERED_MAP<uint32, ScenarioSteps> ScenarioStepsByScenarioMap;
+typedef std::unordered_map<uint32 /*instance_id*/, ScenarioProgress*> ScenarioProgressMap;
+typedef std::unordered_map<uint32, ScenarioSteps> ScenarioStepsByScenarioMap;
 
 class ScenarioMgr
 {

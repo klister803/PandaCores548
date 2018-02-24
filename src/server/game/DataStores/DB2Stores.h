@@ -52,11 +52,11 @@ extern DB2Storage <SpellVisualEntry>              sSpellVisualStore;
 
 void LoadDB2Stores(const std::string& dataPath);
 
-typedef UNORDERED_MAP<uint32, ItemUpgradeData> ItemUpgradeDataMap;
+typedef std::unordered_map<uint32, ItemUpgradeData> ItemUpgradeDataMap;
 ItemUpgradeData const* GetItemUpgradeData(uint32 itemEntry);
 extern ItemUpgradeDataMap sItemUpgradeDataMap;
 
-typedef UNORDERED_MAP<uint32, BattlePetSpeciesEntry const*> BattlePetSpeciesBySpellIdMap;
+typedef std::unordered_map<uint32, BattlePetSpeciesEntry const*> BattlePetSpeciesBySpellIdMap;
 extern BattlePetSpeciesBySpellIdMap sBattlePetSpeciesBySpellId;
 
 typedef std::multimap<uint32, std::pair<uint32, int32>> BattlePetBreedStateByBreedMap;
@@ -84,7 +84,7 @@ typedef std::multimap<uint32, BattlePetSpeciesXAbilityEntry const*> BattlePetXAb
 typedef std::pair<BattlePetXAbilityEntryBySpecIdMap::const_iterator, BattlePetXAbilityEntryBySpecIdMap::const_iterator> BattlePetXAbilityEntryBySpecIdMapBounds;
 extern BattlePetXAbilityEntryBySpecIdMap sBattlePetXAbilityEntryBySpecId;
 
-typedef UNORDERED_MAP<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
+typedef std::unordered_map<uint32, MapChallengeModeEntry const*> MapChallengeModeEntryMap;
 extern MapChallengeModeEntryMap sMapChallengeModeEntrybyMap;
 
 #endif

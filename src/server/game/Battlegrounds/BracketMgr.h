@@ -15,7 +15,7 @@ class BracketMgr
     ~BracketMgr();
 
     public:
-        typedef UNORDERED_MAP<uint64, BracketList> BracketContainer;
+        typedef std::unordered_map<uint64, BracketList> BracketContainer;
 
         void LoadCharacterBrackets();
 
