@@ -1868,6 +1868,9 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
 {
     if (IsInWorld())
         RemoveFromWorld();
+
+    _visibilityPlayerList.clear();
+    _hideForGuid.clear();
 }
 
 void WorldObject::_Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask)
@@ -2408,17 +2411,23 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
-    if (obj->MustBeVisibleOnlyForSomePlayers() && IS_PLAYER_GUID(GetGUID()))
+    if (IS_PLAYER_GUID(GetGUID()))
     {
-        Player const* thisPlayer = ToPlayer();
+        if (obj->MustBeVisibleOnlyForSomePlayers() && IS_PLAYER_GUID(GetGUID()))
+        {
+            Player const* thisPlayer = ToPlayer();
 
-        if (!thisPlayer)
-            return false;
+            if (!thisPlayer)
+                return false;
 
-        Group const* group = thisPlayer->GetGroup();
+            Group const* group = thisPlayer->GetGroup();
 
-        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()) &&
-            (!group || !obj->IsGroupInPersonnalVisibilityList(group->GetGUID())))
+            if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()) &&
+                (!group || !obj->IsGroupInPersonnalVisibilityList(group->GetGUID())))
+                return false;
+        }
+
+        if (obj->HideForSomePlayers() && obj->ShouldHideFor(GetGUID()))
             return false;
     }
 
@@ -2635,11 +2644,7 @@ bool WorldObject::IsPlayerInPersonnalVisibilityList(uint64 guid) const
     if (!IS_PLAYER_GUID(guid))
         return false;
 
-    for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)
-        if ((*itr) == guid)
-            return true;
-
-    return false;
+    return _visibilityPlayerList.find(guid) != _visibilityPlayerList.end();
 }
 
 bool WorldObject::IsGroupInPersonnalVisibilityList(uint64 guid) const
@@ -2647,11 +2652,7 @@ bool WorldObject::IsGroupInPersonnalVisibilityList(uint64 guid) const
     if (!IS_GROUP(guid))
         return false;
 
-    for (std::list<uint64>::const_iterator itr = _visibilityPlayerList.begin(); itr != _visibilityPlayerList.end(); ++itr)
-        if ((*itr) == guid)
-            return true;
-
-    return false;
+    return _visibilityPlayerList.find(guid) != _visibilityPlayerList.end();
 }
 
 void WorldObject::AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList)
@@ -2661,7 +2662,7 @@ void WorldObject::AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerLi
         if (!IS_PLAYER_GUID(*guid))
             continue;
 
-        _visibilityPlayerList.push_back(*guid);
+        _visibilityPlayerList.insert(*guid);
     }
 }
 

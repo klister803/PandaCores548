@@ -510,12 +510,31 @@ enum SMART_ACTION
     SMART_ACTION_SET_HOME_POS                       = 101,    // none
     SMART_ACTION_SET_HEALTH_REGEN                   = 102,    // 0/1
     SMART_ACTION_SET_ROOT                           = 103,    // off/on
+    SMART_ACTION_SET_GO_FLAG                        = 104,    // Flags
+    SMART_ACTION_ADD_GO_FLAG                        = 105,    // Flags
+    SMART_ACTION_REMOVE_GO_FLAG                     = 106,    // Flags
+    SMART_ACTION_SUMMON_CREATURE_GROUP              = 107,    // Group, attackInvoker
+    SMART_ACTION_SET_POWER                          = 108,    // PowerType, newPower
+    SMART_ACTION_ADD_POWER                          = 109,    // PowerType, newPower
+    SMART_ACTION_REMOVE_POWER                       = 110,    // PowerType, newPower
+    SMART_ACTION_GAME_EVENT_STOP                    = 111,    // GameEventId
+    SMART_ACTION_GAME_EVENT_START                   = 112,    // GameEventId
+    SMART_ACTION_START_CLOSEST_WAYPOINT             = 113,    // wp1, wp2, wp3, wp4, wp5, wp6, wp7
+    SMART_ACTION_RISE_UP                            = 114,    // distance
+    SMART_ACTION_DISABLE_EVADE                      = 117,    // 0/1 (1 = disabled, 0 = enabled)
+    SMART_ACTION_SET_CAN_FLY                        = 119,    // 0/1 (0 = disabled, 1 = enabled)
+    SMART_ACTION_PLAY_ANIMKIT                       = 128,    // id, type (0 = oneShot, 1 = aiAnim, 2 = meleeAnim, 3 = movementAnim)
     SMART_ACTION_BOSS_EVADE                         = 200,    // No Params
     SMART_ACTION_BOSS_ANOUNCE                       = 201,    // TextId from trinity_ctring
     SMART_ACTION_MOVE_Z                             = 202,    // TextId from trinity_ctring
     SMART_ACTION_SET_KD                             = 203,    // Set instanse kd
+    SMART_ACTION_SET_SCENATIO_ID                    = 204,    // Set Scenatio Id
+    SMART_ACTION_UPDATE_ACHIEVEMENT_CRITERIA        = 205,    // Update Achievement Criteria
+    SMART_ACTION_SUMMON_ADD_PLR_PERSONNAL_VISIBILE  = 207,    // Add Player In Personnal Visibility
+    SMART_ACTION_SUMMON_ARIATRIGGER                 = 208,    // Summon Ariatrigger
+    SMART_ACTION_JOIN_LFG                           = 209,    // Join LFG
 
-    SMART_ACTION_END                                = 204,
+    SMART_ACTION_END                                = 210,
 };
 
 struct SmartAction
@@ -984,6 +1003,97 @@ struct SmartAction
             int32 targetZ;
             uint8 flymode;
         } movetoz;
+
+        struct
+        {
+            uint32 id;
+            uint32 duration;
+            uint32 KitRecID;
+        } visualKit;
+
+        struct
+        {
+            uint32 flag;
+        } goFlag;
+
+        struct
+        {
+            uint32 group;
+            uint32 attackInvoker;
+        } creatureGroup;
+
+        struct
+        {
+            uint32 powerType;
+            uint32 newPower;
+            bool max_power;
+        } power;
+
+        struct
+        {
+            uint32 id;
+        } gameEventStop;
+
+        struct
+        {
+            uint32 id;
+        } gameEventStart;
+
+        struct
+        {
+            uint32 id;
+        } scenario;
+
+        struct
+        {
+            uint32 type;
+            uint32 misc1;
+            uint32 misc2;
+            uint32 misc3;
+        } achievementCriteria;
+
+        struct
+        {
+            uint32 id;
+            int32 targetX;
+            int32 targetY;
+            int32 targetZ;
+        } conversation;
+
+        struct
+        {
+            uint32 id;
+            int32 targetX;
+            int32 targetY;
+            int32 targetZ;
+            int32 duration;
+        } areatrigger;
+        
+        struct
+        {
+            uint32 id;
+        } joinLfg;
+
+        struct
+        {
+            uint32 visibility;
+        } personalOrHideVisibility;
+
+        struct
+        {
+            uint32 disable;
+        } disableEvade;
+
+        struct
+        {
+            uint32 fly;
+        } flyMode;
+
+        struct
+        {
+            uint32 animKit;
+            uint32 type;
+        } animKit;
     };
 };
 

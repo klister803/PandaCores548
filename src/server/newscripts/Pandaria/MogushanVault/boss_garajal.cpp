@@ -472,10 +472,10 @@ class mob_soul_cutter : public CreatureScript
 
             void JustDied(Unit* attacker)
             {
-                std::list<uint64> playerList;
+                GuidUnorderedSet playerList;
                 me->GetMustBeVisibleForPlayersList(playerList);
 
-				for (std::list<uint64>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+				for (GuidUnorderedSet::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                 {
                     if (Player* player = ObjectAccessor::FindPlayer(*itr))
                     {

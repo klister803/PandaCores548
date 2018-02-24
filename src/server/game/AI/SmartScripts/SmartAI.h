@@ -180,6 +180,8 @@ class SmartAI : public CreatureAI
 
         void SetSwim(bool swim = true);
 
+        void SetEvadeDisabled(bool disable = true);
+
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
         void sGossipHello(Player* player);
@@ -228,6 +230,7 @@ class SmartAI : public CreatureAI
         uint32 GetWPCount() { return mWayPoints ? mWayPoints->size() : 0; }
         bool mCanRepeatPath;
         bool mRun;
+        bool mEvadeDisabled;
         bool mCanAutoAttack;
         bool mCanCombatMove;
         bool mForcedPaused;

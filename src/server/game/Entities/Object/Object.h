@@ -1141,14 +1141,18 @@ class WorldObject : public Object, public WorldLocation
 
         // Personal visibility system
         bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }
-        void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& playerList) { playerList = _visibilityPlayerList; }
+        void GetMustBeVisibleForPlayersList(GuidUnorderedSet& playerList) { playerList = _visibilityPlayerList; }
         void ClearVisibleOnlyForSomePlayers()  { _visibilityPlayerList.clear(); }
 
         bool IsPlayerInPersonnalVisibilityList(uint64 guid) const;
         bool IsGroupInPersonnalVisibilityList(uint64 guid) const;
-        void AddPlayerInPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.push_back(guid); }
+        void AddPlayerInPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.insert(guid); }
         void AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList);
-        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.remove(guid); }
+        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { _visibilityPlayerList.erase(guid); }
+
+        bool HideForSomePlayers() const { return !_hideForGuid.empty(); }
+        void AddToHideList(uint64 guid) { _hideForGuid.insert(guid); }
+        bool ShouldHideFor(uint64 guid) const { return _hideForGuid.find(guid) != _hideForGuid.end();  };
 
     protected:
         std::string m_name;
@@ -1182,7 +1186,8 @@ class WorldObject : public Object, public WorldLocation
 
         uint32 m_currentZoneId;
 
-        std::list<uint64/* guid*/> _visibilityPlayerList;
+        GuidUnorderedSet _visibilityPlayerList;
+        GuidUnorderedSet _hideForGuid;
 
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D, bool size = true) const;
 

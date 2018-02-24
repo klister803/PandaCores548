@@ -47,6 +47,8 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     me->SetWalk(false);
     mRun = false;
 
+    mEvadeDisabled = false;
+
     me->GetPosition(&mLastOOCPos);
 
     mCanAutoAttack = true;
@@ -455,6 +457,12 @@ void SmartAI::EnterEvadeMode()
     if (!me->IsAlive() || me->IsInEvadeMode())
         return;
 
+    if (mEvadeDisabled)
+    {
+        GetScript()->ProcessEventsFor(SMART_EVENT_EVADE);
+        return;
+    }
+
     RemoveAuras();
 
     me->AddUnitState(UNIT_STATE_EVADE);
@@ -786,6 +794,11 @@ void SmartAI::SetSwim(bool swim)
     else
         me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
     me->SendMovementFlagUpdate();
+}
+
+void SmartAI::SetEvadeDisabled(bool disable)
+{
+    mEvadeDisabled = disable;
 }
 
 void SmartAI::sGossipHello(Player* player)

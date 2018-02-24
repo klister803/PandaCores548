@@ -135,6 +135,8 @@ class CreatureAI : public UnitAI
 
         void OnCharmed(bool apply);
 
+        void SetFlyMode(bool /*fly*/);
+
         // Called at reaching home after evade
         virtual void JustReachedHome() {}
 

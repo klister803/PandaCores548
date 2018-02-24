@@ -35,6 +35,7 @@
 #include "ScriptedGossip.h"
 #include "CreatureTextMgr.h"
 #include "ObjectVisitors.hpp"
+#include "LFGMgr.h"
 
 class TrinityStringTextBuilder
 {
@@ -2115,6 +2116,224 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 if (IsCreature(*itr))
                     (*itr)->ToCreature()->SetControlled(e.action.setRoot.root != 0, UNIT_STATE_ROOT);
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_SUMMON_CREATURE_GROUP:
+        {
+            if (!me)
+                break;
+            // std::list<TempSummon*> summonList;
+            // me->SummonCreatureGroup(e.action.creatureGroup.group, &summonList);
+
+            // for (std::list<TempSummon*>::const_iterator itr = summonList.begin(); itr != summonList.end(); ++itr)
+                // if (unit && e.action.creatureGroup.attackInvoker)
+                    // (*itr)->AI()->AttackStart(unit);
+
+            break;
+        }
+        case SMART_ACTION_SET_POWER:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+
+            if (targets)
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                    if (IsUnit(*itr))
+                    {
+                        (*itr)->ToUnit()->SetPower(Powers(e.action.power.powerType), e.action.power.newPower);
+                        if (e.action.power.max_power)
+                            (*itr)->ToUnit()->SetMaxPower(Powers(e.action.power.powerType), e.action.power.newPower);
+                    }
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_ADD_POWER:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+
+            if (targets)
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                    if (IsUnit(*itr))
+                        (*itr)->ToUnit()->SetPower(Powers(e.action.power.powerType), (*itr)->ToUnit()->GetPower(Powers(e.action.power.powerType)) + e.action.power.newPower);
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_REMOVE_POWER:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+
+            if (targets)
+                for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                    if (IsUnit(*itr))
+                        (*itr)->ToUnit()->SetPower(Powers(e.action.power.powerType), (*itr)->ToUnit()->GetPower(Powers(e.action.power.powerType)) - e.action.power.newPower);
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_SET_SCENATIO_ID:
+        {
+            if (!GetBaseObject())
+                break;
+
+            // TC_LOG_DEBUG("smartai", "SmartScript::ProcessAction:: SMART_ACTION_SET_SCENATIO_ID: scenarioId %d", e.action.scenario.id);
+
+            // ObjectList* targets = GetTargets(e, unit);
+            // if (!targets)
+                // break;
+
+            // for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                // if (Player* player = (*itr)->ToPlayer())
+                    // player->SetScenarioId(e.action.scenario.id);
+
+            // delete targets;
+            break;
+        }
+        case SMART_ACTION_UPDATE_ACHIEVEMENT_CRITERIA:
+        {
+            if (!GetBaseObject())
+                break;
+
+            TC_LOG_DEBUG("smartai", "SmartScript::ProcessAction:: SMART_ACTION_UPDATE_ACHIEVEMENT_CRITERIA: type %d misc1 %d misc2 %d misc3 %d",
+                e.action.achievementCriteria.type, e.action.achievementCriteria.misc1, e.action.achievementCriteria.misc2, e.action.achievementCriteria.misc3);
+
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                if (Player* player = (*itr)->ToPlayer())
+                    player->UpdateAchievementCriteria((CriteriaTypes)e.action.achievementCriteria.type, e.action.achievementCriteria.misc1, e.action.achievementCriteria.misc2, e.action.achievementCriteria.misc3, unit, true);
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_SUMMON_ADD_PLR_PERSONNAL_VISIBILE:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!me || !targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                if (Player* player = (*itr)->ToPlayer())
+                {
+                    if (!e.action.personalOrHideVisibility.visibility)
+                        me->AddPlayerInPersonnalVisibilityList(player->GetGUID());
+                    else
+                    {
+                        if (!me->ShouldHideFor(player->GetGUID()))
+                        {
+                            me->AddToHideList(player->GetGUID());
+                            me->DestroyForPlayer(player);
+                        }
+                    }
+                }
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_SUMMON_ARIATRIGGER:
+        {
+            if (!GetBaseObject())
+                break;
+
+            TC_LOG_DEBUG("smartai", "SmartScript::ProcessAction:: SMART_ACTION_SUMMON_ARIATRIGGER: AreaTrigger %d", e.action.areatrigger.id, e.action.areatrigger.targetX, e.action.areatrigger.targetY, e.action.areatrigger.targetZ);
+
+            // if (e.action.areatrigger.targetX || e.action.areatrigger.targetY || e.action.areatrigger.targetZ)
+            // {
+                // Position pos;
+                // pos.Relocate(float(e.action.areatrigger.targetX), float(e.action.areatrigger.targetY), float(e.action.areatrigger.targetZ), 0.0f);
+
+                // AreaTrigger* areaTrigger = new AreaTrigger;
+                // if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GetGenerator<HighGuid::AreaTrigger>()->Generate(), 0, GetBaseObject()->ToUnit(), NULL, pos, pos, NULL, ObjectGuid::Empty, e.action.areatrigger.id))
+                    // delete areaTrigger;
+                // else if (e.action.areatrigger.duration)
+                    // areaTrigger->SetDuration(e.action.areatrigger.duration);
+            // }
+            // else
+            // {
+                // ObjectList* targets = GetTargets(e, unit);
+                // if (!targets)
+                    // break;
+
+                // for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                    // if (Player* player = (*itr)->ToPlayer())
+                    // {
+                        // Position pos;
+                        // player->GetPosition(&pos);
+
+                        // AreaTrigger* areaTrigger = new AreaTrigger;
+                        // if (!areaTrigger->CreateAreaTrigger(sObjectMgr->GetGenerator<HighGuid::AreaTrigger>()->Generate(), 0, GetBaseObject()->ToUnit(), NULL, pos, pos, NULL, ObjectGuid::Empty, e.action.areatrigger.id))
+                            // delete areaTrigger;
+                        // else if (e.action.areatrigger.duration)
+                            // areaTrigger->SetDuration(e.action.areatrigger.duration);
+                    // }
+
+                // delete targets;
+            // }
+            break;
+        }
+        case SMART_ACTION_JOIN_LFG:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+                if (Player* player = (*itr)->ToPlayer())
+                {
+                    std::set<uint32> Slot;
+                    Slot.insert(e.action.joinLfg.id);
+                    sLFGMgr->JoinLfg(player, uint8(lfg::PLAYER_ROLE_LEADER), Slot, "Run LFG");
+                }
+            break;
+        }
+        case SMART_ACTION_DISABLE_EVADE:
+        {
+            if (!IsSmart())
+                break;
+
+            CAST_AI(SmartAI, me->AI())->SetEvadeDisabled(e.action.disableEvade.disable != 0);
+            break;
+        }
+        case SMART_ACTION_SET_CAN_FLY:
+        {
+            if (!IsSmart())
+                break;
+
+            CAST_AI(SmartAI, me->AI())->SetFlyMode(e.action.flyMode.fly != 0);
+            break;
+        }
+        case SMART_ACTION_PLAY_ANIMKIT:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                if (IsCreature(*itr))
+                {
+                    if (e.action.animKit.type == 0)
+                        (*itr)->ToCreature()->PlayOneShotAnimKit(e.action.animKit.animKit);
+                    else if (e.action.animKit.type == 1)
+                        (*itr)->ToCreature()->SetAiAnimKit(e.action.animKit.animKit);
+                    else if (e.action.animKit.type == 2)
+                        (*itr)->ToCreature()->SetAiAnimKit(e.action.animKit.animKit);
+                    else if (e.action.animKit.type == 3)
+                        (*itr)->ToCreature()->SetAiAnimKit(e.action.animKit.animKit);
+                    else
+                    {
+                        TC_LOG_ERROR("sql", "SmartScript: Invalid type for SMART_ACTION_PLAY_ANIMKIT, skipping");
+                        break;
+                    }
+
+                    TC_LOG_DEBUG("smartai", "SmartScript::ProcessAction:: SMART_ACTION_PLAY_ANIMKIT: target: %s (%s), AnimKit: %u, Type: %u",
+                        (*itr)->GetName(), (*itr)->GetGUIDLow(), e.action.animKit.animKit, e.action.animKit.type);
+                }
+            }
 
             delete targets;
             break;
