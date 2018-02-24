@@ -21,16 +21,16 @@
 #include "SFMT.h"
 #include <boost/thread/tss.hpp>
 
-static boost::thread_specific_ptr<CRandomSFMT> sfmtRand;
+static boost::thread_specific_ptr<SFMTRand> sfmtRand;
 static SFMTEngine engine;
 
-static CRandomSFMT* GetRng()
+static SFMTRand* GetRng()
 {
-    CRandomSFMT* rand = sfmtRand.get();
+    SFMTRand* rand = sfmtRand.get();
 
     if (!rand)
     {
-        rand = new CRandomSFMT();
+        rand = new SFMTRand();
         sfmtRand.reset(rand);
     }
 
