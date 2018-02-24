@@ -19,6 +19,7 @@
 #define TRINITY_CONTAINERS_H
 
 #include "Define.h"
+#include "Random.h"
 #include <algorithm>
 #include <utility>
 #include <vector>

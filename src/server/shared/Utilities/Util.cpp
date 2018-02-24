@@ -31,39 +31,6 @@
 #include <ctime>
 #include <chrono>
 
-typedef ACE_TSS<SFMTRand> SFMTRandTSS;
-static SFMTRandTSS sfmtRand;
-
-int32 irand(int32 min, int32 max)
-{
-    return int32(sfmtRand->IRandom(min, max));
-}
-
-uint32 urand(uint32 min, uint32 max)
-{
-    return sfmtRand->URandom(min, max);
-}
-
-float frand(float min, float max)
-{
-    return float(sfmtRand->Random() * (max - min) + min);
-}
-
-int32 rand32()
-{
-    return int32(sfmtRand->BRandom());
-}
-
-double rand_norm(void)
-{
-    return sfmtRand->Random();
-}
-
-double rand_chance(void)
-{
-    return sfmtRand->Random() * 100.0;
-}
-
 Tokenizer::Tokenizer(const std::string &src, const char sep, uint32 vectorReserve)
 {
     m_str = new char[src.length() + 1];
