@@ -16,8 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef TRINITYCORE_COMMON_H
+#define TRINITYCORE_COMMON_H
 
 // config.h needs to be included 1st
 // TODO this thingy looks like hack, but its not, need to
@@ -78,12 +78,17 @@
 #endif
 
 #include <set>
+#include <unordered_set>
 #include <list>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <queue>
 #include <sstream>
 #include <algorithm>
+#include <memory>
+#include <vector>
+#include <array>
 
 #include "Threading/LockedQueue.h"
 #include "Threading/Threading.h"
@@ -115,8 +120,12 @@
 
 #define I32FMT "%08I32X"
 #define I64FMT "%016I64X"
+
+#if (_MSC_VER <= 1800)
 #define snprintf _snprintf
-#define atoll _atoi64
+#endif
+
+#define atoll __atoi64
 #define vsnprintf _vsnprintf
 #define finite(X) _finite(X)
 #define llabs _abs64
@@ -185,41 +194,6 @@ extern char const* localeNames[TOTAL_LOCALES];
 LocaleConstant GetLocaleByName(const std::string& name);
 
 typedef std::vector<std::string> StringVector;
-
-enum GM_COMMAND_TAB
-{
-    GM,
-    PLAYER
-};
-
-struct GmCommand
-{
-    uint32 accountID[2];
-    std::string accountName[2];
-    uint32 characterID[2];
-    std::string characterName[2];
-    std::string command;
-};
-
-struct GmChat
-{
-    uint32 type;
-    uint32 accountID[2];
-    std::string accountName[2];
-    uint32 characterID[2];
-    std::string characterName[2];
-    std::string message;
-};
-
-struct ArenaLog
-{
-    uint32 timestamp;
-    std::string str;
-};
-
-extern ACE_Based::LockedQueue<GmCommand*, ACE_Thread_Mutex> GmLogQueue;
-extern ACE_Based::LockedQueue<GmChat*,    ACE_Thread_Mutex> GmChatLogQueue;
-extern ACE_Based::LockedQueue<ArenaLog*,  ACE_Thread_Mutex> ArenaLogQueue;
 
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max

@@ -472,7 +472,7 @@ class boss_sinestra : public CreatureScript
                             if (targetList.size() < 2)
                                 return;
 
-                            Trinity::Containers::RandomResizeList<Unit*>(targetList, 2);
+                            Trinity::Containers::RandomResizeList(targetList, 2);
 
                             std::list<Unit*>::const_iterator iter = targetList.begin();
                             pOrb1 = me->SummonCreature(NPC_SHADOW_ORB, (*iter)->GetPositionX(), (*iter)->GetPositionY(), (*iter)->GetPositionZ(), (*iter)->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 14000);

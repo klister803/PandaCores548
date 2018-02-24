@@ -19,12 +19,12 @@
 #ifndef TRINITY_DEFINE_H
 #define TRINITY_DEFINE_H
 
-#include "CompilerDefs.h"
+#include <sys/types.h>
 
 #include <ace/Basic_Types.h>
 #include <ace/ACE_export.h>
 
-#include <cstddef>
+#include "CompilerDefs.h"
 
 #define TRINITY_LITTLEENDIAN 0
 #define TRINITY_BIGENDIAN    1
@@ -70,22 +70,27 @@
 #  define ATTR_DEPRECATED
 #endif //COMPILER == COMPILER_GNU
 
-#define UI64FMTD ACE_UINT64_FORMAT_SPECIFIER
-#define UI64LIT(N) ACE_UINT64_LITERAL(N)
+#include <cstddef>
+#include <cinttypes>
+#include <climits>
 
-#define SI64FMTD ACE_INT64_FORMAT_SPECIFIER
-#define SI64LIT(N) ACE_INT64_LITERAL(N)
+#define UI64FMTD "%" PRIu64
+#define UI64LIT(N) UINT64_C(N)
 
-#define SIZEFMTD ACE_SIZE_T_FORMAT_SPECIFIER
+#define SI64FMTD "%" PRId64
+#define SI64LIT(N) INT64_C(N)
 
-typedef ACE_INT64 int64;
-typedef ACE_INT32 int32;
-typedef ACE_INT16 int16;
-typedef ACE_INT8 int8;
-typedef ACE_UINT64 uint64;
-typedef ACE_UINT32 uint32;
-typedef ACE_UINT16 uint16;
-typedef ACE_UINT8 uint8;
+#define SZFMTD "%" PRIuPTR
+#define SIZEFMTD "%" PRIuPTR
+
+typedef int64_t int64;
+typedef int32_t int32;
+typedef int16_t int16;
+typedef int8_t int8;
+typedef uint64_t uint64;
+typedef uint32_t uint32;
+typedef uint16_t uint16;
+typedef uint8_t uint8;
 
 enum DBCFormer
 {

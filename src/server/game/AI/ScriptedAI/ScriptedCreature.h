@@ -45,7 +45,9 @@ class SummonList : public std::list<uint64>
         {
             // We need to use a copy of SummonList here, otherwise original SummonList would be modified
             std::list<uint64> listCopy = *this;
-            Trinity::Containers::RandomResizeList<uint64, Predicate>(listCopy, predicate, max);
+            if (!max)
+                max = listCopy.size();
+            Trinity::Containers::RandomResizeList(listCopy, predicate, max);
             for (iterator i = listCopy.begin(); i != listCopy.end(); )
             {
                 Creature* summon = Unit::GetCreature(*me, *i++);

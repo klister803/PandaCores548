@@ -13,7 +13,7 @@ inline void* dtCustomAlloc(size_t size, dtAllocHint /*hint*/)
 
 inline void dtCustomFree(void* ptr)
 {
-    delete[](unsigned char*)ptr;
+    delete [] (unsigned char*)ptr;
 }
 
 #endif

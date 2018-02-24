@@ -409,12 +409,11 @@ void WheatyExceptionReport::printTracesForAllThreads()
         CONTEXT context;
         context.ContextFlags = 0xffffffff;
         HANDLE threadHandle = OpenThread(THREAD_GET_CONTEXT | THREAD_QUERY_INFORMATION, false, te32.th32ThreadID);
-        if (threadHandle)
+        if (threadHandle && GetThreadContext(threadHandle, &context))
         {
-            if (GetThreadContext(threadHandle, &context))
-                WriteStackDetails(&context, false, threadHandle);
-            CloseHandle(threadHandle);
+            WriteStackDetails(&context, false, threadHandle);
         }
+        CloseHandle(threadHandle);
     }
   } while (Thread32Next(hThreadSnap, &te32));
 
@@ -522,7 +521,7 @@ PEXCEPTION_POINTERS pExceptionInfo)
     _tprintf(_T("Global Variables\r\n"));
 
     SymEnumSymbols(GetCurrentProcess(),
-        (UINT_PTR)GetModuleHandle(szFaultingModule),
+        (DWORD64)GetModuleHandle(szFaultingModule),
         0, EnumerateSymbolsCallback, 0);
   //  #endif                                                  // X86 Only!
 
@@ -990,7 +989,7 @@ PVOID pAddress)
             if (!IsBadStringPtr(*(PSTR*)pAddress, 32))
             {
                 pszCurrBuffer += sprintf(pszCurrBuffer, " = \"%.31s\"",
-                    *(PSTR)pAddress);
+                    *(PDWORD)pAddress);
             }
             else
                 pszCurrBuffer += sprintf(pszCurrBuffer, " = %X",

@@ -569,7 +569,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
             {
                 uint64 newItemIdNum = sObjectMgr->GenerateVoidStorageItemId();
                 char newItemId[20];
-                snprintf(newItemId, 20, "%u", newItemIdNum);
+                snprintf(newItemId, 20, UI64FMTD, newItemIdNum);
 
                 if (!changenth(line, 1, newItemId))           // character_void_storage.itemId update
                     ROLLBACK(DUMP_FILE_BROKEN);
@@ -922,7 +922,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
             {
                 uint64 newItemIdNum = sObjectMgr->GenerateVoidStorageItemId();
                 char newItemId[20];
-                snprintf(newItemId, 20, "%u", newItemIdNum);
+                snprintf(newItemId, 20, UI64FMTD, newItemIdNum);
 
                 if (!changenth(line, 1, newItemId))           // character_void_storage.itemId update
                 {
