@@ -1296,7 +1296,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->Effects[effIndex]->ImplicitTargetConditions, effIndex);
 
-    TC_LOG_DEBUG("spell", "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %u, effIndex %i, Conditions %i", m_spellInfo->Id, radius, (uint32)targetType.GetObjectType(), targets.size(), effIndex, (int32)m_spellInfo->Effects[effIndex]->ImplicitTargetConditions);
+    TC_LOG_DEBUG("spell", "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %u, effIndex %i", m_spellInfo->Id, radius, (uint32)targetType.GetObjectType(), targets.size(), (uint32)effIndex);
 
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
