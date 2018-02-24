@@ -14,10 +14,10 @@ file(GLOB_RECURSE sources_TCSoap TCSoap/*.cpp TCSoap/*.h)
 file(GLOB_RECURSE sources_WorldThread WorldThread/*.cpp WorldThread/*.h)
 file(GLOB sources_localdir *.cpp *.h)
 
-if (USE_COREPCH)
-  set(worldserver_PCH_HDR PrecompiledHeaders/worldPCH.h)
-  set(worldserver_PCH_SRC PrecompiledHeaders/worldPCH.cpp)
-endif()
+# if (USE_COREPCH)
+  # set(worldserver_PCH_HDR PrecompiledHeaders/worldPCH.h)
+  # set(worldserver_PCH_SRC PrecompiledHeaders/worldPCH.cpp)
+# endif()
 
 set(worldserver_SRCS
   ${worldserver_SRCS}
@@ -201,6 +201,6 @@ elseif( WIN32 )
 endif()
 
 # Generate precompiled header
-if( USE_COREPCH )
-  add_cxx_pch(worldserver ${worldserver_PCH_HDR} ${worldserver_PCH_SRC})
-endif()
+# if( USE_COREPCH )
+  # add_cxx_pch(worldserver ${worldserver_PCH_HDR} ${worldserver_PCH_SRC})
+# endif()
