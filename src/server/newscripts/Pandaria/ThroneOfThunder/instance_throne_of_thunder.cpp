@@ -984,7 +984,7 @@ public:
                 InstanceScript* pinstance = im->GetInstanceScript();
                 for (uint8 n = DATA_STORM_CALLER; n <= DATA_LEI_SHEN; n++)
                 {
-                    if (pinstance->GetBossState(n) != DONE)
+                    if (pinstance->GetBossState(n) != DONE && n != DATA_MEGAERA)
                         return;
                 }
                 go->SetGoState(GO_STATE_ACTIVE);
