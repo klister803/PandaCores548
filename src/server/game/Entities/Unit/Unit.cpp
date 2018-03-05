@@ -12401,17 +12401,13 @@ void Unit::RemoveAllControlled()
     {
         Unit *target = *m_Controlled.begin();
         m_Controlled.erase(m_Controlled.begin());
-        if (target->m_objectTypeId != TYPEID_OBJECT)
-        {
-            if (target->GetCharmerGUID() == GetGUID())
-                target->RemoveCharmAuras();
-            else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
-                target->ToTempSummon()->UnSummon();
-        }
-        else if (target->ToTempSummon() && target->IsInWorld())
+        if(!target || !target->IsInWorld())
+            continue;
+
+        if (target->GetCharmerGUID() == GetGUID())
+            target->RemoveCharmAuras();
+        else if (target->GetOwnerGUID() == GetGUID() && target->isSummon())
             target->ToTempSummon()->UnSummon();
-        //else
-            //TC_LOG_ERROR("server", "Unit %u is trying to release unit %u which is neither charmed nor owned by it", GetEntry(), target->GetEntry());
     }
 
     if (getClass() == CLASS_MONK && (m_SummonSlot[13] || m_SummonSlot[14] || m_SummonSlot[15]))

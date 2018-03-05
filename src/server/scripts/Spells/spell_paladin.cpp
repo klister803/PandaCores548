@@ -1515,7 +1515,10 @@ class spell_pal_exorcism : public SpellScriptLoader
             {
                 if (Unit* unitTarget = GetHitUnit())
                 {
-                    uint64 savetarget = GetSpell()->GetRndEffectTarget();
+                    GuidList targets = GetSpell()->GetEffectTargets();
+                    uint64 savetarget;
+                    if (!targets.empty())
+                        savetarget = targets.front();
                     if(savetarget != unitTarget->GetGUID())
                         SetHitDamage(GetHitDamage() / 4);
                 }
