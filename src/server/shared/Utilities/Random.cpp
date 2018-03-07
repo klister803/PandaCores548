@@ -39,7 +39,7 @@ static SFMTRand* GetRng()
 
 int32 irand(int32 min, int32 max)
 {
-    if(max >= min);
+    if (max >= min)
         return int32(GetRng()->IRandom(min, max));
 
     return int32(GetRng()->IRandom(max, min));
@@ -47,23 +47,26 @@ int32 irand(int32 min, int32 max)
 
 uint32 urand(uint32 min, uint32 max)
 {
-    if(max >= min);
+    if (max >= min)
         return GetRng()->IRandom((uint32)min, (uint32)max);
+
     return GetRng()->IRandom((uint32)max, (uint32)min);
 }
 
 uint32 urandms(uint32 min, uint32 max)
 {
     // ASSERT(INT_MAX / IN_MILLISECONDS >= max);
-    if(max >= min);
+    if (max >= min)
         return GetRng()->IRandom(min * IN_MILLISECONDS, max * IN_MILLISECONDS);
+
     return GetRng()->IRandom(max * IN_MILLISECONDS, min * IN_MILLISECONDS);
 }
 
 float frand(float min, float max)
 {
-    if(max >= min);
+    if (max >= min)
         return float(GetRng()->Random() * (max - min) + min);
+
     return float(GetRng()->Random() * (min - max) + max);
 }
 

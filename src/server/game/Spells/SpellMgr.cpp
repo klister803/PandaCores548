@@ -4650,7 +4650,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case 90174: // Divine Purpose
                 case 6770:   // Sap
-                case 6346:   // Fear Ward
                 case 81292:  // Glyph of Mind Spike
                 case 132158: // Nature's Swiftness
                 case 143333: // Water Strider Water Walking
@@ -4663,6 +4662,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 144871:  // Sage Mender
                 case 144595:  // Divine Crusader
                     spellInfo->ProcCharges = 1;
+                    break;
+                case 6346:   // Fear Ward
+                    spellInfo->ProcCharges = 1;
+                    spellInfo->Effects[EFFECT_1]->Effect = 0;
                     break;
                 case 89485:  // Inner Focus
                     spellInfo->ProcChance = 100;
@@ -5663,6 +5666,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->Effects[0]->TargetB = 0;
                     break;
                 //Thok Bloodthirsty
+
                 case 147607: //Cannon Ball AT Dmg
                 {
                     for (uint8 d = NONE_DIFFICULTY; d < MAX_DIFFICULTY; ++d)
@@ -5696,6 +5700,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 }
                 case 143445: //Fixate
+                    spellInfo->AttributesEx &= ~SPELL_ATTR1_CHANNEL_TRACK_TARGET;
+                    spellInfo->AttributesEx5 &= ~SPELL_ATTR5_DONT_TURN_DURING_CAST;
                     spellInfo->Effects[0]->TargetA = 25;
                     spellInfo->Effects[0]->TargetB = 0;
                     spellInfo->Effects[1]->TargetA = 25;

@@ -153,6 +153,7 @@ enum CreatureText
     SAY_PULL
 };
 
+//71529
 class boss_thok_the_bloodthirsty : public CreatureScript
 {
     public:
@@ -428,13 +429,21 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 {
                     if (findtargets <= diff)
                     {
+                        /*std::ostringstream s;
+                        std::string front = me->isInFront(*itr, M_PI) ? "true" : "false";
+                        s << "thok orientation - " << me->GetOrientation() << " target orientation - " << (*itr)->GetOrientation() << " IsInFront - " << front;
+                        sWorld->SendServerMessage(SERVER_MSG_STRING, s.str().c_str());*/
                         std::list<Player*> plist;
                         plist.clear();
-                        GetPlayerListInGrid(plist, me, 20.0f);
+                        GetPlayerListInGrid(plist, me, 50.0f);
                         if (!plist.empty())
-                            for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
-                                if (me->isInFront(*itr, M_PI/6) && me->GetDistance(*itr) <= 8.0f)
-                                    me->Kill(*itr, true);
+                        {
+                            for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
+                                if (me->GetExactDist2d(*itr) <= 25.0f)
+                                    if (me->isInFront(*itr, M_PI/4))
+                                        me->Kill(*itr, true);
+                        }
+
                         findtargets = 750;
                     }
                     else

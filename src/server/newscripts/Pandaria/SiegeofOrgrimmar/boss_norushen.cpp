@@ -213,16 +213,22 @@ public:
         boss_norushenAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
+            bossstarted = false;
         }
 
         InstanceScript* instance;
         EventMap events;
+        bool bossstarted;
 
         void DoAction(int32 const action)
         {
-            if (instance && instance->GetBossState(DATA_NORUSHEN) != DONE)
+            if (!instance)
+                return;
+
+            if (!bossstarted && instance->GetBossState(DATA_NORUSHEN) != DONE)
             {
-                me->SetUInt32Value(UNIT_NPC_FLAGS, 0);
+                bossstarted = true;
+                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 //continue from EVENT_13
                 uint32 t = 0;
                 events.ScheduleEvent(EVENT_1, t += 0);          //18:23:14.000
