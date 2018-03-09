@@ -580,19 +580,18 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_metamorphosis_cost_AuraScript);
 
-            /*void OnTick(AuraEffect const* aurEff)
+            void OnTick(AuraEffect const* aurEff)
             {
-                if (Unit* caster = GetCaster())
-                    caster->EnergizeBySpell(caster, WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
-            }*/
+                if (Unit* caster = GetCaster())          // for safe
+                    if (caster->isInCombat() && caster->GetPower(POWER_DEMONIC_FURY) >= 6)
+                        caster->EnergizeBySpell(caster, WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
+            }
 
             void OnUpdate(uint32 diff, AuraEffect* aurEff)
             {
                 if (Unit* caster = GetCaster())
-                {
                     if (caster->GetPower(POWER_DEMONIC_FURY) <= 40)
                          GetAura()->Remove();
-                }
             }
 
             void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -604,7 +603,7 @@ class spell_warl_metamorphosis_cost : public SpellScriptLoader
 
             void Register()
             {
-                //OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
                 OnEffectUpdate += AuraEffectUpdateFn(spell_warl_metamorphosis_cost_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT);
                 OnEffectRemove += AuraEffectApplyFn(spell_warl_metamorphosis_cost_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
             }
