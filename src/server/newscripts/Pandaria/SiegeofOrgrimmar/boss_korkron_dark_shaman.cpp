@@ -183,10 +183,6 @@ public:
             instance->SetBossState(DATA_KORKRON_D_SHAMAN, NOT_STARTED);
             if (firstpull)
                 SummonAndSeatOnMount(me->GetEntry());
-            /*if (me->GetMap()->IsHeroic())
-                nextpct = 95;
-            else
-                nextpct = 85;*/
             firstattack = false;
             stage = false;
             stage2 = false;
@@ -329,14 +325,6 @@ public:
                 stage5 = true;
                 SetExtraEvents(0);
             }
-            //old version
-            /*if (Creature* oshaman = GetOtherShaman())
-            {
-                if (damage >= me->GetHealth())
-                    oshaman->Kill(oshaman, true);
-                else
-                    oshaman->SetHealth(oshaman->GetHealth() - damage);
-            }*/
         }
         
         void SetExtraEvents(uint8 phase)
@@ -441,30 +429,6 @@ public:
                     evadecheck -= diff;
             }
 
-            //old version
-            /*if (HealthBelowPct(nextpct))
-            {
-                switch (nextpct)
-                {
-                case 95:
-                    nextpct = 85;
-                    break;
-                case 85:
-                    nextpct = 65;
-                    break;
-                case 65:
-                    nextpct = 50;
-                    break;
-                case 50:
-                    nextpct = 25;
-                    break;
-                case 25:
-                    nextpct = 0;
-                    break;
-                }
-                SetExtraEvents(nextpct);
-            }*/
-
             events.Update(diff);
 
             if (me->HasUnitState(UNIT_STATE_CASTING))
@@ -497,7 +461,8 @@ public:
                             firstattack = true;
                             Talk(SAY_FIRSTATTACK);
                         }
-                        DoCastVictim(SPELL_FROSTSTORM_STRIKE);
+                        if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
+                            DoCastVictim(SPELL_FROSTSTORM_STRIKE);
                     }
                     events.ScheduleEvent(EVENT_FROSTSTORM_STRIKE, 6000);
                     break;
