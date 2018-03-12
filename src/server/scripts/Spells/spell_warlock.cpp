@@ -2921,6 +2921,52 @@ class spell_warl_curse_of_exhaustion : public SpellScriptLoader
         }
 };
 
+//6353, 131381, 686
+class spell_warlock_generic_demonic_rage : public SpellScriptLoader
+{
+public:
+    spell_warlock_generic_demonic_rage() : SpellScriptLoader("spell_warlock_generic_demonic_rage") { }
+
+    class spell_warlock_generic_demonic_rage_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warlock_generic_demonic_rage_SpellScript);
+
+        void HandleCast()
+        {
+            if (GetCaster())
+            {
+                float demonic_rage = 0;
+
+                switch (GetSpellInfo()->Id)
+                {
+                    case 6353:   //Soul Burn
+                    case 131381: //Soul Burn
+                        demonic_rage = 30.0f;
+                        break;
+                    case 686:    //Shadow Bolt
+                        demonic_rage = 25.0f;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (demonic_rage)
+                    GetCaster()->CastCustomSpell(104314, SPELLVALUE_BASE_POINT1, demonic_rage, GetCaster(), true, NULL, NULL, GetCaster()->GetGUID());
+            }
+        }
+
+        void Register()
+        {
+            OnCast += SpellCastFn(spell_warlock_generic_demonic_rage_SpellScript::HandleCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_warlock_generic_demonic_rage_SpellScript();
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_shield_of_shadow();
@@ -2984,4 +3030,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_dark_apotheosis();
     new spell_warl_soulburn_summ_cooldown();
     new spell_warl_curse_of_exhaustion();
+    new spell_warlock_generic_demonic_rage();
 }

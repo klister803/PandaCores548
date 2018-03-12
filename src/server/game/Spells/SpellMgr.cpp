@@ -4850,6 +4850,16 @@ void SpellMgr::LoadSpellCustomAttr()
                     mSpellInfoMap[spellInfo->Effects[EFFECT_0]->TriggerSpell] = fishingDummy;
                     break;
                 }
+
+                //Some Class Spells
+                //Warlock
+                case 6353:   //Soul Burn
+                case 131381: //Soul Burn
+                case 686:    //Shadow Bolt
+                    spellInfo->Effects[1]->Effect = 0;
+                    break;
+                //
+
                 // Siege of the Niuzoa temple
                 case 119941: //Puddle Void Zone
                     spellInfo->Effects[EFFECT_0]->RadiusEntry = sSpellRadiusStore.LookupEntry(22);
