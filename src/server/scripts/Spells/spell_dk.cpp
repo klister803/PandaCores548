@@ -1475,6 +1475,12 @@ class spell_dk_blood_boil : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_blood_boil_SpellScript);
 
+            bool Load()
+            {
+                RoilingBloodTargetGuids.clear();
+                return true;
+            }
+
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -1506,31 +1512,36 @@ class spell_dk_blood_boil : public SpellScriptLoader
             void FilterTargets(std::list<WorldObject*>& unitList)
             {
                 Unit* caster = GetCaster();
-                if(!caster || !caster->HasAura(108170))
+                if (!caster || !caster->HasAura(108170))
                     return;
 
                 if (!unitList.empty())
                     caster->CastSpell(caster, DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
 
                 for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
-                {
                     if (Unit* unit = (*itr)->ToUnit())
                         if (unit->HasAura(DK_SPELL_FROST_FEVER, caster->GetGUID()) || unit->HasAura(DK_SPELL_BLOOD_PLAGUE, caster->GetGUID()))
-                            GetSpell()->AddEffectTarget(unit->GetGUID());
-                }
+                            RoilingBloodTargetGuids.push_back(unit->GetGUID());
             }
 
             void HandleAfterCast()
             {
+                // Roiling Blood
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    // Roiling Blood
-                    if(uint64 targetGuid = GetSpell()->GetRndEffectTarget())
+                    if (RoilingBloodTargetGuids.empty())
+                        return;
+
+                    std::random_shuffle(RoilingBloodTargetGuids.begin(), RoilingBloodTargetGuids.end());
+                    for (std::vector<uint64>::const_iterator Itr = RoilingBloodTargetGuids.begin(); Itr != RoilingBloodTargetGuids.end(); ++Itr)
                     {
-                        if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGuid))
+                        if (Unit* target = _player->GetUnit(*_player, *Itr))
                         {
-                            _player->CastSpell(target, 116617, true);
-                            GetSpell()->ClearEffectTarget();
+                            if (target->IsAlive())
+                            {
+                                _player->CastSpell(target, 116617, true);
+                                break;
+                            }
                         }
                     }
                 }
@@ -1542,6 +1553,8 @@ class spell_dk_blood_boil : public SpellScriptLoader
                 OnHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleOnHit);
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dk_blood_boil_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
             }
+        private:
+            std::vector<uint64>RoilingBloodTargetGuids;
         };
 
         SpellScript* GetSpellScript() const
