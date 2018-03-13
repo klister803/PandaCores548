@@ -1667,7 +1667,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
             case 104330:
             {
                 if (Unit* owner = m_caster->GetAnyOwner())
-                    m_caster->EnergizeBySpell(owner, m_spellInfo->Id, damage, POWER_DEMONIC_FURY);
+                    m_caster->EnergizeBySpell(owner, m_spellInfo->Id, 5, POWER_DEMONIC_FURY);
                 return;
             }
             // Vanish (not exist)
