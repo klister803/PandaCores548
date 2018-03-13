@@ -923,7 +923,7 @@ bool IsPartOfSkillLine(uint32 skillId, uint32 spellId);
 DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered);
 DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group);
 DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group);
-int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const* spellproto);
+int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const* spellproto, Unit* caster);
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 
 bool IsCCSpell(SpellInfo const *spellInfo, uint8 EffMask= 0, bool nodamage = false);

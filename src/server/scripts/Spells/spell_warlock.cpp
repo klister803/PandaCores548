@@ -2904,9 +2904,8 @@ class spell_warl_curse_of_exhaustion : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetUnitOwner())
-                        if (caster->HasAura(58080)) // Glyph Curse of Exhaustion (Affliction)
-                            if (target->ToPlayer())
-                                duration /= 2;
+                        if (caster->HasAura(58080) && !target->ToPlayer()) // Glyph Curse of Exhaustion for PvE
+                            duration = 16000;
             }
 
             void Register()

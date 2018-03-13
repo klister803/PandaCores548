@@ -305,7 +305,7 @@ DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group)
     }
 }
 
-int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const* spellproto)
+int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const* spellproto, Unit* caster)
 {
     if (!IsDiminishingReturnsGroupDurationLimited(group))
         return 0;
@@ -346,7 +346,12 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
         {
             // Curse of Exhaustion - limit in PvP
             if (spellproto->Id == 18223 || spellproto->Id == 104223)
-                return 8 * IN_MILLISECONDS;
+            {
+                if (caster->HasAura(58080)) // Glyph Curse of Exhaustion for PvP
+                    return 4 * IN_MILLISECONDS;
+                else
+                    return 8 * IN_MILLISECONDS;
+            }
             // Banish - limit to 6 seconds in PvP
             if (spellproto->SpellFamilyFlags[1] & 0x8000000)
                 return 6 * IN_MILLISECONDS;
