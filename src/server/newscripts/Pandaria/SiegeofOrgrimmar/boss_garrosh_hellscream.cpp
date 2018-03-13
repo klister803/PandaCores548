@@ -653,6 +653,20 @@ class boss_garrosh_hellscream : public CreatureScript
                         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_FIXATE_IRON_STAR);
                     }
                 }
+
+                if (me->GetMap()->IsHeroic())
+                {
+                    Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+                    if (PlayerList.isEmpty())
+                        return;
+
+                    uint32 achievement_entry = Is25ManRaid() ? 8401 : 8400;
+                    for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
+                        if (Player* player = Itr->getSource())
+                            if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievement_entry))
+                                if (!player->HasAchieved(achievement_entry))
+                                    player->CompletedAchievement(achievementEntry);
+                }
             }
 
             bool IfTargetHavePlayersInRange(Player* target, uint8 count, float radius)
