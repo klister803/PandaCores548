@@ -4571,6 +4571,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 5782:  // Fear
                     spellInfo->Mechanic = 0;
                     spellInfo->Effects[EFFECT_0]->Mechanic = MECHANIC_NONE;
+                    spellInfo->AttributesEx |= SPELL_ATTR1_CANT_BE_REFLECTED;
                     break;
                 case 45204: // Mirror Image - Clone Me!
                     spellInfo->AttributesEx6 |= SPELL_ATTR6_CAN_TARGET_INVISIBLE;
