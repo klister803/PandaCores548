@@ -852,7 +852,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 {
                     spellInfo = newInfo;
                     spellId = newInfo->Id;
-                replaced = true;
+                    replaced = true;
                 }
                 break;
             }
@@ -1473,7 +1473,17 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
         else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
             data << uint32(0);
         else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
-            data << uint32(item->GetTemplate()->DisplayInfoID);
+        {
+            if (item->GetTransmogrification())
+            {
+                if (ItemTemplate const* transmogItemTemplate = sObjectMgr->GetItemTemplate(item->GetTransmogrification()))
+                    data << uint32(transmogItemTemplate->DisplayInfoID);
+                else
+                    data << uint32(item->GetTemplate()->DisplayInfoID); // for safe
+            }
+            else
+                data << uint32(item->GetTemplate()->DisplayInfoID);
+        }
         else
             data << uint32(0);
         ++slotCount;
