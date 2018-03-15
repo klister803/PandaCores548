@@ -7995,7 +7995,7 @@ SpellCastResult Spell::CheckCasterAuras() const
             Unit::AuraEffectList const& stunAuras = m_caster->GetAuraEffectsByType(SPELL_AURA_MOD_STUN);
             for (Unit::AuraEffectList::const_iterator i = stunAuras.begin(); i != stunAuras.end(); ++i)
             {
-                if (!((*i)->GetSpellInfo()->GetAllEffectsMechanicMask() & (1<<MECHANIC_STUN)))
+                if (!((*i)->GetSpellInfo()->GetAllEffectsMechanicMask() & (1<<MECHANIC_STUN)) && !(*i)->GetSpellInfo()->GetAllEffectsMechanicMask() & (1 << MECHANIC_MAGICAL_IMMUNITY))
                 {
                     foundNotStun = true;
                     break;
