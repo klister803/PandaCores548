@@ -2584,6 +2584,11 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     if (!obj->m_stealth.GetFlags())
         return true;
 
+    //!Hack fix - Subterfuge(Rogue)
+    if (Player const* plr = obj->ToPlayer())
+        if (plr->HasAura(115192))
+            return true;
+
     float distance = GetExactDist(obj);
     float combatReach = 0.0f;
 
