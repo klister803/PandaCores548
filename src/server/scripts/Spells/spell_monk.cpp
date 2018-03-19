@@ -1719,36 +1719,61 @@ class spell_monk_soothing_mist : public SpellScriptLoader
             {
                 Unit* target = GetTarget();
                 Unit* caster = GetCaster();
-
                 if (!caster || !target)
                     return;
 
+                caster->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+
                 for (int i = SUMMON_SLOT_TOTEM; i < SUMMON_SLOT_TOTEM + 1; ++i)
-                    if (caster->m_SummonSlot[i])
-                        if (Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[i]))
-                            if (summon->GetEntry() == 60849)
-                                summon->CastSpell(summon, 125962, true); //Searcher
+                {
+                    if(caster->m_SummonSlot[i])
+                    {
+                        if(Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[i]))
+                            if(summon->GetEntry() == 60849 && summon->GetExactDist2d(target) < 40.0f)
+                            {
+                                if(caster->IsInRaidWith(target))
+                                {
+                                    target->CastSpell(target, 125955, true);
+                                    summon->CastSpell(target, 125950, true);
+                                }
+                                else if(caster->GetExactDist2d(summon) < 40.0f)
+                                {
+                                    caster->CastSpell(caster, 125955, true);
+                                    summon->CastSpell(caster, 125950, true);
+                                }
+                            }
+                    }
+                }
             }
 
             void HandleEffectPeriodic(AuraEffect const* aurEff)
             {
                 if (Unit* caster = GetCaster())
-                    if (roll_chance_i(25))
-                        caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
+                {
+                    if (Unit* target = GetTarget())
+                        // 25% to give 1 chi per tick
+                        if (roll_chance_i(25))
+                            caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
+                }
             }
 
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* caster = GetCaster();
-
-                if (!caster)
+                Unit* target = GetTarget();
+                if (!caster || !target)
                     return;
-
-                for (int i = SUMMON_SLOT_TOTEM; i < SUMMON_SLOT_TOTEM + 1; ++i)
-                    if (caster->m_SummonSlot[i])
-                        if (Creature* summon = caster->GetMap()->GetCreature(caster->m_SummonSlot[i]))
-                            if (summon->GetEntry() == 60849)
-                                summon->InterruptNonMeleeSpells(true);
+                target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
+                if(caster->IsInRaidWith(target))
+                {
+                    target->RemoveAura(125955);
+                    target->RemoveAura(125950);
+                }
+                else
+                {
+                    caster->RemoveAura(125955);
+                    caster->RemoveAura(125950);
+                }
             }
 
             void Register()
@@ -1763,64 +1788,6 @@ class spell_monk_soothing_mist : public SpellScriptLoader
         {
             return new spell_monk_soothing_mist_AuraScript();
         }
-};
-
-//125962
-class spell_monk_soothing_mist_trigger : public SpellScriptLoader
-{
-public:
-    spell_monk_soothing_mist_trigger() : SpellScriptLoader("spell_monk_soothing_mist_trigger") { }
-
-    class spell_monk_soothing_mist_trigger_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_monk_soothing_mist_trigger_SpellScript);
-
-        void FilterTargets(std::list<WorldObject*>& targets)
-        {
-            if (!GetCaster())
-                return;
-
-            if (!GetCaster()->ToTempSummon())
-                return;
-
-            if (Unit* originalCaster = GetCaster()->GetUnit(*GetCaster(), GetCaster()->GetOwnerGUID()))
-            {
-                float lasthppct = 100;
-                Unit* _target = NULL;
-
-                //Find lowest hp target
-                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); itr++)
-                    if (Unit* target = (*itr)->ToUnit())
-                        if (target->IsAlive() && target->GetHealthPct() < lasthppct)
-                            lasthppct = target->GetHealthPct();
-
-                //Select lowest hp target
-                for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); itr++)
-                    if (Unit* target = (*itr)->ToUnit())
-                        if (target->IsAlive() && target->GetHealthPct() <= lasthppct)
-                            _target = target;
-
-                targets.clear();
-
-                if (_target)
-                {
-                    originalCaster->CastSpell(_target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
-                    _target->CastSpell(_target, 125955, true);
-                    GetCaster()->CastSpell(_target, 125950, true);
-                }
-            }
-        }
-
-        void Register()
-        {
-            OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_monk_soothing_mist_trigger_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_monk_soothing_mist_trigger_SpellScript();
-    }
 };
 
 // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
@@ -3535,7 +3502,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_elusive_brew();
     new spell_monk_breath_of_fire();
     new spell_monk_soothing_mist();
-    new spell_monk_soothing_mist_trigger();
     new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
     new spell_monk_fortifying_brew();
