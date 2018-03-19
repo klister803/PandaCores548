@@ -1,0 +1,1 @@
+INSERT INTO `spell_script_names`(`spell_id`,`ScriptName`) VALUES ( '125962','spell_monk_soothing_mist_trigger');
