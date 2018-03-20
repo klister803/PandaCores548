@@ -2087,9 +2087,16 @@ class spell_hun_bestial_wrath  : public SpellScriptLoader
                 absorbAmount = 0;
             }
 
+            void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (Unit* target = GetTarget())
+                    target->RemoveAurasDueToSpell(145737); //Brutal Kinship Pet
+            }
+
             void Register()
             {
                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_hun_bestial_wrath_AuraScript::Absorb, EFFECT_3, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectRemove += AuraEffectRemoveFn(spell_hun_bestial_wrath_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -2097,6 +2104,34 @@ class spell_hun_bestial_wrath  : public SpellScriptLoader
         {
             return new spell_hun_bestial_wrath_AuraScript();
         }
+};
+
+//34471
+class spell_hun_beast_inside : public SpellScriptLoader
+{
+public:
+    spell_hun_beast_inside() : SpellScriptLoader("spell_hun_beast_inside") { }
+
+    class spell_hun_beast_inside_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_hun_beast_inside_AuraScript);
+
+        void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
+        {
+            if (Unit* target = GetTarget())
+                target->RemoveAurasDueToSpell(144670); //Brutal Kinship Player
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_hun_beast_inside_AuraScript::HandleEffectRemove, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_hun_beast_inside_AuraScript();
+    }
 };
 
 // Widow Venom - 82654
@@ -2196,6 +2231,7 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_ice_trap();
     new spell_hun_scatter_shot();
     new spell_hun_bestial_wrath();
+    new spell_hun_beast_inside();
     new spell_hun_toss_damage();
     new spell_hun_widow_venom();
     new spell_hunt_spore_cloud();
