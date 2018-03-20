@@ -1035,20 +1035,30 @@ class spell_rog_killing_spree : public SpellScriptLoader
             PrepareAuraScript(spell_rog_killing_spree_AuraScript);
 
             Position pos;
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+
+            void HandleEffectPeriodic(AuraEffect const* aurEff)
             {
+                if (!GetCaster())
+                    return;
+
+                //Rogue T16 4P Bonus for Killing Spree
+                if (GetCaster()->HasAura(145210))
+                    if (aurEff->GetTickNumber() >= 2)
+                        if (AuraEffect* aurEffb = GetCaster()->GetAura(145210)->GetEffect(0))
+                            aurEffb->SetAmount(aurEffb->GetAmount() + 10); //increase damage for next killing spree on 10%
+
                 if (Unit* caster = GetCaster())
                 {
                     Unit* target = GetTarget();
                     std::list<uint64> targets = GetAura()->GetEffectTargets();
 
-                    if(!targets.empty())
+                    if (!targets.empty())
                     {
                         uint64 targetGuid = Trinity::Containers::SelectRandomContainerElement(targets);
-                        if(Unit* effectTarget = ObjectAccessor::GetUnit(*caster, targetGuid))
+                        if (Unit* effectTarget = ObjectAccessor::GetUnit(*caster, targetGuid))
                             target = effectTarget;
                     }
-                    if(target)
+                    if (target)
                     {
                         caster->CastSpell(target, 57840, true);
                         caster->CastSpell(target, 57841, true);
@@ -1058,18 +1068,28 @@ class spell_rog_killing_spree : public SpellScriptLoader
 
             void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
-                {
-                    caster->CastSpell(caster, 61851, true);
-                    caster->GetPosition(&pos);
-                }
+                if (!GetCaster())
+                    return;
+
+                if (GetCaster()->HasAura(145210))
+                    if (AuraEffect* aurEffb = GetCaster()->GetAura(145210)->GetEffect(0))
+                        aurEffb->SetAmount(10); ////Reset value, for safe
+
+                GetCaster()->CastSpell(GetCaster(), 61851, true);
+                GetCaster()->GetPosition(&pos);
             }
 
             void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
             {
                 if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(145210))
+                        if (AuraEffect* aurEffb = caster->GetAura(145210)->GetEffect(0))
+                            aurEffb->SetAmount(10); //Reset value
+
                     if (caster->HasAura(63252))
                         caster->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+                }
             }
 
             void Register()
