@@ -459,6 +459,9 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
             action = 0;
         }
     }
+    
+    if (bg->GetStatus() == STATUS_WAIT_LEAVE) // if bg just end, then leave
+        action = 0;
 
     switch (action)
     {
