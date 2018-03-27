@@ -2017,7 +2017,21 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
     }
 
     if (Player* plr = m_caster->ToPlayer())
+    {
         plr->SetFallInformation(0, z);
+        //TODO: Maybe need check LOS for all spells with SPELL_EFFECT_JUMP_DEST
+        //!Hack fix. Check LOS and rewrite dest pos if needed...
+        if (m_spellInfo->Id == 102417) // Druid - Wild Charge
+        {
+            Position pos;
+            float angle = 0.0f;
+            float dist = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcRadius(m_caster);
+            m_caster->GetFirstCollisionPosition(pos, dist, angle);
+            x = pos.m_positionX;
+            y = pos.m_positionY;
+            z = pos.m_positionZ;
+        }
+    }
 
     //TC_LOG_DEBUG("spell", "EffectJumpDest start xyz %f %f %f o %f", x, y, z, o);
 
