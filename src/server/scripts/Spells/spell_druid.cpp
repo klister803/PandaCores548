@@ -2850,6 +2850,17 @@ class spell_druid_berserk_tiger_fury_buff : public SpellScriptLoader
                 // Glyph of Shred (Feral)
                 if (target->HasAura(114234))
                     target->CastSpell(target, 114235, true, NULL, aurEff);
+
+                if (GetId() == 5217)
+                {
+                    if (!GetCaster())
+                        return;
+
+                    if (!GetCaster()->HasAura(144841)) // Item - Druid T16 Feral 4P Bonus
+                        return;
+
+                    GetCaster()->CastSpell(GetCaster(), 146874, true); //Feral Rage
+                }
             }
 
             void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)

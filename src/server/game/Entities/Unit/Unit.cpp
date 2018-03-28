@@ -8478,6 +8478,22 @@ bool Unit::HandleDummyAuraProc(Unit* victim, DamageInfo* dmgInfoProc, AuraEffect
                     CastCustomSpell(70691, SPELLVALUE_BASE_POINT0, damage, victim, true);
                     return true;
                 }
+                case 146874: //Feral Rage
+                {
+                    if (Player* caster = ToPlayer())
+                    {
+                        if (!caster->HasAura(144841))
+                            return false;
+
+                        //Tiger Fury 3Points
+                        if (Unit* _target = caster->getVictim())
+                            caster->CastSpell(_target, 144859, true);
+                        else if (Unit* _target2 = caster->GetSelectedUnit())
+                            if (caster->IsValidAttackTarget(_target2))
+                                caster->CastSpell(_target2, 144859, true);
+                    }
+                    break;
+                }
             }
             // Living Seed
             if (dummySpell->SpellIconID == 2860)
