@@ -321,6 +321,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_oldZoneUpdateId = 0;
     m_areaUpdateId = 0;
     m_oldAreaUpdateId = 0;
+    m_extratotemGuid = 0;
 }
 
 ////////////////////////////////////////////////////////////

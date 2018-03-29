@@ -223,13 +223,29 @@ void TempSummon::InitStats(uint32 duration)
 
         if (slot)
         {
-            if(slot > 0)
+            if (slot > 0)
             {
-                if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+                // Totemic Persistence
+                if (owner->HasAura(108284) && !owner->GetExtraTotemGuid() && slot != 1) // exclude fire totems
                 {
-                    Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]);
-                    if (oldSummon && oldSummon->isSummon())
-                        oldSummon->ToTempSummon()->UnSummon();
+                    if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+                    {
+                        if (Creature* oldTotem = GetMap()->GetCreature(owner->m_SummonSlot[slot]))
+                        {
+                            if (oldTotem->GetEntry() != GetEntry())
+                                owner->SetExtraTotemGuid(GetGUID());
+                            else
+                                if (oldTotem->isSummon())
+                                    oldTotem->ToTempSummon()->UnSummon();
+                        }
+                    }
+                }
+                else
+                {
+                    if (owner->m_SummonSlot[slot] && owner->m_SummonSlot[slot] != GetGUID())
+                        if (Creature* oldSummon = GetMap()->GetCreature(owner->m_SummonSlot[slot]))
+                            if (oldSummon->isSummon())
+                                oldSummon->ToTempSummon()->UnSummon();
                 }
                 owner->m_SummonSlot[slot] = GetGUID();
             }
@@ -486,6 +502,7 @@ void TempSummon::RemoveFromWorld()
         return;
 
     if (m_Properties)
+    {
         if (uint32 slot = m_Properties->Slot)
         {
             if (slot > MAX_SUMMON_SLOT)
@@ -495,6 +512,13 @@ void TempSummon::RemoveFromWorld()
                 if (owner->m_SummonSlot[slot] == GetGUID())
                     owner->m_SummonSlot[slot] = 0;
         }
+    }
+
+    // for Totemic Persistence - Shaman
+    if (ToTempSummon())
+        if (Unit* owner = GetSummoner())
+            if (owner->GetExtraTotemGuid() == GetGUID())
+                owner->SetExtraTotemGuid(0);
 
     //if (GetOwnerGUID())
     //    TC_LOG_ERROR("server", "Unit %u has owner guid when removed from world", GetEntry());

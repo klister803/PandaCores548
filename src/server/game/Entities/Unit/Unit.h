@@ -2622,6 +2622,8 @@ class Unit : public WorldObject
         void SendSpellCooldown(int32 spellId, int32 spell_cooldown, int32 cooldown = 0);
         void SetDynamicPassiveSpells(uint32 spellId, uint32 slot);
         uint32 GetDynamicPassiveSpells(uint32 slot);
+        uint64 GetExtraTotemGuid() { return m_extratotemGuid; }
+        void SetExtraTotemGuid(uint64 guid) { m_extratotemGuid = guid; }
 
         void SetDynamicWorldEffects(uint32 effect, uint32 slot);
 
@@ -2784,6 +2786,7 @@ class Unit : public WorldObject
         uint32 m_reducedThreatPercent;
         uint64 m_misdirectionTargetGUID;
         uint64 m_curTargetGUID;
+        uint64 m_extratotemGuid;
 
         bool m_cleanupDone; // lock made to not add stuff after cleanup before delete
         bool m_duringRemoveFromWorld; // lock made to not add stuff after beginning removing from world
