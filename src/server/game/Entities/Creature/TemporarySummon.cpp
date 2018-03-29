@@ -517,7 +517,7 @@ void TempSummon::RemoveFromWorld()
     // for Totemic Persistence - Shaman
     if (ToTempSummon())
         if (Unit* owner = GetSummoner())
-            if (owner->GetExtraTotemGuid() == GetGUID())
+            if (owner->GetExtraTotemGuid() && owner->GetExtraTotemGuid() == GetGUID())
                 owner->SetExtraTotemGuid(0);
 
     //if (GetOwnerGUID())
