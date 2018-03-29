@@ -235,8 +235,10 @@ void TempSummon::InitStats(uint32 duration)
                             if (oldTotem->GetEntry() != GetEntry())
                                 owner->SetExtraTotemGuid(GetGUID());
                             else
+                            {
                                 if (oldTotem->isSummon())
                                     oldTotem->ToTempSummon()->UnSummon();
+                            }
                         }
                     }
                 }
