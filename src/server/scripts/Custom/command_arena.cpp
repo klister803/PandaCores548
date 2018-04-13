@@ -408,7 +408,7 @@ public:
         {
             if (QueryResult teamResult = CharacterDatabase.Query("SELECT ch.guid, ch.name, wins, games, rating FROM `character_brackets_info` cbi LEFT JOIN characters ch ON ch.guid = cbi.guid WHERE `bracket` = 1 and rating >= 1700 AND `name` != '' AND wins >= 50 ORDER BY rating DESC"))
             {
-                uint32 playerCount = arenaWinner->GetRowCount();
+                uint32 playerCount = teamResult->GetRowCount();
                 uint32 firstWinTypeCount = 3;
                 uint32 secondWinTypeCount  = std::floor((playerCount * 0.005f) + 0.5f);
                 if(secondWinTypeCount < 6)
@@ -428,7 +428,7 @@ public:
                 uint32 teamNumber = 1;
                 do
                 {
-                    Field* Fields = arenaWinner->Fetch();
+                    Field* Fields = teamResult->Fetch();
                     uint64 guid = Fields[0].GetUInt64();
                     std::string name = Fields[1].GetString();
                     uint32 wins = Fields[2].GetUInt32();
@@ -482,7 +482,7 @@ public:
 
                     teamNumber++;
                 }
-                while (arenaWinner->NextRow());
+                while (teamResult->NextRow());
             }
         }
 
