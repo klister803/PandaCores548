@@ -435,48 +435,35 @@ public:
                     uint32 games = Fields[3].GetUInt32();
                     uint32 rating = Fields[4].GetUInt32();
 
-                    uint32 titleId = 0;
-                    uint32 efirCount = 0;
                     if(!debugOnly)
                     {
                         if (teamNumber >= firstWinTypeCount && teamNumber <= firstWinTypeCount)
                         {
-                            titleId = 388;
-                            efirCount = 900;
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 388);
+                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 388);
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','%u')", guid, 38186, 900);
+                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','%u');", guid, 38186, 900);
                         }
                         if (teamNumber >= firstWinTypeCount && teamNumber <= secondWinTypeCount)
                         {
-                            titleId = 42;
-                            efirCount = 0;
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 42);
+                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 42);
                         }
                         if (teamNumber >= firstWinTypeCount && teamNumber <= thirdWinTypeCount)
                         {
-                            titleId = 43;
-                            efirCount = 0;
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 43);
+                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 43);
                         }
                         if (teamNumber >= firstWinTypeCount && teamNumber <= fothWinTypeCount)
                         {
-                            titleId = 44;
-                            efirCount = 0;
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
+                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 44);
                         }
                         if (teamNumber >= firstWinTypeCount && teamNumber <= fifthWinTypeCount)
                         {
-                            titleId = 45;
-                            efirCount = 0;
+                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
+                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
                         }
-
-                        if (efirCount)
-                        {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','%u')", guid, 38186, efirCount);
-                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','%u');", guid, 38186, efirCount);
-                        }
-                        if (titleId)
-                        {
-                            CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, titleId);
-                            TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, titleId);
-                        }
-                        // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','1')", guid, 500054); //Tabard winter 2017
-                        // CharacterDatabase.PQuery("INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','3','%u','150')", guid, 38186);
                     }
                     TC_LOG_DEBUG("arena","За %u место в топе 3на3 получил %s(%u) %u эфира, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, efirCount, wins, games, rating);
 
