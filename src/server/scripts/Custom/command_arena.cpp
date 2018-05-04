@@ -465,7 +465,7 @@ public:
                             TC_LOG_DEBUG("arena","INSERT INTO `character_reward` (`owner_guid`, `type`, `id`, `count`) VALUES('%u','2','%u','0')", guid, 45);
                         }
                     }
-                    TC_LOG_DEBUG("arena","За %u место в топе 3на3 получил %s(%u) %u эфира, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, efirCount, wins, games, rating);
+//                    TC_LOG_DEBUG("arena","За %u место в топе 3на3 получил %s(%u) %u эфира, побед %u, игр %u, рейтинг %u", teamNumber, name.c_str(), guid, efirCount, wins, games, rating);
 
                     teamNumber++;
                 }
