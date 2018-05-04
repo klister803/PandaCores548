@@ -738,7 +738,7 @@ struct DigSiteInfo
 class WorldLocation : public Position
 {
     public:
-        explicit WorldLocation(uint32 _mapid = MAPID_INVALID, float _x = 0, float _y = 0, float _z = 0, float _o = 0)
+        WorldLocation(uint32 _mapid = MAPID_INVALID, float _x = 0, float _y = 0, float _z = 0, float _o = 0)
             : m_mapId(_mapid) { Relocate(_x, _y, _z, _o); }
         WorldLocation(const WorldLocation &loc) { WorldRelocate(loc); }
 
