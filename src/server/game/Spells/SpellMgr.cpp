@@ -6529,8 +6529,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 33763: // we skip saving this aura
                 case 67483: // When a druid logins, he doesnt have either eclipse power, nor the marker auras, nor the eclipse buffs. Dont save them.
                 case 67484:
-                case 48517:
-                case 48518:
                 case 107095:
                 case 118694:
                 case 119048:
@@ -6546,6 +6544,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 case 110909:
                     spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_BE_SAVED_IN_DB;
                     break;
+                case 48517:
+                case 48518:
+                    spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CHANGE_MAP;
+                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CANT_BE_SAVED_IN_DB;
                 default:
                     break;
             }
